@@ -26,7 +26,9 @@ const Login = () => {
     
     // Simulación de login exitoso temporalmente
     alert("Login simulado exitoso. Redirigiendo...");
-    navigate("/dashboard/list");
+    
+    // ✅ CAMBIO AQUÍ: Cambiamos "/dashboard/list" por "/dashboard"
+    navigate("/dashboard"); 
     
     /* CÓDIGO REAL COMENTADO HASTA TENER EL BACKEND
     const url = `${import.meta.env.VITE_BACKEND_URL}/administrador/login`;
@@ -42,7 +44,7 @@ const Login = () => {
     if (response) {
       setToken(response.token);         
       setRolGlobal(response.rol);       
-      navigate("/dashboard/list");
+      navigate("/dashboard"); // Asegúrate de cambiarlo aquí también para el futuro
     }
     */
   };
@@ -50,22 +52,24 @@ const Login = () => {
   const handleInvitado = () => {
     // setToken("TOKEN_INVITADO"); 
     // setRolGlobal("invitado");   
-    navigate("/dashboard/list"); 
+    
+    // ✅ CAMBIO AQUÍ: Cambiamos "/dashboard/list" por "/dashboard"
+    navigate("/dashboard"); 
   };
 
   return (
     <div className="relative flex items-center justify-center min-h-screen py-8 overflow-y-auto bg-gray-100">
       {/* <ToastContainer /> */}
 
-      {/* Fondo (Asegúrate de tener esfot.jpg en la carpeta public/images/) */}
-      <div className="absolute inset-0 bg-[url('/images/esfot.jpg')] bg-no-repeat bg-cover bg-center opacity-40"></div>
-      <div className="absolute inset-0 bg-black/40"></div>
+      {/* Fondo (Asegúrate de tener esfot.jpg en la carpeta public/images/ o public/) */}
+      <div className="absolute inset-0 bg-[url('/esfot.jpg')] bg-no-repeat bg-cover bg-center opacity-40"></div>
+      <div className="absolute inset-0 bg-black/25"></div>
 
       {/* Header institucional */}
       <div className="absolute top-0 left-0 right-0 h-16 bg-[#17243D] shadow-xl flex items-center justify-between px-6 z-20">
         <div className="h-full py-2 flex items-center justify-center">
           {/* ✅ CORRECCIÓN 2: Uso del logo de la EPN de prueba si no tienes logoPIC.png aún */}
-           <img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Escudo_EPN.svg" alt="Escudo EPN" className="h-full w-auto" />
+           <img src="/logoPIC.png" alt="Escudo EPN" className="h-[90px] w-auto object-contain" />
         </div>
         <Link to="/" className="text-white hover:text-yellow-400 font-bold text-sm">
            Volver al Inicio
@@ -163,7 +167,7 @@ const Login = () => {
           <button
             type="button"
             onClick={handleInvitado}
-            className="py-2 w-full block text-center bg-gray-500 text-white font-bold rounded-full hover:scale-105 transition-transform duration-300 hover:bg-gray-600"
+            className="py-2 px-8 bg-[#F5BD45] text-[#17243D] font-extrabold rounded-full hover:scale-105 transition-transform duration-300 hover:bg-yellow-500 w-full text-center"
           >
             Ingresar como Invitado
           </button>
@@ -179,13 +183,13 @@ const Login = () => {
 
         {/* Enlaces inferiores */}
         <div className="flex flex-col items-center gap-4 text-sm">
-          <Link to="/forgot/id" className="underline text-gray-600 hover:text-[#17243D] transition-colors">
+          <Link to="/forgot" className="underline text-gray-600 hover:text-[#17243D] transition-colors">
             ¿Olvidaste tu contraseña?
           </Link>
           
           {/* <Link
             to="/register"
-            className="py-2 px-8 bg-[#F5BD45] text-[#17243D] font-extrabold rounded-full hover:scale-105 transition-transform duration-300 hover:bg-yellow-500 w-full text-center"
+            className="..."
           >
             Registrarse
           </Link> */}

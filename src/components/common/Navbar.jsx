@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom';
 export default function Navbar() {
   return (
     <nav className="bg-blue-950 text-white shadow-md w-full z-50">
-      <div className="container mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
+      <div className="container mx-auto px-4 md:px-6 py-1 flex items-center justify-between">
         
         {/* Logo EPN */}
         <div className="flex items-center gap-3">
           <img 
-            src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Escudo_EPN.svg" 
+            src="/logoPIC.png" 
             alt="Logo EPN" 
-            className="h-12 md:h-14 w-auto" 
+            className="h-12 md:h-20 w-auto" 
           />
         </div>
 

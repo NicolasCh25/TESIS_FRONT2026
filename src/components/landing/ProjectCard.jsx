@@ -12,12 +12,12 @@ export default function ProjectCard({ project }) {
         <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-between text-white z-10">
           <div className="flex items-center justify-between">
             <img 
-              src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Escudo_EPN.svg" 
+              src="/public/logoPIC.png" 
               alt="Logo EPN" 
               className="h-8 sm:h-10 w-auto opacity-90" 
             />
             <span className="text-[10px] sm:text-xs font-semibold tracking-widest text-gray-200 uppercase p-1">
-              CARRERA
+              ESFOT
             </span>
           </div>
           
