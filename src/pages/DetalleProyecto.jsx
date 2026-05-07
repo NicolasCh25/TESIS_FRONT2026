@@ -22,7 +22,7 @@ const DetalleProyecto = () => {
 
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
 
-        const url = `${baseUrl}/api/proyectos`;
+        const url = `${baseUrl}api/proyectos`;
 
         const response = await fetchDataBackend(
           url,
