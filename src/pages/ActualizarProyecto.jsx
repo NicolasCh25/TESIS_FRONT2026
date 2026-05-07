@@ -25,7 +25,7 @@ const ActualizarProyecto = () => {
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
 
         // BUSCAR TODOS LOS PROYECTOS
-        const url = `${baseUrl}/api/proyectos`;
+        const url = `${baseUrl}api/proyectos`;
 
         const response = await fetchDataBackend(url, null, "GET", {
           Authorization: `Bearer ${token}`
