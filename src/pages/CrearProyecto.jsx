@@ -23,7 +23,7 @@ const CrearProyecto = () => {
     try {
       // ✅ CORRECCIÓN: evitar doble slash
       const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-      const url = `${baseUrl}/api/proyectos`;
+      const url = `${baseUrl}api/proyectos`;
 
       const formData = new FormData();
       
