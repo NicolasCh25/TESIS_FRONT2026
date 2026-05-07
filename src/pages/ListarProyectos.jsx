@@ -60,7 +60,7 @@ const ListarProyectos = () => {
 
       const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
 
-      const url = `${baseUrl}/api/eliminar-proyecto/${id}`;
+      const url = `${baseUrl}api/eliminar-proyecto/${id}`;
 
       try {
 
