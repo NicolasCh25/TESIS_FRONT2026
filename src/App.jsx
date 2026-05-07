@@ -5,8 +5,9 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import PublicRoute from './routes/PublicRoute';
 
 // Páginas
-import Home from './pages/Home'; // <-- Asegúrate de que esta sea tu Landing Page
+import Home from './pages/Home'; 
 import Login from './pages/Login';
+import RegistroPublico from './pages/RegistroPublico'; // <-- Nueva Importación
 import Forgot from './pages/Forgot';
 import NuevoPassword from './pages/NuevoPassword';
 import ConfirmarCuenta from './pages/ConfirmarCuenta'; 
@@ -31,14 +32,12 @@ function App() {
         {/* =======================
             RUTAS PÚBLICAS
             ======================= */}
-        {/* Usamos path="/" FUERA del PublicRoute si quieres que la Landing 
-            sea siempre accesible sin importar si hay sesión o no. 
-            O dentro de PublicRoute si quieres que solo se vea si NO hay sesión. */}
             
         <Route path="/" element={<Home />} /> {/* LANDING PAGE PRINCIPAL */}
 
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<Login />} />
+          <Route path="/registro" element={<RegistroPublico />} /> {/* <-- Nueva Ruta Pública */}
           <Route path="/forgot" element={<Forgot />} />
           <Route path="/recuperarpassword/:token" element={<NuevoPassword />} />
           <Route path="/confirmar/:id" element={<ConfirmarCuenta />} />
