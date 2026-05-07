@@ -12,7 +12,7 @@ const ListarProyectos = () => {
 
   const [proyectos, setProyectos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
-  const [filtro, setFiltro] = useState("autor"); // 👈 NUEVO
+  const [filtro, setFiltro] = useState("autor"); 
 
   const obtenerProyectos = async () => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
@@ -22,7 +22,7 @@ const ListarProyectos = () => {
     // 👇 construir query dinámico según filtro
     const query = valor ? `?${filtro}=${encodeURIComponent(valor)}` : "";
 
-    const url = `${baseUrl}/api/proyectos${query}`;
+    const url = `${baseUrl}api/proyectos${query}`;
 
     try {
       const response = await fetchDataBackend(url, null, "GET", {
