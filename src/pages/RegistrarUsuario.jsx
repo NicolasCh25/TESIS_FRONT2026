@@ -16,22 +16,21 @@ const RegistrarUsuario = () => {
   const handleRegistro = async (dataForm) => {
     setCargando(true);
     
-    // 🚀 LÓGICA DINÁMICA DE ENDPOINT
-    // Si es administrador, enviamos a la URL de administradores (Postman)
-    // De lo contrario, usamos el registro normal de usuarios
-    const url = dataForm.rol === "administrador" 
-      ? "https://repositiorio-pic.onrender.com/api/administradores"
-      : `${import.meta.env.VITE_BACKEND_URL}api/registro`;
+    // 🚀 URL ajustada al endpoint de administradores que confirmaste en Postman
+    const url = "https://repositiorio-pic.onrender.com/api/administradores";
 
     try {
+      // Enviamos los datos (nombre, apellido, email, password) al endpoint
       const response = await fetchDataBackend(url, dataForm, "POST", {
         Authorization: `Bearer ${token}`
       });
 
       if (response) {
-        toast.success(response.msg || "Usuario registrado exitosamente.");
+        // El mensaje del backend es: "Administrador creado, revisa tu correo para confirmar"
+        toast.success(response.msg || "Administrador registrado con éxito.");
+        
         // Redirigir a la lista de usuarios tras el éxito
-        setTimeout(() => navigate("/dashboard/users"), 2000);
+        setTimeout(() => navigate("/dashboard/users"), 2500);
       }
     } catch (error) {
       console.error("Error en registro:", error);
@@ -59,14 +58,15 @@ const RegistrarUsuario = () => {
       <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
         <div className="bg-[#17243D] p-8 text-center md:text-left border-b-4 border-[#F5BD45]">
           <h1 className="text-3xl font-black text-white uppercase tracking-tighter">
-            Crear <span className="text-[#F5BD45]">Cuenta</span>
+            Nuevo <span className="text-[#F5BD45]">Administrador</span>
           </h1>
           <p className="text-gray-300 text-sm mt-1 font-medium">
-            Completa los campos para dar acceso a un nuevo miembro del sistema.
+            Registra los datos para crear una nueva cuenta de administrador.
           </p>
         </div>
 
         <div className="p-8 md:p-12 bg-gray-50/30">
+          {/* El formulario ahora solo pide Nombre, Apellido, Email y Password */}
           <FormularioUsuario onSubmit={handleRegistro} cargando={cargando} />
         </div>
       </div>

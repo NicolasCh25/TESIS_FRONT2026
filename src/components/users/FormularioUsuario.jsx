@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { MdSave, MdPerson, MdEmail, MdLock, MdSecurity } from "react-icons/md";
+import { MdSave, MdPerson, MdEmail, MdLock } from "react-icons/md";
 
 const FormularioUsuario = ({ onSubmit, cargando }) => {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -18,7 +18,7 @@ const FormularioUsuario = ({ onSubmit, cargando }) => {
             </span>
             <input 
               type="text"
-              placeholder="Ej. Nicolás"
+              placeholder="Ej. Gabriel"
               className={inputClass}
               {...register("nombre", { required: "El nombre es obligatorio" })}
             />
@@ -35,7 +35,7 @@ const FormularioUsuario = ({ onSubmit, cargando }) => {
             </span>
             <input 
               type="text"
-              placeholder="Ej. Chiguano"
+              placeholder="Ej. Escobar"
               className={inputClass}
               {...register("apellido", { required: "El apellido es obligatorio" })}
             />
@@ -44,46 +44,24 @@ const FormularioUsuario = ({ onSubmit, cargando }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Email */}
-        <div>
-          <label className="block text-sm font-bold text-[#17243D] mb-2 uppercase tracking-wide">Correo Institucional</label>
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-              <MdEmail size={20} />
-            </span>
-            <input 
-              type="email"
-              placeholder="usuario@epn.edu.ec"
-              className={inputClass}
-              {...register("email", { 
-                required: "El correo es obligatorio",
-                pattern: { value: /^\S+@\S+$/i, message: "Formato de correo inválido" }
-              })}
-            />
-          </div>
-          {errors.email && <p className="text-red-500 text-xs mt-1 font-bold">{errors.email.message}</p>}
+      {/* Email */}
+      <div>
+        <label className="block text-sm font-bold text-[#17243D] mb-2 uppercase tracking-wide">Correo Institucional</label>
+        <div className="relative">
+          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+            <MdEmail size={20} />
+          </span>
+          <input 
+            type="email"
+            placeholder="nicolas.chiguano@epn.edu.ec"
+            className={inputClass}
+            {...register("email", { 
+              required: "El correo es obligatorio",
+              pattern: { value: /^\S+@\S+$/i, message: "Formato de correo inválido" }
+            })}
+          />
         </div>
-
-        {/* Rol (Selección Dinámica) */}
-        <div>
-          <label className="block text-sm font-bold text-[#17243D] mb-2 uppercase tracking-wide">Rol a Asignar</label>
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-              <MdSecurity size={20} />
-            </span>
-            <select 
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#17243D] outline-none transition-all bg-white appearance-none cursor-pointer"
-              {...register("rol", { required: "Debes seleccionar un rol" })}
-            >
-              <option value="">Selecciona un rol...</option>
-              <option value="estudiante">Estudiante (Acceso limitado)</option>
-              <option value="administrador">Administrador (Acceso total)</option>
-            </select>
-            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400 text-xs">▼</div>
-          </div>
-          {errors.rol && <p className="text-red-500 text-xs mt-1 font-bold">{errors.rol.message}</p>}
-        </div>
+        {errors.email && <p className="text-red-500 text-xs mt-1 font-bold">{errors.email.message}</p>}
       </div>
 
       {/* Password */}
@@ -99,7 +77,7 @@ const FormularioUsuario = ({ onSubmit, cargando }) => {
             className={inputClass}
             {...register("password", { 
               required: "La contraseña es obligatoria",
-              minLength: { value: 6, message: "Debe tener al menos 6 caracteres" }
+              minLength: { value: 8, message: "Debe tener al menos 8 caracteres" }
             })}
           />
         </div>
@@ -114,7 +92,7 @@ const FormularioUsuario = ({ onSubmit, cargando }) => {
         }`}
       >
         <MdSave size={24} />
-        {cargando ? "PROCESANDO REGISTRO..." : "FINALIZAR REGISTRO"}
+        {cargando ? "PROCESANDO REGISTRO..." : "REGISTRAR ADMINISTRADOR"}
       </button>
     </form>
   );
