@@ -19,6 +19,7 @@ import Estadisticas from './pages/Estadisticas';
 import Profile from './pages/Profile';
 import ActualizarProyecto from './pages/ActualizarProyecto';
 import ActualizarUsuario from './pages/ActualizarUsuario';
+import DetalleProyecto from './pages/DetalleProyecto';
 
 // ✅ IMPORTAR DETALLE
 import DetalleProyecto from './pages/DetalleProyecto';
@@ -73,7 +74,6 @@ function App() {
 
             <Route path="list" element={<ListarProyectos />} />
 
-            {/* ✅ NUEVA RUTA */}
             <Route path="detalle/:id" element={<DetalleProyecto />} />
 
             <Route path="actualizar/:id" element={<ActualizarProyecto />} />
