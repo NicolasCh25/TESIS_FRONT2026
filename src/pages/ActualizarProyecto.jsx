@@ -10,29 +10,75 @@ const ActualizarProyecto = () => {
   const navigate = useNavigate();
   const fetchDataBackend = useFetch();
   const { token, rol } = storeAuth();
-  
+
   const [archivo, setArchivo] = useState(null);
   const [cargando, setCargando] = useState(false);
 
-  // Efecto para simular la carga de datos del proyecto a editar
+  // NUEVO
+  const [datosIniciales, setDatosIniciales] = useState(null);
+
+  // OBTENER PROYECTO
   useEffect(() => {
-    toast.info(`Cargando datos del proyecto: ${id}`);
-    // Aquí harías el fetch para traer los datos actuales y precargar el form
+    const obtenerProyecto = async () => {
+      try {
+
+        const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+
+        // BUSCAR TODOS LOS PROYECTOS
+        const url = `${baseUrl}/api/proyectos`;
+
+        const response = await fetchDataBackend(url, null, "GET", {
+          Authorization: `Bearer ${token}`
+        });
+
+        if (response?.resultados) {
+
+          // BUSCAR EL PROYECTO POR ID
+          const proyecto = response.resultados.find(
+            (p) => p._id === id
+          );
+
+          if (proyecto) {
+            setDatosIniciales(proyecto);
+          } else {
+            toast.error("Proyecto no encontrado");
+          }
+        }
+
+      } catch (error) {
+        console.error(error);
+        toast.error("Error al cargar proyecto");
+      }
+    };
+
+    obtenerProyecto();
   }, [id]);
 
   const handleActualizar = async (dataForm) => {
+
     if (rol === "invitado") {
       toast.warning("Modo invitado: no puedes editar proyectos");
       return;
     }
 
     setCargando(true);
+
     try {
-      const url = `${import.meta.env.VITE_BACKEND_URL}/proyecto/actualizar/${id}`;
-      // Lógica de FormData para el envío
+
+      const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+
+      // ENDPOINT REAL
+      const url = `${baseUrl}/api/proyectos/${id}`;
+
       const formData = new FormData();
-      Object.entries(dataForm).forEach(([key, value]) => formData.append(key, value));
-      if (archivo) formData.append("archivo_proyecto", archivo);
+
+      Object.entries(dataForm).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+
+      if (archivo) {
+        formData.append("archivoPDF", archivo);
+      }
 
       const response = await fetchDataBackend(url, formData, "PUT", {
         Authorization: `Bearer ${token}`
@@ -40,9 +86,14 @@ const ActualizarProyecto = () => {
 
       if (response) {
         toast.success("¡Proyecto actualizado correctamente!");
-        setTimeout(() => navigate('/dashboard/list'), 2000);
+
+        setTimeout(() => {
+          navigate("/dashboard/list");
+        }, 2000);
       }
+
     } catch (error) {
+      console.error(error);
       toast.error("Error al actualizar el proyecto");
     } finally {
       setCargando(false);
@@ -51,20 +102,26 @@ const ActualizarProyecto = () => {
 
   return (
     <div className="relative w-full min-h-[calc(100vh-4rem)] flex justify-center items-center py-10 px-4 overflow-hidden bg-gray-50">
-      <ToastContainer />
       
-      {/* Fondo con imagen de la ESFOT (Misma que CrearProyecto) */}
-      <div 
+      <ToastContainer />
+
+      <div
         className="absolute inset-0 bg-cover bg-center opacity-10"
         style={{ backgroundImage: "url('/images/esfot.jpg')" }}
       ></div>
 
-      <CardActualizar 
-        onSubmit={handleActualizar}
-        setArchivo={setArchivo}
-        rol={rol}
-        cargando={cargando}
-      />
+      {
+        datosIniciales && (
+          <CardActualizar
+            onSubmit={handleActualizar}
+            setArchivo={setArchivo}
+            rol={rol}
+            cargando={cargando}
+            datosIniciales={datosIniciales}
+          />
+        )
+      }
+
     </div>
   );
 };
