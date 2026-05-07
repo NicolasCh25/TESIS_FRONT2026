@@ -1,18 +1,25 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-// Páginas del Portal PIC
-import Home from './pages/Home';
+// Importación de tus archivos de protección
+import ProtectedRoute from './routes/ProtectedRoute';
+import PublicRoute from './routes/PublicRoute';
+
+// Páginas
+import Home from './pages/Home'; // <-- Asegúrate de que esta sea tu Landing Page
 import Login from './pages/Login';
 import Forgot from './pages/Forgot';
+import NuevoPassword from './pages/NuevoPassword';
+import ConfirmarCuenta from './pages/ConfirmarCuenta'; 
 import CrearProyecto from './pages/CrearProyecto';
 import ListarProyectos from './pages/ListarProyectos';
 import GestionUsuarios from './pages/GestionUsuarios'; 
+import RegistrarUsuario from './pages/RegistrarUsuario';
 import Estadisticas from './pages/Estadisticas';
 import Profile from './pages/Profile';
 import ActualizarProyecto from './pages/ActualizarProyecto';
 import ActualizarUsuario from './pages/ActualizarUsuario';
 
-// Importaciones del Dashboard
+// Layouts e Inicio
 import Dashboard from './layout/Dashboard';
 import InicioAdmin from './pages/InicioAdmin'; 
 
@@ -20,50 +27,50 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        
         {/* =======================
-            Rutas Públicas 
+            RUTAS PÚBLICAS
             ======================= */}
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/forgot" element={<Forgot />} />
+        {/* Usamos path="/" FUERA del PublicRoute si quieres que la Landing 
+            sea siempre accesible sin importar si hay sesión o no. 
+            O dentro de PublicRoute si quieres que solo se vea si NO hay sesión. */}
+            
+        <Route path="/" element={<Home />} /> {/* LANDING PAGE PRINCIPAL */}
+
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot" element={<Forgot />} />
+          <Route path="/recuperarpassword/:token" element={<NuevoPassword />} />
+          <Route path="/confirmar/:id" element={<ConfirmarCuenta />} />
+        </Route>
 
         {/* =======================
-            Rutas Privadas (Dashboard Layout) 
+            RUTAS PROTEGIDAS
             ======================= */}
-        <Route path="/dashboard" element={<Dashboard />}>
-          
-          {/* Inicio del Panel: Muestra los 4 cuadros */}
-          <Route index element={<InicioAdmin />} />
-          
-          {/* Módulo: Subir Nuevo Proyecto */}
-          <Route path="create" element={<CrearProyecto />} /> 
-          
-          {/* Módulo: Gestionar Proyectos (PIC) */}
-          <Route path="list" element={<ListarProyectos />} />
-          
-          {/* Módulo: Gestión de Usuarios */}
-          <Route path="users" element={<GestionUsuarios />} />  
-          
-          {/* Módulo: Informes y Estadísticas */}
-          <Route path="stats" element={<Estadisticas />} />  
-
-            {/* Módulo: Perfil de Usuario */}
-          <Route path="profile" element={<Profile />} />
-
-          {/* Ruta para actualizar proyecto */}
-          <Route path="actualizar/:id" element={<ActualizarProyecto />} />
-
-          {/* Ruta para actualizar usuario*/}
-          <Route path="usuarios/actualizar/:id" element={<ActualizarUsuario />} />
-
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Dashboard />}>
+            <Route index element={<InicioAdmin />} />
+            
+            {/* Proyectos */}
+            <Route path="create" element={<CrearProyecto />} /> 
+            <Route path="list" element={<ListarProyectos />} />
+            <Route path="actualizar/:id" element={<ActualizarProyecto />} />
+            
+            {/* Usuarios */}
+            <Route path="users" element={<GestionUsuarios />} />  
+            <Route path="usuarios/registrar" element={<RegistrarUsuario />} />
+            <Route path="usuarios/actualizar/:id" element={<ActualizarUsuario />} />
+            
+            {/* Otros */}
+            <Route path="stats" element={<Estadisticas />} />  
+            <Route path="profile" element={<Profile />} />
+          </Route>
         </Route>
 
         {/* =======================
             Manejo de errores 404 
             ======================= */}
-        <Route 
-          path="*" 
-          element={
+        <Route path="*" element={
             <div className="flex h-screen items-center justify-center bg-gray-50 flex-col text-center p-4">
               <h1 className="text-9xl font-black text-[#17243D] opacity-20">404</h1>
               <div className="absolute">

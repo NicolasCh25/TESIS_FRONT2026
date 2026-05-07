@@ -21,44 +21,56 @@ const CrearProyecto = () => {
 
     setCargando(true);
     try {
-      const formData = new FormData();
-      Object.entries(dataForm).forEach(([key, value]) => formData.append(key, value));
-      if (archivo) formData.append("archivo_proyecto", archivo);
+      // ✅ CORRECCIÓN: evitar doble slash
+      const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+      const url = `${baseUrl}/api/proyectos`;
 
-      const url = `${import.meta.env.VITE_BACKEND_URL}/proyecto/registro`;
+      const formData = new FormData();
+      
+      formData.append("titulo", dataForm.titulo);
+      formData.append("descripcion", dataForm.descripcion);
+      formData.append("autor", dataForm.autor);
+      formData.append("tutor", dataForm.tutor);
+      formData.append("palabrasClave", dataForm.palabrasClave);
+      formData.append("tecnologias", dataForm.tecnologias);
+      formData.append("periodoAcademico", dataForm.periodoAcademico);
+      formData.append("carrera", dataForm.carrera);
+      
+      const f = new Date();
+      const fecha = `${String(f.getDate()).padStart(2, '0')}-${String(f.getMonth() + 1).padStart(2, '0')}-${f.getFullYear()}`;
+      formData.append("fecha", fecha);
+
+      if (archivo) {
+        formData.append("archivoPDF", archivo);
+      }
+
       const response = await fetchDataBackend(url, formData, "POST", {
         Authorization: `Bearer ${token}`
       });
 
       if (response) {
-        toast.success("¡Proyecto registrado con éxito!");
+        toast.success(response.msg || "¡Proyecto registrado!");
         setTimeout(() => navigate('/dashboard/list'), 2000);
       }
+
     } catch (error) {
-      toast.error("Error al conectar con el servidor");
+      const msg = error.response?.data?.error || error.response?.data?.msg || "Error interno";
+      toast.error(msg);
     } finally {
       setCargando(false);
     }
   };
 
   return (
-    <div className="relative w-full min-h-[calc(100vh-4rem)] flex justify-center items-center py-10 px-4 overflow-hidden bg-gray-50">
+    <div className="relative w-full min-h-[calc(100vh-4rem)] flex justify-center items-center py-10 px-4 bg-gray-50">
       <ToastContainer />
-      <div 
-        className="absolute inset-0 bg-cover bg-center opacity-10"
-        style={{ backgroundImage: "url('/images/esfot.jpg')" }}
-      ></div>
-      
-      {/* Contenedor visual para que mantenga el estilo de "Card" */}
-      <div className="relative z-10 w-full max-w-4xl bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/50">
+      <div className="relative z-10 w-full max-w-4xl bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-black text-[#17243D] tracking-tight uppercase">
-            Registrar <span className="text-[#F5BD45]">Nuevo Proyecto</span>
+          <h1 className="text-3xl font-black text-[#17243D] uppercase">
+            Registrar <span className="text-[#F5BD45]">Proyecto PIC</span>
           </h1>
-          <div className="h-1.5 w-24 bg-[#F5BD45] mx-auto mt-2 rounded-full"></div>
         </div>
 
-        {/*Usamos el componente FormularioProyecto */}
         <FormularioProyecto 
           onSubmit={registrarProyecto} 
           setArchivo={setArchivo} 

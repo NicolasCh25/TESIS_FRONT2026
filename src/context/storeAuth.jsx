@@ -1,22 +1,31 @@
 import { create } from 'zustand';
 
-// Definimos el store de forma nombrada (export const)
 export const storeAuth = create((set) => ({
-  // Intentamos recuperar datos previos del localStorage si existen
   token: localStorage.getItem('token') || null,
   rol: localStorage.getItem('rol') || null,
+  nombre: localStorage.getItem('nombre') || null,
+  apellido: localStorage.getItem('apellido') || null,
 
-  // Función para guardar los datos al hacer Login
-  setToken: (token, rol) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('rol', rol);
-    set({ token, rol });
+  setToken: (token, rol, nombre, apellido) => {
+    // Solo guardamos en localStorage si el valor existe (no es null ni undefined)
+    if (token !== undefined && token !== null) localStorage.setItem('token', token);
+    if (rol !== undefined && rol !== null) localStorage.setItem('rol', rol);
+    if (nombre !== undefined && nombre !== null) localStorage.setItem('nombre', nombre);
+    if (apellido !== undefined && apellido !== null) localStorage.setItem('apellido', apellido);
+    
+    set((state) => ({
+      token: token ?? state.token,
+      rol: rol ?? state.rol,
+      nombre: nombre ?? state.nombre,
+      apellido: apellido ?? state.apellido
+    }));
   },
 
-  // Función para limpiar los datos al hacer Logout
   clearToken: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('rol');
-    set({ token: null, rol: null });
+    localStorage.removeItem('nombre');
+    localStorage.removeItem('apellido');
+    set({ token: null, rol: null, nombre: null, apellido: null });
   },
 }));

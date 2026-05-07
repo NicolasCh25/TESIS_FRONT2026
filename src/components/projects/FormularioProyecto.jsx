@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 
-const FormularioProyecto = ({ onSubmit, setArchivo, rol }) => {
+const FormularioProyecto = ({ onSubmit, setArchivo, rol, cargando }) => {
   const { register, handleSubmit, formState: { errors } } = useForm();
 
   const inputClass = "block w-full rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:border-[#17243D] focus:outline-none focus:ring-1 focus:ring-[#17243D] py-2.5 px-4 text-gray-700 transition-all duration-200";
@@ -9,99 +9,128 @@ const FormularioProyecto = ({ onSubmit, setArchivo, rol }) => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        
         {/* Título */}
         <div className="md:col-span-2">
           <label className={labelClass}>Título del Proyecto</label>
           <input
             type="text"
-            placeholder="Ej. Diseño e implementación de un sistema..."
+            placeholder="Título del proyecto"
             className={inputClass}
             {...register("titulo", { required: "El título es obligatorio" })}
           />
           {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message}</p>}
         </div>
 
-        {/* Carrera */}
+        {/* Autor */}
+        <div>
+          <label className={labelClass}>Autor</label>
+          <input 
+            type="text" 
+            className={inputClass} 
+            {...register("autor", { required: "Requerido" })} 
+          />
+          {errors.autor && <p className="text-red-500 text-xs mt-1">{errors.autor.message}</p>}
+        </div>
+
+        {/* Tutor */}
+        <div>
+          <label className={labelClass}>Tutor</label>
+          <input 
+            type="text" 
+            className={inputClass} 
+            {...register("tutor", { required: "Requerido" })} 
+          />
+          {errors.tutor && <p className="text-red-500 text-xs mt-1">{errors.tutor.message}</p>}
+        </div>
+
+        {/* ✅ Carrera (COMBOBOX) */}
         <div>
           <label className={labelClass}>Carrera</label>
-          <select className={inputClass} {...register("carrera", { required: "Seleccione una carrera" })}>
-            <option value="">Seleccione su carrera</option>
-            <option>Desarrollo de Software</option>
-            <option>Redes y Telecomunicaciones</option>
-            <option>Electromecánica</option>
-            <option>Agua y Saneamiento Ambiental</option>
-            <option>Procesamiento Industrial de la Madera</option>
-            <option>Procesamiento de Alimentos</option>
+          <select
+            className={inputClass}
+            defaultValue=""
+            {...register("carrera", { required: "La carrera es obligatoria" })}
+          >
+            <option value="" disabled>Seleccione una carrera</option>
+            <option value="Tecnología Superior en Desarrollo de Software">
+              Tecnología Superior en Desarrollo de Software
+            </option>
+            <option value="Agua y Saneamiento">
+              Agua y Saneamiento
+            </option>
+            <option value="Electrónica">
+              Electrónica
+            </option>
+            <option value="Mecánica">
+              Mecánica
+            </option>
+            <option value="Electricidad">
+              Electricidad
+            </option>
           </select>
           {errors.carrera && <p className="text-red-500 text-xs mt-1">{errors.carrera.message}</p>}
         </div>
 
-        {/* Estudiante */}
+        {/* Periodo Académico */}
         <div>
-          <label className={labelClass}>Autor / Estudiante</label>
-          <input className={inputClass} placeholder="Nombre completo" {...register("estudiante", { required: "Nombre requerido" })} />
-          {errors.estudiante && <p className="text-red-500 text-xs mt-1">{errors.estudiante.message}</p>}
+          <label className={labelClass}>Periodo Académico</label>
+          <input 
+            placeholder="2026-a" 
+            className={inputClass} 
+            {...register("periodoAcademico", { required: "Requerido" })} 
+          />
+          {errors.periodoAcademico && <p className="text-red-500 text-xs mt-1">{errors.periodoAcademico.message}</p>}
         </div>
 
-        {/* Fecha y Tecnologías */}
+        {/* Palabras Clave */}
         <div>
-          <label className={labelClass}>Fecha de Entrega</label>
-          <input type="date" className={inputClass} {...register("fecha_realizacion", { required: "Fecha requerida" })} />
-        </div>
-        <div>
-          <label className={labelClass}>Tecnologías / Herramientas</label>
-          <input placeholder="Ej. React, Cisco, LabVIEW" className={inputClass} {...register("tecnologias")} />
+          <label className={labelClass}>Palabras Clave</label>
+          <input 
+            className={inputClass} 
+            {...register("palabrasClave", { required: "Requerido" })} 
+          />
+          {errors.palabrasClave && <p className="text-red-500 text-xs mt-1">{errors.palabrasClave.message}</p>}
         </div>
 
-        {/* GitHub y Video */}
+        {/* Tecnologías */}
         <div>
-          <label className={labelClass}>Repositorio (GitHub/GitLab)</label>
-          <input placeholder="https://github.com/usuario/repo" className={inputClass} {...register("github_url")} />
-        </div>
-        <div>
-          <label className={labelClass}>Video Demostrativo (URL)</label>
-          <input placeholder="YouTube / Drive" className={inputClass} {...register("video_url")} />
+          <label className={labelClass}>Tecnologías</label>
+          <input 
+            className={inputClass} 
+            {...register("tecnologias", { required: "Requerido" })} 
+          />
+          {errors.tecnologias && <p className="text-red-500 text-xs mt-1">{errors.tecnologias.message}</p>}
         </div>
       </div>
 
       {/* Descripción */}
       <div>
-        <label className={labelClass}>Resumen del Proyecto</label>
-        <textarea
-          placeholder="Describe el problema y la solución técnica..."
-          className={`${inputClass} h-32 resize-none`}
-          {...register("descripcion", { required: "El resumen es obligatorio" })}
+        <label className={labelClass}>Descripción</label>
+        <textarea 
+          className={`${inputClass} h-32 resize-none`} 
+          {...register("descripcion", { required: "Requerido" })} 
         />
         {errors.descripcion && <p className="text-red-500 text-xs mt-1">{errors.descripcion.message}</p>}
       </div>
 
-      {/* Carga de Archivos */}
+      {/* Archivo PDF */}
       <div className="p-5 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
-        <label className={labelClass}>Documento PDF o ZIP del Proyecto</label>
+        <label className={labelClass}>Archivo del Proyecto (archivoPDF)</label>
         <input 
           type="file" 
-          accept=".pdf,.zip,.rar"
-          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#17243D] file:text-white hover:file:bg-[#F5BD45] transition-all cursor-pointer"
-          onChange={(e) => setArchivo(e.target.files[0])}
+          accept=".pdf"
+          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#17243D] file:text-white"
+          onChange={(e) => setArchivo(e.target.files[0] || null)}
         />
       </div>
 
-      {rol === "invitado" && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded-lg text-yellow-700 text-xs font-bold">
-          ⚠️ MODO INVITADO: El botón de guardado está deshabilitado.
-        </div>
-      )}
-
       <button
         type="submit"
-        disabled={rol === "invitado"}
-        className={`w-full font-black py-4 rounded-xl shadow-lg transition-all duration-300 transform active:scale-95 ${
-          rol === "invitado"
-            ? "bg-gray-400 cursor-not-allowed opacity-50"
-            : "bg-[#17243D] hover:bg-[#2c3e50] text-white hover:shadow-[#17243D]/30"
-        }`}
+        disabled={rol === "invitado" || cargando}
+        className="w-full font-black py-4 rounded-xl shadow-lg bg-[#17243D] text-white hover:bg-[#2c3e50] transition-all disabled:opacity-50 uppercase"
       >
-        FINALIZAR REGISTRO
+        {cargando ? "REGISTRANDO..." : "FINALIZAR REGISTRO"}
       </button>
     </form>
   );
