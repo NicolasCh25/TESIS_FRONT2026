@@ -68,7 +68,7 @@ const ActualizarProyecto = () => {
       const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
 
       // ENDPOINT REAL
-      const url = `${baseUrl}/api/proyectos/${id}`;
+      const url = `${baseUrl}api/proyectos/${id}`;
 
       const formData = new FormData();
 
@@ -105,10 +105,7 @@ const ActualizarProyecto = () => {
       
       <ToastContainer />
 
-      <div
-        className="absolute inset-0 bg-cover bg-center opacity-10"
-        style={{ backgroundImage: "url('/images/esfot.jpg')" }}
-      ></div>
+     
 
       {
         datosIniciales && (
