@@ -64,7 +64,7 @@ const TablaProyectos = ({
                     <td className="px-6 py-4 font-bold text-gray-800">
 
                       <Link
-                        to={`/dashboard/proyecto/${proyecto._id}`}
+                        to={`/dashboard/detalle/${proyecto._id}`}
                         state={proyecto}
                         className="hover:text-[#F5BD45] transition-colors"
                       >
@@ -94,7 +94,7 @@ const TablaProyectos = ({
 
                         {/* DETALLE */}
                         <Link
-                          to={`/dashboard/proyecto/${proyecto._id}`}
+                          to={`/dashboard/detalle/${proyecto._id}`}
                           state={proyecto}
                         >
                           <MdInfo

@@ -21,9 +21,6 @@ import ActualizarProyecto from './pages/ActualizarProyecto';
 import ActualizarUsuario from './pages/ActualizarUsuario';
 import DetalleProyecto from './pages/DetalleProyecto';
 
-// ✅ IMPORTAR DETALLE
-import DetalleProyecto from './pages/DetalleProyecto';
-
 // Layouts e Inicio
 import Dashboard from './layout/Dashboard';
 import InicioAdmin from './pages/InicioAdmin'; 
