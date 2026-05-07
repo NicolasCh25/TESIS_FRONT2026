@@ -7,7 +7,7 @@ import PublicRoute from './routes/PublicRoute';
 // Páginas
 import Home from './pages/Home'; 
 import Login from './pages/Login';
-import RegistroPublico from './pages/RegistroPublico'; // <-- Nueva Importación
+import RegistroPublico from './pages/RegistroPublico';
 import Forgot from './pages/Forgot';
 import NuevoPassword from './pages/NuevoPassword';
 import ConfirmarCuenta from './pages/ConfirmarCuenta'; 
@@ -20,68 +20,121 @@ import Profile from './pages/Profile';
 import ActualizarProyecto from './pages/ActualizarProyecto';
 import ActualizarUsuario from './pages/ActualizarUsuario';
 
+// ✅ IMPORTAR DETALLE
+import DetalleProyecto from './pages/DetalleProyecto';
+
 // Layouts e Inicio
 import Dashboard from './layout/Dashboard';
 import InicioAdmin from './pages/InicioAdmin'; 
 
 function App() {
+
   return (
+
     <BrowserRouter>
+
       <Routes>
-        
+
         {/* =======================
             RUTAS PÚBLICAS
-            ======================= */}
-            
-        <Route path="/" element={<Home />} /> {/* LANDING PAGE PRINCIPAL */}
+        ======================= */}
+
+        <Route path="/" element={<Home />} />
 
         <Route element={<PublicRoute />}>
+
           <Route path="/login" element={<Login />} />
-          <Route path="/registro" element={<RegistroPublico />} /> {/* <-- Nueva Ruta Pública */}
+
+          <Route path="/registro" element={<RegistroPublico />} />
+
           <Route path="/forgot" element={<Forgot />} />
+
           <Route path="/recuperarpassword/:token" element={<NuevoPassword />} />
+
           <Route path="/confirmar/:id" element={<ConfirmarCuenta />} />
+
         </Route>
 
         {/* =======================
             RUTAS PROTEGIDAS
-            ======================= */}
+        ======================= */}
+
         <Route element={<ProtectedRoute />}>
+
           <Route path="/dashboard" element={<Dashboard />}>
+
             <Route index element={<InicioAdmin />} />
-            
-            {/* Proyectos */}
-            <Route path="create" element={<CrearProyecto />} /> 
+
+            {/* =======================
+                PROYECTOS
+            ======================= */}
+
+            <Route path="create" element={<CrearProyecto />} />
+
             <Route path="list" element={<ListarProyectos />} />
+
+            {/* ✅ NUEVA RUTA */}
+            <Route path="detalle/:id" element={<DetalleProyecto />} />
+
             <Route path="actualizar/:id" element={<ActualizarProyecto />} />
-            
-            {/* Usuarios */}
-            <Route path="users" element={<GestionUsuarios />} />  
+
+            {/* =======================
+                USUARIOS
+            ======================= */}
+
+            <Route path="users" element={<GestionUsuarios />} />
+
             <Route path="usuarios/registrar" element={<RegistrarUsuario />} />
+
             <Route path="usuarios/actualizar/:id" element={<ActualizarUsuario />} />
-            
-            {/* Otros */}
-            <Route path="stats" element={<Estadisticas />} />  
+
+            {/* =======================
+                OTROS
+            ======================= */}
+
+            <Route path="stats" element={<Estadisticas />} />
+
             <Route path="profile" element={<Profile />} />
+
           </Route>
+
         </Route>
 
         {/* =======================
-            Manejo de errores 404 
-            ======================= */}
-        <Route path="*" element={
+            MANEJO DE ERROR 404
+        ======================= */}
+
+        <Route
+          path="*"
+          element={
             <div className="flex h-screen items-center justify-center bg-gray-50 flex-col text-center p-4">
-              <h1 className="text-9xl font-black text-[#17243D] opacity-20">404</h1>
+
+              <h1 className="text-9xl font-black text-[#17243D] opacity-20">
+                404
+              </h1>
+
               <div className="absolute">
-                <h2 className="text-2xl font-bold text-gray-800 uppercase tracking-widest">Página no encontrada</h2>
-                <p className="text-gray-500 mt-2">El recurso que buscas no existe en el Portal PIC.</p>
+
+                <h2 className="text-2xl font-bold text-gray-800 uppercase tracking-widest">
+                  Página no encontrada
+                </h2>
+
+                <p className="text-gray-500 mt-2">
+                  El recurso que buscas no existe en el Portal PIC.
+                </p>
+
               </div>
+
             </div>
-          } 
+          }
         />
+
       </Routes>
+
     </BrowserRouter>
+
   );
+
 }
 
 export default App;
