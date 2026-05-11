@@ -12,10 +12,10 @@ const GestionUsuarios = () => {
   const navigate = useNavigate();
   const [usuarios, setUsuarios] = useState([]);
 
-  // 1. LISTAR ADMINISTRADORES
+  // 1. OBTENER LISTADO DE ADMINISTRADORES
   const obtenerUsuarios = async () => {
-    // Usamos el endpoint específico que pasaste
-    const url = "https://repositiorio-pic.onrender.com/api/administradores";
+    // Estandarizamos el uso de la variable de entorno
+    const url = `${import.meta.env.VITE_BACKEND_URL}api/administradores`;
 
     try {
       const response = await fetchDataBackend(url, null, "GET", {
@@ -23,8 +23,12 @@ const GestionUsuarios = () => {
       });
 
       if (response) {
-        // Al ser un array directo en el JSON de respuesta:
-        setUsuarios(Array.isArray(response) ? response : (response.usuarios || []));
+        // CORRECCIÓN: Manejamos si el back devuelve el array directo o envuelto
+        const dataFinal = Array.isArray(response) 
+          ? response 
+          : (response.usuarios || response.data || []);
+        
+        setUsuarios(dataFinal);
       }
     } catch (error) {
       console.error("Error al obtener usuarios:", error);
@@ -38,7 +42,7 @@ const GestionUsuarios = () => {
 
   // 2. CAMBIAR ESTADO (ACTIVO/INACTIVO)
   const handleCambiarEstado = async (id, nuevoEstado) => {
-    const url = `https://repositiorio-pic.onrender.com/api/administradores/estado/${id}`;
+    const url = `${import.meta.env.VITE_BACKEND_URL}api/administradores/estado/${id}`;
     
     try {
       const response = await fetchDataBackend(url, { estado: nuevoEstado }, "PUT", {
@@ -47,26 +51,31 @@ const GestionUsuarios = () => {
 
       if (response) {
         toast.success(response.msg || `Estado actualizado a ${nuevoEstado}`);
-        obtenerUsuarios(); // Recargamos la tabla
+        obtenerUsuarios(); // Recargamos la lista inmediatamente
       }
     } catch (error) {
-      toast.error("Error al cambiar el estado");
+      console.error("Error al cambiar estado:", error);
+      toast.error("Error al actualizar el estado del usuario");
     }
   };
 
+  // 3. ELIMINAR PERMANENTE
   const handleEliminar = async (id) => {
     if (window.confirm("¿Deseas eliminar permanentemente a este usuario?")) {
       const url = `${import.meta.env.VITE_BACKEND_URL}api/usuario/eliminar/${id}`;
+      
       try {
         const response = await fetchDataBackend(url, null, "DELETE", {
           Authorization: `Bearer ${token}`
         });
+
         if (response) {
-          toast.success("Usuario eliminado");
+          toast.success("Usuario eliminado exitosamente");
           obtenerUsuarios();
         }
       } catch (error) {
-        toast.error("Error al eliminar");
+        console.error("Error al eliminar:", error);
+        toast.error("Error al eliminar el usuario");
       }
     }
   };
@@ -75,20 +84,21 @@ const GestionUsuarios = () => {
 
   return (
     <div className="p-6 min-h-screen bg-gray-50 animate-fadeIn">
-      <ToastContainer />
+      <ToastContainer position="top-right" autoClose={3000} />
       
+      {/* Encabezado */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-black text-[#17243D]">
             GESTIÓN DE <span className="text-[#F5BD45]">USUARIOS</span>
           </h1>
-          <p className="text-gray-500 text-sm font-medium">Activa o desactiva privilegios de administrador</p>
+          <p className="text-gray-500 text-sm font-medium">Administra estados y privilegios de acceso</p>
         </div>
 
         <div className="w-full md:w-auto">
           <Link 
             to="/dashboard/usuarios/registrar" 
-            className="flex items-center justify-center gap-2 bg-[#17243D] text-white px-6 py-3 rounded-2xl font-black hover:bg-[#F5BD45] hover:text-[#17243D] transition-all shadow-lg hover:scale-105"
+            className="flex items-center justify-center gap-2 bg-[#17243D] text-white px-6 py-3 rounded-2xl font-black hover:bg-[#F5BD45] hover:text-[#17243D] transition-all shadow-lg hover:scale-105 active:scale-95"
           >
             <MdPersonAdd size={24} />
             NUEVO USUARIO
@@ -96,12 +106,13 @@ const GestionUsuarios = () => {
         </div>
       </div>
 
+      {/* Tabla de Resultados */}
       <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
         <TablaUsuarios 
           usuarios={usuarios} 
           handleEliminar={handleEliminar} 
           handleEditar={handleEditar}
-          handleCambiarEstado={handleCambiarEstado} // Pasamos la nueva función
+          handleCambiarEstado={handleCambiarEstado}
         />
       </div>
     </div>

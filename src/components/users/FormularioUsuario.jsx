@@ -73,7 +73,7 @@ const FormularioUsuario = ({ onSubmit, cargando }) => {
           </span>
           <input 
             type="password"
-            placeholder="Mínimo 6 caracteres"
+            placeholder="Mínimo 8 caracteres"
             className={inputClass}
             {...register("password", { 
               required: "La contraseña es obligatoria",
