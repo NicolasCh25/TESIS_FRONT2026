@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { MdLink, MdPlayCircleOutline } from "react-icons/md";
 
 const FormularioProyecto = ({
   onSubmit,
@@ -16,7 +17,6 @@ const FormularioProyecto = ({
     reset
   } = useForm();
 
-  // ✅ CARGAR DATOS EN EL FORMULARIO
   useEffect(() => {
     if (defaultValues) {
       reset({
@@ -28,6 +28,8 @@ const FormularioProyecto = ({
         palabrasClave: defaultValues.palabrasClave || "",
         tecnologias: defaultValues.tecnologias || "",
         descripcion: defaultValues.descripcion || "",
+        repositorio: defaultValues.repositorio || "",
+        video: defaultValues.video || "",
       });
     }
   }, [defaultValues, reset]);
@@ -43,205 +45,128 @@ const FormularioProyecto = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-        {/* Título */}
         <div className="md:col-span-2">
           <label className={labelClass}>Título del Proyecto</label>
-
           <input
             type="text"
             placeholder="Título del proyecto"
             className={inputClass}
-            {...register("titulo", {
-              required: "El título es obligatorio"
-            })}
+            {...register("titulo", { required: "El título es obligatorio" })}
           />
-
-          {errors.titulo && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.titulo.message}
-            </p>
-          )}
+          {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message}</p>}
         </div>
 
-        {/* Autor */}
         <div>
           <label className={labelClass}>Autor</label>
-
           <input
             type="text"
             className={inputClass}
-            {...register("autor", {
-              required: "Requerido"
-            })}
+            {...register("autor", { required: "Requerido" })}
           />
-
-          {errors.autor && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.autor.message}
-            </p>
-          )}
+          {errors.autor && <p className="text-red-500 text-xs mt-1">{errors.autor.message}</p>}
         </div>
 
-        {/* Tutor */}
         <div>
           <label className={labelClass}>Tutor</label>
-
           <input
             type="text"
             className={inputClass}
-            {...register("tutor", {
-              required: "Requerido"
-            })}
+            {...register("tutor", { required: "Requerido" })}
           />
-
-          {errors.tutor && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.tutor.message}
-            </p>
-          )}
+          {errors.tutor && <p className="text-red-500 text-xs mt-1">{errors.tutor.message}</p>}
         </div>
 
-        {/* Carrera */}
         <div>
           <label className={labelClass}>Carrera</label>
-
           <select
             className={inputClass}
-            {...register("carrera", {
-              required: "La carrera es obligatoria"
-            })}
+            {...register("carrera", { required: "La carrera es obligatoria" })}
           >
             <option value="">Seleccione una carrera</option>
-
-            <option value="Tecnología Superior en Desarrollo de Software">
-              Tecnología Superior en Desarrollo de Software
-            </option>
-
-            <option value="Agua y Saneamiento">
-              Agua y Saneamiento
-            </option>
-
-            <option value="Electrónica">
-              Electrónica
-            </option>
-
-            <option value="Mecánica">
-              Mecánica
-            </option>
-
-            <option value="Electricidad">
-              Electricidad
-            </option>
+            <option value="Tecnología Superior en Desarrollo de Software">Tecnología Superior en Desarrollo de Software</option>
+            <option value="Agua y Saneamiento">Agua y Saneamiento</option>
+            <option value="Electrónica">Electrónica</option>
+            <option value="Mecánica">Mecánica</option>
+            <option value="Electricidad">Electricidad</option>
           </select>
-
-          {errors.carrera && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.carrera.message}
-            </p>
-          )}
+          {errors.carrera && <p className="text-red-500 text-xs mt-1">{errors.carrera.message}</p>}
         </div>
 
-        {/* Periodo */}
         <div>
-          <label className={labelClass}>
-            Periodo Académico
-          </label>
-
+          <label className={labelClass}>Periodo Académico</label>
           <input
             placeholder="2026-a"
             className={inputClass}
-            {...register("periodoAcademico", {
-              required: "Requerido"
-            })}
+            {...register("periodoAcademico", { required: "Requerido" })}
           />
-
-          {errors.periodoAcademico && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.periodoAcademico.message}
-            </p>
-          )}
+          {errors.periodoAcademico && <p className="text-red-500 text-xs mt-1">{errors.periodoAcademico.message}</p>}
         </div>
 
-        {/* Palabras */}
         <div>
-          <label className={labelClass}>
-            Palabras Clave
-          </label>
-
+          <label className={labelClass}>Palabras Clave</label>
           <input
             className={inputClass}
-            {...register("palabrasClave", {
-              required: "Requerido"
-            })}
+            {...register("palabrasClave", { required: "Requerido" })}
           />
-
-          {errors.palabrasClave && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.palabrasClave.message}
-            </p>
-          )}
+          {errors.palabrasClave && <p className="text-red-500 text-xs mt-1">{errors.palabrasClave.message}</p>}
         </div>
 
-        {/* Tecnologías */}
         <div>
-          <label className={labelClass}>
-            Tecnologías
-          </label>
-
+          <label className={labelClass}>Tecnologías</label>
           <input
             className={inputClass}
-            {...register("tecnologias", {
-              required: "Requerido"
-            })}
+            {...register("tecnologias", { required: "Requerido" })}
           />
+          {errors.tecnologias && <p className="text-red-500 text-xs mt-1">{errors.tecnologias.message}</p>}
+        </div>
 
-          {errors.tecnologias && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.tecnologias.message}
-            </p>
-          )}
+        {/* Repositorio (Opcional - Sin validación required) */}
+        <div>
+          <label className={labelClass}>Enlace del Repositorio (Opcional)</label>
+          <div className="relative">
+            <MdLink className="absolute left-3 top-3 text-gray-400" size={20} />
+            <input
+              type="url"
+              placeholder="https://github.com/..."
+              className={`${inputClass} pl-10`}
+              {...register("repositorio")}
+            />
+          </div>
+        </div>
+
+        {/* Video (Opcional - Sin validación required) */}
+        <div>
+          <label className={labelClass}>Enlace del Video (Opcional)</label>
+          <div className="relative">
+            <MdPlayCircleOutline className="absolute left-3 top-3 text-gray-400" size={20} />
+            <input
+              type="url"
+              placeholder="https://youtube.com/..."
+              className={`${inputClass} pl-10`}
+              {...register("video")}
+            />
+          </div>
         </div>
 
       </div>
 
-      {/* Descripción */}
       <div>
-
-        <label className={labelClass}>
-          Descripción
-        </label>
-
+        <label className={labelClass}>Descripción</label>
         <textarea
           className={`${inputClass} h-32 resize-none`}
-          {...register("descripcion", {
-            required: "Requerido"
-          })}
+          {...register("descripcion", { required: "Requerido" })}
         />
-
-        {errors.descripcion && (
-          <p className="text-red-500 text-xs mt-1">
-            {errors.descripcion.message}
-          </p>
-        )}
-
+        {errors.descripcion && <p className="text-red-500 text-xs mt-1">{errors.descripcion.message}</p>}
       </div>
 
-      {/* PDF */}
       <div className="p-5 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
-
-        <label className={labelClass}>
-          Archivo del Proyecto (archivoPDF)
-        </label>
-
+        <label className={labelClass}>Archivo del Proyecto (PDF)</label>
         <input
           type="file"
           accept=".pdf"
           className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#17243D] file:text-white"
-          onChange={(e) =>
-            setArchivo(e.target.files[0] || null)
-          }
+          onChange={(e) => setArchivo(e.target.files[0] || null)}
         />
-
       </div>
 
       <button
@@ -249,13 +174,11 @@ const FormularioProyecto = ({
         disabled={rol === "invitado" || cargando}
         className="w-full font-black py-4 rounded-xl shadow-lg bg-[#17243D] text-white hover:bg-[#2c3e50] transition-all disabled:opacity-50 uppercase"
       >
-        {cargando
-          ? "ACTUALIZANDO..."
-          : "FINALIZAR REGISTRO"}
+        {cargando ? "PROCESANDO..." : "FINALIZAR REGISTRO"}
       </button>
 
     </form>
   );
 };
 
-export default FormularioProyecto;  
+export default FormularioProyecto;

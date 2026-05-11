@@ -21,12 +21,13 @@ const CrearProyecto = () => {
 
     setCargando(true);
     try {
-      // ✅ CORRECCIÓN: evitar doble slash
+      // ✅ Limpieza de la URL para evitar errores de conexión
       const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
       const url = `${baseUrl}api/proyectos`;
 
       const formData = new FormData();
       
+      // Datos obligatorios y descriptivos
       formData.append("titulo", dataForm.titulo);
       formData.append("descripcion", dataForm.descripcion);
       formData.append("autor", dataForm.autor);
@@ -35,11 +36,18 @@ const CrearProyecto = () => {
       formData.append("tecnologias", dataForm.tecnologias);
       formData.append("periodoAcademico", dataForm.periodoAcademico);
       formData.append("carrera", dataForm.carrera);
+
+      // ✅ Campos opcionales (Repositorio y Video)
+      // Si vienen vacíos desde el formulario, se envían como strings vacíos
+      formData.append("repositorio", dataForm.repositorio || "");
+      formData.append("video", dataForm.video || "");
       
+      // Formateo de fecha automática
       const f = new Date();
       const fecha = `${String(f.getDate()).padStart(2, '0')}-${String(f.getMonth() + 1).padStart(2, '0')}-${f.getFullYear()}`;
       formData.append("fecha", fecha);
 
+      // Manejo del archivo PDF
       if (archivo) {
         formData.append("archivoPDF", archivo);
       }
@@ -49,12 +57,12 @@ const CrearProyecto = () => {
       });
 
       if (response) {
-        toast.success(response.msg || "¡Proyecto registrado!");
+        toast.success(response.msg || "¡Proyecto registrado exitosamente!");
         setTimeout(() => navigate('/dashboard/list'), 2000);
       }
 
     } catch (error) {
-      const msg = error.response?.data?.error || error.response?.data?.msg || "Error interno";
+      const msg = error.response?.data?.error || error.response?.data?.msg || "Error interno al registrar";
       toast.error(msg);
     } finally {
       setCargando(false);
@@ -63,12 +71,16 @@ const CrearProyecto = () => {
 
   return (
     <div className="relative w-full min-h-[calc(100vh-4rem)] flex justify-center items-center py-10 px-4 bg-gray-50">
-      <ToastContainer />
-      <div className="relative z-10 w-full max-w-4xl bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
+      <ToastContainer position="top-right" autoClose={3000} />
+      
+      <div className="relative z-10 w-full max-w-4xl bg-white rounded-3xl shadow-2xl p-8 border border-gray-100 animate-fadeIn">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-black text-[#17243D] uppercase">
+          <h1 className="text-3xl font-black text-[#17243D] uppercase tracking-tighter">
             Registrar <span className="text-[#F5BD45]">Proyecto PIC</span>
           </h1>
+          <p className="text-gray-500 text-sm mt-1 font-medium">
+            Completa la información técnica y adjunta la documentación necesaria.
+          </p>
         </div>
 
         <FormularioProyecto 
