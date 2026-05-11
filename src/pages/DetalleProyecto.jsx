@@ -5,7 +5,7 @@ import { storeAuth } from "../context/storeAuth";
 import { toast } from "react-toastify";
 import { 
   MdArrowBack, MdPerson, MdSchool, MdCalendarToday, 
-  MdCode, MdDescription, MdPictureAsPdf, MdLabel,
+  MdDescription, MdPictureAsPdf, MdCode, MdLabel,
   MdLink, MdPlayCircleOutline 
 } from "react-icons/md";
 
@@ -49,6 +49,16 @@ const DetalleProyecto = () => {
       </div>
     );
   }
+
+  // Helper para renderizar listas que pueden venir como String o Array (Evita el error .split)
+  const renderList = (data, colorClass) => {
+    const items = Array.isArray(data) ? data : (data?.split(',') || []);
+    return items.map((item, i) => (
+      <span key={i} className={`${colorClass} px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider`}>
+        {typeof item === 'string' ? item.trim() : item}
+      </span>
+    ));
+  };
 
   const InfoCard = ({ icon: Icon, label, value }) => (
     <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex items-start gap-3 transition-all hover:shadow-md">
@@ -112,19 +122,13 @@ const DetalleProyecto = () => {
 
             {/* LINKS EXTERNOS (REPOSITORIO Y VIDEO) */}
             <div className="grid md:grid-cols-2 gap-6">
-              {/* REPOSITORIO */}
               <section className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
                 <div className="flex items-center gap-2 mb-4 text-[#17243D]">
                   <MdLink size={24} />
                   <h3 className="font-black uppercase tracking-tighter">Repositorio de Código</h3>
                 </div>
                 {proyecto.repositorio ? (
-                  <a 
-                    href={proyecto.repositorio} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 font-bold hover:underline break-all block"
-                  >
+                  <a href={proyecto.repositorio} target="_blank" rel="noopener noreferrer" className="text-blue-600 font-bold hover:underline break-all block text-sm">
                     {proyecto.repositorio}
                   </a>
                 ) : (
@@ -132,20 +136,14 @@ const DetalleProyecto = () => {
                 )}
               </section>
 
-              {/* VIDEO */}
               <section className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
                 <div className="flex items-center gap-2 mb-4 text-[#17243D]">
                   <MdPlayCircleOutline size={24} />
                   <h3 className="font-black uppercase tracking-tighter">Video Demostrativo</h3>
                 </div>
                 {proyecto.video ? (
-                  <a 
-                    href={proyecto.video} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="bg-[#F5BD45] text-[#17243D] px-4 py-2 rounded-xl text-sm font-black inline-block shadow-sm hover:shadow-md transition-all uppercase"
-                  >
-                    Ver Video de Funcionamiento
+                  <a href={proyecto.video} target="_blank" rel="noopener noreferrer" className="bg-[#F5BD45] text-[#17243D] px-4 py-2 rounded-xl text-sm font-black inline-block shadow-sm hover:shadow-md transition-all uppercase">
+                    Ver Funcionamiento
                   </a>
                 ) : (
                   <p className="text-gray-400 text-sm italic">Link no ingresado</p>
@@ -154,31 +152,25 @@ const DetalleProyecto = () => {
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
-              {/* TECNOLOGÍAS */}
+              {/* TECNOLOGÍAS - CORREGIDO PARA ARRAY O STRING */}
               <section>
                 <div className="flex items-center gap-2 mb-3 border-b border-gray-100 pb-2">
                   <MdCode className="text-[#F5BD45]" size={24} />
                   <h2 className="text-lg font-black text-[#17243D] uppercase tracking-tighter">Tecnologías</h2>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {proyecto.tecnologias?.split(',').map((tech, i) => (
-                    <span key={i} className="bg-[#17243D] text-white px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">
-                      {tech.trim()}
-                    </span>
-                  ))}
+                  {renderList(proyecto.tecnologias, "bg-[#17243D] text-white")}
                 </div>
               </section>
 
-              {/* PALABRAS CLAVE */}
+              {/* PALABRAS CLAVE - CORREGIDO PARA ARRAY O STRING */}
               <section>
                 <div className="flex items-center gap-2 mb-3 border-b border-gray-100 pb-2">
                   <MdLabel className="text-[#F5BD45]" size={24} />
                   <h2 className="text-lg font-black text-[#17243D] uppercase tracking-tighter">Palabras Clave</h2>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {proyecto.palabrasClave?.split(',').map((word, i) => (
-                    <span key={i} className="text-gray-500 text-sm font-bold">#{word.trim()}</span>
-                  ))}
+                  {renderList(proyecto.palabrasClave, "bg-gray-100 text-gray-600 border border-gray-200")}
                 </div>
               </section>
             </div>
@@ -196,16 +188,11 @@ const DetalleProyecto = () => {
               </div>
 
               {proyecto.archivoPDF ? (
-                <a
-                  href={proyecto.archivoPDF}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full md:w-auto text-center bg-[#17243D] text-white px-10 py-4 rounded-2xl hover:bg-[#F5BD45] hover:text-[#17243D] transition-all font-black shadow-lg uppercase text-sm tracking-widest"
-                >
+                <a href={proyecto.archivoPDF} target="_blank" rel="noopener noreferrer" className="w-full md:w-auto text-center bg-[#17243D] text-white px-10 py-4 rounded-2xl hover:bg-[#F5BD45] hover:text-[#17243D] transition-all font-black shadow-lg uppercase text-sm tracking-widest">
                   Visualizar Documento
                 </a>
               ) : (
-                <span className="text-red-400 font-bold italic italic">Archivo no disponible</span>
+                <span className="text-red-400 font-bold italic">Archivo no disponible</span>
               )}
             </div>
 
