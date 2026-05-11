@@ -11,21 +11,21 @@ const GestionUsuarios = () => {
   const { token } = storeAuth();
   const navigate = useNavigate();
   const [usuarios, setUsuarios] = useState([]);
-  const [busqueda, setBusqueda] = useState("");
 
+  // 1. LISTAR ADMINISTRADORES
   const obtenerUsuarios = async () => {
-    const url = `${import.meta.env.VITE_BACKEND_URL}api/usuarios`;
+    // Usamos el endpoint específico que pasaste
+    const url = "https://repositiorio-pic.onrender.com/api/administradores";
 
     try {
       const response = await fetchDataBackend(url, null, "GET", {
         Authorization: `Bearer ${token}`
       });
 
-      // 🔥 CORRECCIÓN CLAVE (adaptarse a cómo responde el backend)
       if (response) {
-        setUsuarios(response.usuarios || response.data || response);
+        // Al ser un array directo en el JSON de respuesta:
+        setUsuarios(Array.isArray(response) ? response : (response.usuarios || []));
       }
-
     } catch (error) {
       console.error("Error al obtener usuarios:", error);
       toast.error("No se pudieron cargar los usuarios");
@@ -36,36 +36,45 @@ const GestionUsuarios = () => {
     obtenerUsuarios();
   }, []);
 
+  // 2. CAMBIAR ESTADO (ACTIVO/INACTIVO)
+  const handleCambiarEstado = async (id, nuevoEstado) => {
+    const url = `https://repositiorio-pic.onrender.com/api/administradores/estado/${id}`;
+    
+    try {
+      const response = await fetchDataBackend(url, { estado: nuevoEstado }, "PUT", {
+        Authorization: `Bearer ${token}`
+      });
+
+      if (response) {
+        toast.success(response.msg || `Estado actualizado a ${nuevoEstado}`);
+        obtenerUsuarios(); // Recargamos la tabla
+      }
+    } catch (error) {
+      toast.error("Error al cambiar el estado");
+    }
+  };
+
   const handleEliminar = async (id) => {
     if (window.confirm("¿Deseas eliminar permanentemente a este usuario?")) {
       const url = `${import.meta.env.VITE_BACKEND_URL}api/usuario/eliminar/${id}`;
-      
       try {
         const response = await fetchDataBackend(url, null, "DELETE", {
           Authorization: `Bearer ${token}`
         });
-
         if (response) {
           toast.success("Usuario eliminado");
           obtenerUsuarios();
         }
-
       } catch (error) {
-        toast.error("Error al eliminar usuario");
+        toast.error("Error al eliminar");
       }
     }
   };
 
   const handleEditar = (id) => navigate(`/dashboard/usuarios/actualizar/${id}`);
 
-  // 🔥 CORRECCIÓN: evitar error si viene null o undefined
-  const filtrados = usuarios.filter(user => 
-    (user.nombre || "").toLowerCase().includes(busqueda.toLowerCase()) ||
-    (user.email || "").toLowerCase().includes(busqueda.toLowerCase())
-  );
-
   return (
-    <div className="p-6 min-h-screen bg-gray-50">
+    <div className="p-6 min-h-screen bg-gray-50 animate-fadeIn">
       <ToastContainer />
       
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
@@ -73,32 +82,26 @@ const GestionUsuarios = () => {
           <h1 className="text-3xl font-black text-[#17243D]">
             GESTIÓN DE <span className="text-[#F5BD45]">USUARIOS</span>
           </h1>
-          <p className="text-gray-500 text-sm">Administra los accesos al Portal PIC</p>
+          <p className="text-gray-500 text-sm font-medium">Activa o desactiva privilegios de administrador</p>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-          <input 
-            type="text" 
-            placeholder="Buscar usuario..." 
-            className="px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#F5BD45] outline-none shadow-sm" 
-            onChange={(e) => setBusqueda(e.target.value)} 
-          />
-          
+        <div className="w-full md:w-auto">
           <Link 
             to="/dashboard/usuarios/registrar" 
-            className="flex items-center justify-center gap-2 bg-[#17243D] text-white px-5 py-2 rounded-xl font-bold hover:bg-[#1F3059] transition-all shadow-md hover:scale-105"
+            className="flex items-center justify-center gap-2 bg-[#17243D] text-white px-6 py-3 rounded-2xl font-black hover:bg-[#F5BD45] hover:text-[#17243D] transition-all shadow-lg hover:scale-105"
           >
-            <MdPersonAdd size={22} />
-            Nuevo Usuario
+            <MdPersonAdd size={24} />
+            NUEVO USUARIO
           </Link>
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
         <TablaUsuarios 
-          usuarios={filtrados} 
+          usuarios={usuarios} 
           handleEliminar={handleEliminar} 
-          handleEditar={handleEditar} 
+          handleEditar={handleEditar}
+          handleCambiarEstado={handleCambiarEstado} // Pasamos la nueva función
         />
       </div>
     </div>
