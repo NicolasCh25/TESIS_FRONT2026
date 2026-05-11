@@ -11,31 +11,36 @@ const RegistrarUsuario = () => {
   const navigate = useNavigate();
   const fetchDataBackend = useFetch();
   const { token } = storeAuth();
+  
   const [cargando, setCargando] = useState(false);
+  // ✅ Nuevo estado para capturar errores específicos del backend (como usuario duplicado)
+  const [errorServer, setErrorServer] = useState("");
 
   const handleRegistro = async (dataForm) => {
     setCargando(true);
+    setErrorServer(""); // Limpiamos errores previos al intentar registrar
     
-    // 🚀 URL ajustada al endpoint de administradores que confirmaste en Postman
-    const url = "https://repositiorio-pic.onrender.com/api/administradores";
+    const url = `${import.meta.env.VITE_BACKEND_URL}api/administradores`;
 
     try {
-      // Enviamos los datos (nombre, apellido, email, password) al endpoint
       const response = await fetchDataBackend(url, dataForm, "POST", {
         Authorization: `Bearer ${token}`
       });
 
       if (response) {
-        // El mensaje del backend es: "Administrador creado, revisa tu correo para confirmar"
         toast.success(response.msg || "Administrador registrado con éxito.");
-        
-        // Redirigir a la lista de usuarios tras el éxito
+        // Redirigir tras éxito
         setTimeout(() => navigate("/dashboard/users"), 2500);
       }
     } catch (error) {
       console.error("Error en registro:", error);
-      const msg = error.response?.data?.msg || "Error al procesar el registro";
-      toast.error(msg);
+      
+      // ✅ Capturamos el mensaje del backend (ej: "Usuario ya registrado")
+      const msgError = error.response?.data?.msg || "Error al procesar el registro";
+      
+      // Lo mostramos en el Toast y también lo pasamos al formulario
+      toast.error(msgError);
+      setErrorServer(msgError);
     } finally {
       setCargando(false);
     }
@@ -43,7 +48,7 @@ const RegistrarUsuario = () => {
 
   return (
     <div className="p-4 md:p-8 animate-fadeIn">
-      <ToastContainer />
+      <ToastContainer position="top-right" autoClose={4000} />
       
       {/* Botón Volver */}
       <button 
@@ -66,8 +71,12 @@ const RegistrarUsuario = () => {
         </div>
 
         <div className="p-8 md:p-12 bg-gray-50/30">
-          {/* El formulario ahora solo pide Nombre, Apellido, Email y Password */}
-          <FormularioUsuario onSubmit={handleRegistro} cargando={cargando} />
+          {/* ✅ Pasamos el errorServer al formulario para que lo muestre en pantalla */}
+          <FormularioUsuario 
+            onSubmit={handleRegistro} 
+            cargando={cargando} 
+            errorServer={errorServer} 
+          />
         </div>
       </div>
     </div>

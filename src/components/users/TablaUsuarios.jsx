@@ -17,14 +17,14 @@ const TablaUsuarios = ({ usuarios, handleEliminar, handleEditar, handleCambiarEs
           <tbody className="divide-y divide-gray-100">
             {usuarios.length > 0 ? (
               usuarios.map((user) => (
-                <tr key={user._id} className={`transition-colors ${user.estado === 'inactivo' ? 'bg-gray-50 opacity-70' : 'hover:bg-gray-50'}`}>
+                <tr key={user._id} className={`transition-all ${user.estado === 'inactivo' ? 'bg-gray-50 opacity-60' : 'hover:bg-gray-50'}`}>
                   <td className="px-6 py-4 font-bold text-gray-800">
                     {user.nombre} {user.apellido}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
                   <td className="px-6 py-4">
                     <span className="text-xs px-3 py-1 rounded-full font-bold bg-blue-100 text-blue-700 uppercase">
-                      {user.rol || 'Administrador'}
+                      {user.rol || 'ADMINISTRADOR'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
@@ -36,26 +36,27 @@ const TablaUsuarios = ({ usuarios, handleEliminar, handleEditar, handleCambiarEs
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex justify-center gap-3">
-                      {/* ACCIÓN: CAMBIAR ESTADO (Botón dinámico) */}
+                      {/* ACCIÓN: CAMBIAR ESTADO (No elimina de la tabla) */}
                       <button 
                         onClick={() => handleCambiarEstado(user._id, user.estado === 'activo' ? 'inactivo' : 'activo')}
+                        className="transition-transform active:scale-90"
                         title={user.estado === 'activo' ? "Desactivar" : "Activar"}
                       >
                         {user.estado === 'activo' ? 
-                          <MdRemoveCircle className="h-6 w-6 text-orange-400 hover:text-orange-600" /> : 
-                          <MdCheckCircle className="h-6 w-6 text-green-500 hover:text-green-700" />
+                          <MdRemoveCircle className="h-7 w-7 text-orange-400 hover:text-orange-600" /> : 
+                          <MdCheckCircle className="h-7 w-7 text-green-500 hover:text-green-700" />
                         }
                       </button>
 
                       <MdEdit 
                         onClick={() => handleEditar(user._id)}
-                        className="h-6 w-6 text-gray-400 cursor-pointer hover:text-[#F5BD45]" 
-                        title="Editar Usuario"
+                        className="h-7 w-7 text-gray-400 cursor-pointer hover:text-[#F5BD45]" 
+                        title="Editar Datos"
                       />
                       
                       <MdDeleteForever 
                         onClick={() => handleEliminar(user._id)}
-                        className="h-6 w-6 text-red-400 cursor-pointer hover:text-red-600" 
+                        className="h-7 w-7 text-red-400 cursor-pointer hover:text-red-600" 
                         title="Eliminar Permanente"
                       />
                     </div>
@@ -64,8 +65,8 @@ const TablaUsuarios = ({ usuarios, handleEliminar, handleEditar, handleCambiarEs
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="px-6 py-20 text-center text-gray-400 font-medium">
-                  No hay usuarios registrados.
+                <td colSpan="5" className="px-6 py-20 text-center text-gray-400 font-medium italic">
+                  No hay usuarios en la base de datos.
                 </td>
               </tr>
             )}

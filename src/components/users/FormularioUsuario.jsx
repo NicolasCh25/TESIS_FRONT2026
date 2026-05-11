@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
-import { MdSave, MdPerson, MdEmail, MdLock } from "react-icons/md";
+import { MdSave, MdPerson, MdEmail, MdLock, MdError } from "react-icons/md";
 
-const FormularioUsuario = ({ onSubmit, cargando }) => {
+const FormularioUsuario = ({ onSubmit, cargando, errorServer }) => {
   const { register, handleSubmit, formState: { errors } } = useForm();
 
   const inputClass = "w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#17243D] focus:border-transparent outline-none transition-all shadow-sm";
@@ -44,7 +44,7 @@ const FormularioUsuario = ({ onSubmit, cargando }) => {
         </div>
       </div>
 
-      {/* Email con Validación Institucional */}
+      {/* Email */}
       <div>
         <label className="block text-sm font-bold text-[#17243D] mb-2 uppercase tracking-wide">Correo Institucional</label>
         <div className="relative">
@@ -67,7 +67,7 @@ const FormularioUsuario = ({ onSubmit, cargando }) => {
         {errors.email && <p className="text-red-500 text-xs mt-1 font-bold">{errors.email.message}</p>}
       </div>
 
-      {/* Password con Validación de Complejidad */}
+      {/* Password */}
       <div>
         <label className="block text-sm font-bold text-[#17243D] mb-2 uppercase tracking-wide">Contraseña Temporal</label>
         <div className="relative">
@@ -91,6 +91,14 @@ const FormularioUsuario = ({ onSubmit, cargando }) => {
         </div>
         {errors.password && <p className="text-red-500 text-xs mt-1 font-bold">{errors.password.message}</p>}
       </div>
+
+      {/* MENSAJE DE ERROR DEL SERVIDOR (Ej: Usuario ya registrado) */}
+      {errorServer && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 flex items-center gap-3 animate-pulse">
+          <MdError className="text-red-500" size={24} />
+          <p className="text-red-700 text-sm font-black uppercase">{errorServer}</p>
+        </div>
+      )}
 
       <button 
         type="submit" 
