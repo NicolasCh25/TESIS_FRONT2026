@@ -44,7 +44,7 @@ const FormularioUsuario = ({ onSubmit, cargando }) => {
         </div>
       </div>
 
-      {/* Email */}
+      {/* Email con Validación Institucional */}
       <div>
         <label className="block text-sm font-bold text-[#17243D] mb-2 uppercase tracking-wide">Correo Institucional</label>
         <div className="relative">
@@ -57,14 +57,17 @@ const FormularioUsuario = ({ onSubmit, cargando }) => {
             className={inputClass}
             {...register("email", { 
               required: "El correo es obligatorio",
-              pattern: { value: /^\S+@\S+$/i, message: "Formato de correo inválido" }
+              pattern: { 
+                value: /^[a-zA-Z0-9._%+-]+@epn\.edu\.ec$/, 
+                message: "Solo se permiten correos @epn.edu.ec" 
+              }
             })}
           />
         </div>
         {errors.email && <p className="text-red-500 text-xs mt-1 font-bold">{errors.email.message}</p>}
       </div>
 
-      {/* Password */}
+      {/* Password con Validación de Complejidad */}
       <div>
         <label className="block text-sm font-bold text-[#17243D] mb-2 uppercase tracking-wide">Contraseña Temporal</label>
         <div className="relative">
@@ -77,7 +80,12 @@ const FormularioUsuario = ({ onSubmit, cargando }) => {
             className={inputClass}
             {...register("password", { 
               required: "La contraseña es obligatoria",
-              minLength: { value: 8, message: "Debe tener al menos 8 caracteres" }
+              minLength: { value: 8, message: "Debe tener al menos 8 caracteres" },
+              validate: {
+                format: (value) => 
+                  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/.test(value) || 
+                  "Debe contener mayúscula, minúscula y número"
+              }
             })}
           />
         </div>
@@ -92,7 +100,7 @@ const FormularioUsuario = ({ onSubmit, cargando }) => {
         }`}
       >
         <MdSave size={24} />
-        {cargando ? "PROCESANDO REGISTRO..." : "REGISTRAR ADMINISTRADOR"}
+        {cargando ? "PROCESANDO..." : "REGISTRAR ADMINISTRADOR"}
       </button>
     </form>
   );
