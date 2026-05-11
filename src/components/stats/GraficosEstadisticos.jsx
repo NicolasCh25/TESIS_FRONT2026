@@ -3,7 +3,7 @@ import {
   PieChart, Pie, Legend 
 } from 'recharts';
 
-const GraficosEstadisticos = ({ datosGrafico, datosTendencia }) => {
+const GraficosEstadisticos = ({ datosCarrera, datosTutor }) => {
   const COLORS = ['#17243D', '#F5BD45', '#3B82F6', '#10B981', '#F43F5E'];
 
   return (
@@ -17,13 +17,13 @@ const GraficosEstadisticos = ({ datosGrafico, datosTendencia }) => {
         </h3>
         <div className="h-[350px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={datosGrafico}>
+            <BarChart data={datosCarrera}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 11}} />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 10}} />
               <YAxis axisLine={false} tickLine={false} />
-              <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{ borderRadius: '15px', border: 'none' }} />
+              <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{ borderRadius: '15px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
               <Bar dataKey="cantidad" radius={[10, 10, 0, 0]}>
-                {datosGrafico.map((entry, index) => (
+                {datosCarrera.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Bar>
@@ -32,28 +32,29 @@ const GraficosEstadisticos = ({ datosGrafico, datosTendencia }) => {
         </div>
       </div>
 
-      {/* Gráfico 2: Pastel - Distribución de Participación */}
+      {/* Gráfico 2: Pastel - Distribución por Tutores */}
       <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
         <h3 className="text-xl font-bold text-[#17243D] mb-6 flex items-center gap-2">
-          <span className="w-2 h-8 bg-[#F5BD45] rounded-full"></span>
-          Participación del Repositorio
+          <span className="w-2 h-8 bg-[#17243D] rounded-full"></span>
+          Carga por Tutores
         </h3>
         <div className="h-[350px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={datosGrafico}
-                innerRadius={80}
-                outerRadius={110}
+                data={datosTutor}
+                innerRadius={70}
+                outerRadius={100}
                 paddingAngle={5}
                 dataKey="cantidad"
+                nameKey="name"
               >
-                {datosGrafico.map((entry, index) => (
+                {datosTutor.map((entry, index) => (
                   <Cell key={`cell-pie-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip />
-              <Legend verticalAlign="bottom" height={36}/>
+              <Legend verticalAlign="bottom" iconType="circle" />
             </PieChart>
           </ResponsiveContainer>
         </div>
