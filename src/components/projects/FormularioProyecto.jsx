@@ -83,11 +83,12 @@ const FormularioProyecto = ({
             {...register("carrera", { required: "La carrera es obligatoria" })}
           >
             <option value="">Seleccione una carrera</option>
-            <option value="Tecnología Superior en Desarrollo de Software">Tecnología Superior en Desarrollo de Software</option>
-            <option value="Agua y Saneamiento">Agua y Saneamiento</option>
-            <option value="Electrónica">Electrónica</option>
-            <option value="Mecánica">Mecánica</option>
-            <option value="Electricidad">Electricidad</option>
+            <option value="Tecnología Superior en Desarrollo de Software">Desarrollo de Software</option>
+            <option value="Agua y Saneamiento">Redes y Telecomunicaciones</option>
+            <option value="Electrónica">Electromecánica</option>
+            <option value="Mecánica">Agua y Saneamiento Ambiental</option>
+            <option value="Electricidad">Procesamiento Industrial de la Madera</option>
+            <option value="Electricidad">Procesamiento de Alimentos</option>
           </select>
           {errors.carrera && <p className="text-red-500 text-xs mt-1">{errors.carrera.message}</p>}
         </div>
