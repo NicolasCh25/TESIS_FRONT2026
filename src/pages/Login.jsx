@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { MdVisibility, MdVisibilityOff, MdError } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { ToastContainer, toast } from "react-toastify";
@@ -9,6 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [errorBackend, setErrorBackend] = useState(""); // Estado para el mensaje de error en pantalla
   const navigate = useNavigate();
 
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -17,7 +18,7 @@ const Login = () => {
   const auth = storeAuth(); 
 
   const handleLogin = async (dataForm) => {
-    // 🚀 VALIDACIÓN DE ROL ELIMINADA: Ya no detiene el proceso.
+    setErrorBackend(""); // Limpiar errores previos
 
     const url = `${import.meta.env.VITE_BACKEND_URL}api/login`;
 
@@ -30,7 +31,6 @@ const Login = () => {
       const response = await fetchDataBackend(url, dataToSend, "POST");
 
       if (response) {
-        // ✅ Ahora guardamos el rol que viene directamente del BACKEND (response.rol)
         auth.setToken(
           response.token, 
           response.rol, 
@@ -39,19 +39,23 @@ const Login = () => {
         );
         
         toast.success(`¡Bienvenido(a) ${response.nombre || ''}!`);
-        
         setTimeout(() => navigate("/dashboard"), 1000);
       }
     } catch (error) {
-      const errorMsg = error.response?.data?.msg || "Error: Credenciales inválidas o cuenta no activa";
-      toast.error(errorMsg);
+      // 🚀 CAPTURA DE MENSAJES ESPECÍFICOS DEL BACKEND
+      const errorMsg = error.response?.data?.msg || "Credenciales incorrectas o servidor no disponible";
+      
+      setErrorBackend(errorMsg); // Mostrar debajo del formulario
+      toast.error(errorMsg);     // Mostrar notificación flotante
+      
       console.error("Detalle técnico:", error);
     }
   };
 
   return (
     <div className="relative flex items-center justify-center min-h-screen py-8 overflow-y-auto bg-gray-100">
-      <ToastContainer />
+      <ToastContainer position="top-right" autoClose={3000} />
+      
       {/* Fondo con imagen institucional */}
       <div className="absolute inset-0 bg-[url('/esfot.jpg')] bg-no-repeat bg-cover bg-center opacity-40"></div>
       <div className="absolute inset-0 bg-black/25"></div>
@@ -84,7 +88,7 @@ const Login = () => {
             <input
               type="email"
               placeholder="ejemplo@epn.edu.ec"
-              className="block w-full rounded-full border border-gray-300 focus:border-[#17243D] focus:outline-none focus:ring-1 focus:ring-[#17243D] py-2.5 px-4 text-gray-700 transition-all"
+              className={`block w-full rounded-full border ${errors.email || errorBackend ? 'border-red-500' : 'border-gray-300'} focus:border-[#17243D] focus:outline-none focus:ring-1 focus:ring-[#17243D] py-2.5 px-4 text-gray-700 transition-all`}
               {...register("email", { required: "El correo es obligatorio" })}
             />
             {errors.email && <p className="text-red-600 text-xs mt-1 font-bold ml-2">{errors.email.message}</p>}
@@ -97,7 +101,7 @@ const Login = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="********************"
-                className="block w-full rounded-full border border-gray-300 py-2.5 px-4 pr-10 text-gray-700 focus:border-[#17243D] focus:outline-none focus:ring-1 focus:ring-[#17243D] transition-all"
+                className={`block w-full rounded-full border ${errors.password || errorBackend ? 'border-red-500' : 'border-gray-300'} py-2.5 px-4 pr-10 text-gray-700 focus:border-[#17243D] focus:outline-none focus:ring-1 focus:ring-[#17243D] transition-all`}
                 {...register("password", { required: "La contraseña es obligatoria" })}
               />
               <button
@@ -111,7 +115,13 @@ const Login = () => {
             {errors.password && <p className="text-red-600 text-xs mt-1 font-bold ml-2">{errors.password.message}</p>}
           </div>
 
-          {/* ❌ SECCIÓN DE SELECCIÓN DE ROL ELIMINADA TOTALMENTE */}
+          {/* ✅ MENSAJE DE ERROR DEL BACKEND VISIBLE EN EL FORMULARIO */}
+          {errorBackend && (
+            <div className="flex items-center gap-2 bg-red-50 text-red-700 p-3 rounded-xl border border-red-200 animate-shake">
+              <MdError size={20} />
+              <p className="text-xs font-bold uppercase">{errorBackend}</p>
+            </div>
+          )}
 
           {/* Botones */}
           <div className="pt-4 space-y-3">
