@@ -114,23 +114,6 @@ const Login = () => {
             {errors.password && <p className="text-red-600 text-xs mt-1 font-bold ml-2">{errors.password.message}</p>}
           </div>
 
-          {/* Rol */}
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-gray-700">Selecciona tu Rol</label>
-            <div className="relative">
-              <select
-                value={rolVisual}
-                onChange={(e) => setRolVisual(e.target.value)}
-                className="block w-full appearance-none rounded-full border border-gray-300 py-2.5 px-4 focus:border-[#17243D] focus:outline-none focus:ring-1 focus:ring-[#17243D] text-gray-700 cursor-pointer transition-all"
-              >
-                <option value="">Selecciona un rol</option>
-                <option value="administrador">Administrador</option>
-                <option value="estudiante">Estudiante</option>
-              </select>
-              <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400 text-xs">▼</div>
-            </div>
-          </div>
-
           {/* Botones */}
           <div className="pt-4 space-y-3">
             <button type="submit" className="py-3 w-full block text-center bg-[#17243D] text-white font-bold rounded-full hover:shadow-lg hover:bg-[#1F3059] transition-all duration-300 active:scale-95">
