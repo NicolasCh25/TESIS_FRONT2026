@@ -9,7 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [errorBackend, setErrorBackend] = useState(""); // Estado para el mensaje de error en pantalla
+  const [errorBackend, setErrorBackend] = useState(""); 
   const navigate = useNavigate();
 
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -18,10 +18,9 @@ const Login = () => {
   const auth = storeAuth(); 
 
   const handleLogin = async (dataForm) => {
-    setErrorBackend(""); // Limpiar errores previos
+    setErrorBackend(""); 
 
     const url = `${import.meta.env.VITE_BACKEND_URL}api/login`;
-
     const dataToSend = {
       email: dataForm.email,
       password: dataForm.password,
@@ -30,25 +29,30 @@ const Login = () => {
     try {
       const response = await fetchDataBackend(url, dataToSend, "POST");
 
-      if (response) {
-        auth.setToken(
-          response.token, 
-          response.rol, 
-          response.nombre,
-          response.apellido 
-        );
-        
-        toast.success(`¡Bienvenido(a) ${response.nombre || ''}!`);
-        setTimeout(() => navigate("/dashboard"), 1000);
+      // 🔥 VALIDACIÓN CRÍTICA: 
+      // Si el Hook useFetch captura el error internamente y devuelve null,
+      // forzamos la entrada al catch o manejamos el error aquí.
+      if (!response) {
+        setErrorBackend("Credenciales incorrectas o cuenta no activa");
+        return;
       }
+
+      // Si llegamos aquí, el login fue exitoso
+      auth.setToken(
+        response.token, 
+        response.rol, 
+        response.nombre,
+        response.apellido 
+      );
+      
+      toast.success(`¡Bienvenido(a) ${response.nombre || ''}!`);
+      setTimeout(() => navigate("/dashboard"), 1000);
+
     } catch (error) {
-      // 🚀 CAPTURA DE MENSAJES ESPECÍFICOS DEL BACKEND
-      const errorMsg = error.response?.data?.msg || "Credenciales incorrectas o servidor no disponible";
-      
-      setErrorBackend(errorMsg); // Mostrar debajo del formulario
-      toast.error(errorMsg);     // Mostrar notificación flotante
-      
-      console.error("Detalle técnico:", error);
+      // Captura si el Hook lanza el error (throw error)
+      const errorMsg = error.response?.data?.msg || "Error de conexión con el servidor";
+      setErrorBackend(errorMsg);
+      toast.error(errorMsg);
     }
   };
 
@@ -56,7 +60,6 @@ const Login = () => {
     <div className="relative flex items-center justify-center min-h-screen py-8 overflow-y-auto bg-gray-100">
       <ToastContainer position="top-right" autoClose={3000} />
       
-      {/* Fondo con imagen institucional */}
       <div className="absolute inset-0 bg-[url('/esfot.jpg')] bg-no-repeat bg-cover bg-center opacity-40"></div>
       <div className="absolute inset-0 bg-black/25"></div>
 
@@ -70,38 +73,35 @@ const Login = () => {
         </Link>
       </div>
 
-      {/* Card de Login */}
       <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-xl p-8 mx-4 my-8 mt-24 border border-gray-200 animate-fadeIn">
         <h1 className="text-3xl font-bold text-center mb-0 mt-4">
           <span className="text-[#F5BD45]">BIENVENIDO(A)</span> <br />
           <span className="text-[#17243D] uppercase tracking-tighter">AL PORTAL PIC</span>
         </h1>
 
-        <small className="text-gray-600 block mb-6 text-center text-sm mt-2">
+        <small className="text-gray-600 block mb-6 text-center text-sm mt-2 font-medium">
           Ingresa tus credenciales de la Politécnica
         </small>
 
         <form className="space-y-4" onSubmit={handleSubmit(handleLogin)}>
-          {/* Email */}
           <div>
-            <label className="mb-2 block text-sm font-semibold text-gray-700">Correo Electrónico</label>
+            <label className="mb-2 block text-sm font-bold text-gray-700">Correo Electrónico</label>
             <input
               type="email"
               placeholder="ejemplo@epn.edu.ec"
-              className={`block w-full rounded-full border ${errors.email || errorBackend ? 'border-red-500' : 'border-gray-300'} focus:border-[#17243D] focus:outline-none focus:ring-1 focus:ring-[#17243D] py-2.5 px-4 text-gray-700 transition-all`}
+              className={`block w-full rounded-full border ${errors.email || errorBackend ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300'} focus:border-[#17243D] focus:outline-none focus:ring-1 focus:ring-[#17243D] py-2.5 px-4 text-gray-700 transition-all`}
               {...register("email", { required: "El correo es obligatorio" })}
             />
             {errors.email && <p className="text-red-600 text-xs mt-1 font-bold ml-2">{errors.email.message}</p>}
           </div>
 
-          {/* Contraseña */}
           <div className="relative">
-            <label className="mb-2 block text-sm font-semibold text-gray-700">Contraseña</label>
+            <label className="mb-2 block text-sm font-bold text-gray-700">Contraseña</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="********************"
-                className={`block w-full rounded-full border ${errors.password || errorBackend ? 'border-red-500' : 'border-gray-300'} py-2.5 px-4 pr-10 text-gray-700 focus:border-[#17243D] focus:outline-none focus:ring-1 focus:ring-[#17243D] transition-all`}
+                className={`block w-full rounded-full border ${errors.password || errorBackend ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300'} py-2.5 px-4 pr-10 text-gray-700 focus:border-[#17243D] focus:outline-none focus:ring-1 focus:ring-[#17243D] transition-all`}
                 {...register("password", { required: "La contraseña es obligatoria" })}
               />
               <button
@@ -115,23 +115,22 @@ const Login = () => {
             {errors.password && <p className="text-red-600 text-xs mt-1 font-bold ml-2">{errors.password.message}</p>}
           </div>
 
-          {/* ✅ MENSAJE DE ERROR DEL BACKEND VISIBLE EN EL FORMULARIO */}
+          {/* ✅ MENSAJE DE ERROR VISIBLE (Inyectado con estilo institucional) */}
           {errorBackend && (
-            <div className="flex items-center gap-2 bg-red-50 text-red-700 p-3 rounded-xl border border-red-200 animate-shake">
-              <MdError size={20} />
-              <p className="text-xs font-bold uppercase">{errorBackend}</p>
+            <div className="flex items-center gap-3 bg-red-50 text-red-700 p-4 rounded-2xl border border-red-200 animate-pulse">
+              <MdError size={24} className="flex-shrink-0" />
+              <p className="text-xs font-black uppercase tracking-tight">{errorBackend}</p>
             </div>
           )}
 
-          {/* Botones */}
           <div className="pt-4 space-y-3">
-            <button type="submit" className="py-3 w-full block text-center bg-[#17243D] text-white font-bold rounded-full hover:shadow-lg hover:bg-[#1F3059] transition-all duration-300 active:scale-95">
+            <button type="submit" className="py-3 w-full block text-center bg-[#17243D] text-white font-black rounded-full hover:shadow-lg hover:bg-[#1F3059] transition-all duration-300 active:scale-95 uppercase tracking-widest text-sm">
               Iniciar Sesión
             </button>
             
             <Link 
               to="/registro" 
-              className="py-3 px-8 bg-[#F5BD45] text-[#17243D] font-extrabold rounded-full hover:shadow-lg hover:bg-yellow-500 w-full text-center transition-all duration-300 active:scale-95 block"
+              className="py-3 px-8 bg-[#F5BD45] text-[#17243D] font-black rounded-full hover:shadow-lg hover:bg-yellow-500 w-full text-center transition-all duration-300 active:scale-95 block uppercase tracking-widest text-sm"
             >
               Registrarme
             </Link>
@@ -145,7 +144,7 @@ const Login = () => {
         </div>
 
         <div className="flex flex-col items-center gap-4 text-sm font-medium">
-          <Link to="/forgot" className="text-gray-500 hover:text-[#17243D] transition-colors hover:underline">
+          <Link to="/forgot" className="text-gray-500 hover:text-[#17243D] transition-colors hover:underline font-bold">
             ¿Olvidaste tu contraseña?
           </Link>
         </div>

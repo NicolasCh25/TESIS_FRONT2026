@@ -1,7 +1,6 @@
-// src/hooks/useFetch.js
 import { useState } from 'react';
 
-export const useFetch = () => { // <--- DEBE TENER 'export const'
+export const useFetch = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -19,7 +18,6 @@ export const useFetch = () => { // <--- DEBE TENER 'export const'
       if (body && !(body instanceof FormData)) {
         options.body = JSON.stringify(body);
       } else if (body instanceof FormData) {
-        // Si es FormData (como para subir el archivo PIC), no ponemos Content-Type manual
         delete options.headers['Content-Type'];
         options.body = body;
       }
@@ -27,12 +25,18 @@ export const useFetch = () => { // <--- DEBE TENER 'export const'
       const response = await fetch(url, options);
       const data = await response.json();
 
-      if (!response.ok) throw new Error(data.message || 'Error en la petición');
+      if (!response.ok) {
+        // 🚀 Ajustado para capturar 'msg' que es lo que envía tu backend
+        const errorMsg = data.msg || data.message || 'Error en la petición';
+        const errorObj = new Error(errorMsg);
+        errorObj.response = { data }; // Simulamos la estructura de Axios para no romper tu Login
+        throw errorObj; 
+      }
 
       return data;
     } catch (err) {
       setError(err.message);
-      return null;
+      throw err; // 🚀 IMPORTANTE: Lanzamos el error para que el Login lo atrape
     } finally {
       setLoading(false);
     }
