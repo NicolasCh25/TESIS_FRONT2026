@@ -9,7 +9,6 @@ import "react-toastify/dist/ReactToastify.css";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [rolVisual, setRolVisual] = useState(""); 
   const navigate = useNavigate();
 
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -18,9 +17,7 @@ const Login = () => {
   const auth = storeAuth(); 
 
   const handleLogin = async (dataForm) => {
-    if (!rolVisual.trim()) {
-      return toast.warning("Por favor selecciona un rol institucional");
-    }
+    // 🚀 VALIDACIÓN DE ROL ELIMINADA: Ya no detiene el proceso.
 
     const url = `${import.meta.env.VITE_BACKEND_URL}api/login`;
 
@@ -33,10 +30,10 @@ const Login = () => {
       const response = await fetchDataBackend(url, dataToSend, "POST");
 
       if (response) {
-        // ✅ Pasamos los 4 parámetros: token, rol, nombre y apellido
+        // ✅ Ahora guardamos el rol que viene directamente del BACKEND (response.rol)
         auth.setToken(
           response.token, 
-          response.rol || rolVisual, 
+          response.rol, 
           response.nombre,
           response.apellido 
         );
@@ -114,13 +111,14 @@ const Login = () => {
             {errors.password && <p className="text-red-600 text-xs mt-1 font-bold ml-2">{errors.password.message}</p>}
           </div>
 
+          {/* ❌ SECCIÓN DE SELECCIÓN DE ROL ELIMINADA TOTALMENTE */}
+
           {/* Botones */}
           <div className="pt-4 space-y-3">
             <button type="submit" className="py-3 w-full block text-center bg-[#17243D] text-white font-bold rounded-full hover:shadow-lg hover:bg-[#1F3059] transition-all duration-300 active:scale-95">
               Iniciar Sesión
             </button>
             
-            {/* ✅ Botón corregido para dirigir a la página de Registro Público */}
             <Link 
               to="/registro" 
               className="py-3 px-8 bg-[#F5BD45] text-[#17243D] font-extrabold rounded-full hover:shadow-lg hover:bg-yellow-500 w-full text-center transition-all duration-300 active:scale-95 block"
