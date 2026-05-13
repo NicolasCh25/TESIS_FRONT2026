@@ -1,4 +1,9 @@
+import { Link } from 'react-router-dom';
+
 export default function ProjectCard({ project }) {
+  // Codificamos la carrera para que sea válida en una URL
+  const carreraUrl = encodeURIComponent(project.title);
+
   return (
     <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 group transition-transform hover:-translate-y-2 flex flex-col h-full">
       <div className="relative h-64 sm:h-72 overflow-hidden flex-shrink-0">
@@ -11,6 +16,7 @@ export default function ProjectCard({ project }) {
         
         <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-between text-white z-10">
           <div className="flex items-center justify-between">
+            {/* ✅ Ruta corregida del logo */}
             <img 
               src="/logoPIC.png" 
               alt="Logo EPN" 
@@ -30,9 +36,13 @@ export default function ProjectCard({ project }) {
       </div>
       
       <div className="p-4 sm:p-6 bg-white space-y-4 flex-grow flex flex-col justify-end">
-        <button className="w-full rounded-full bg-yellow-400 py-2 sm:py-3 text-xs sm:text-sm font-extrabold text-blue-950 shadow-md hover:bg-yellow-500 transition">
+        {/* ✅ Redirección dinámica a la lista de proyectos de esta carrera */}
+        <Link 
+          to={`/proyectos/carrera/${carreraUrl}`}
+          className="w-full rounded-full bg-yellow-400 py-2 sm:py-3 text-xs sm:text-sm font-extrabold text-blue-950 shadow-md hover:bg-yellow-500 transition text-center block"
+        >
           Más Información
-        </button>
+        </Link>
       </div>
     </div>
   );
