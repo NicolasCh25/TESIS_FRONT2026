@@ -12,7 +12,7 @@ export default function ProjectCard({ project }) {
         <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-between text-white z-10">
           <div className="flex items-center justify-between">
             <img 
-              src="/public/logoPIC.png" 
+              src="/logoPIC.png" 
               alt="Logo EPN" 
               className="h-8 sm:h-10 w-auto opacity-90" 
             />
