@@ -6,7 +6,6 @@ import { ToastContainer, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom"; 
 
 const ListarProyectos = () => {
-
   const fetchDataBackend = useFetch();
   const { token } = storeAuth();
   const navigate = useNavigate(); 
@@ -15,69 +14,68 @@ const ListarProyectos = () => {
   const [busqueda, setBusqueda] = useState("");
   const [filtro, setFiltro] = useState("autor"); 
 
+  // ✅ LISTA DE CARRERAS (Exactamente como están en tu Base de Datos)
+  const carrerasDisponibles = [
+    "Tecnología Superior en Desarrollo de Software",
+    "Tecnología Superior en Electromecánica",
+    "Tecnología Superior en Agua y Saniamiento Ambiental",
+    "Tecnología Superior en Procesamiento Industrial de la Madera",
+    "Tecnología Superior en Procesamiento de Alimentos",
+    "Tecnología Superior en Redes y Telecomunicaciones"
+  ];
+
   const obtenerProyectos = async () => {
-
     const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-
     const valor = busqueda.trim();
 
+    // ✅ Si el filtro es periodo, enviamos 'periodo' en la query pero el valor del estado
     const query = valor
       ? `?${filtro}=${encodeURIComponent(valor)}`
       : "";
 
-    // ✅ CORREGIDO
     const url = `${baseUrl}api/proyectos${query}`;
 
     try {
-
       const response = await fetchDataBackend(
         url,
         null,
         "GET",
-        {
-          Authorization: `Bearer ${token}`
-        }
+        { Authorization: `Bearer ${token}` }
       );
 
       if (response && response.resultados) {
         setProyectos(response.resultados);
       }
-
     } catch (error) {
       console.error("Error en Proyectos:", error);
       toast.error("Error al obtener proyectos");
     }
   };
 
+  // ✅ Limpiar la búsqueda cada vez que cambie el tipo de filtro para evitar conflictos
+  useEffect(() => {
+    setBusqueda("");
+  }, [filtro]);
+
   useEffect(() => {
     obtenerProyectos();
   }, [busqueda, filtro]);
 
-  // ✅ ELIMINAR
   const handleEliminar = async (id) => {
-
     if (window.confirm("¿Estás seguro de eliminar este proyecto?")) {
-
       const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-
       const url = `${baseUrl}api/proyectos/${id}`;
-
       try {
-
         const response = await fetchDataBackend(
           url,
           null,
           "DELETE",
-          {
-            Authorization: `Bearer ${token}`
-          }
+          { Authorization: `Bearer ${token}` }
         );
-
         if (response) {
           toast.success(response.msg);
           obtenerProyectos();
         }
-
       } catch (error) {
         console.error(error);
         toast.error("Error al eliminar");
@@ -85,33 +83,24 @@ const ListarProyectos = () => {
     }
   };
 
-  // ✅ EDITAR
-  const handleEditar = (id) => {
-    navigate(`/dashboard/actualizar/${id}`);
-  };
-
-  // ✅ VER DETALLE
-  const handleDetalle = (id) => {
-    navigate(`/dashboard/detalle/${id}`);
-  };
+  const handleEditar = (id) => navigate(`/dashboard/actualizar/${id}`);
+  const handleDetalle = (id) => navigate(`/dashboard/detalle/${id}`);
 
   return (
     <div className="p-6 min-h-screen bg-gray-50">
-
       <ToastContainer />
 
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-
         <h1 className="text-3xl font-black text-[#17243D]">
           GESTIONAR <span className="text-[#F5BD45]">PROYECTOS</span>
         </h1>
 
         <div className="flex gap-2 w-full md:w-auto">
-
+          {/* Selector de tipo de Filtro */}
           <select
             value={filtro}
             onChange={(e) => setFiltro(e.target.value)}
-            className="px-3 py-2 rounded-xl border outline-none"
+            className="px-3 py-2 rounded-xl border outline-none bg-white font-bold text-sm"
           >
             <option value="autor">Autor</option>
             <option value="carrera">Carrera</option>
@@ -119,27 +108,38 @@ const ListarProyectos = () => {
             <option value="titulo">Título</option>
           </select>
 
-          <input 
-            type="text" 
-            placeholder="Buscar..." 
-            className="px-4 py-2 w-full md:w-80 rounded-xl border outline-none"
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
-
+          {/* ✅ RENDERIZADO CONDICIONAL DEL INPUT DE BÚSQUEDA */}
+          {filtro === "carrera" ? (
+            <select
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              className="px-4 py-2 w-full md:w-80 rounded-xl border outline-none bg-white"
+            >
+              <option value="">Selecciona una carrera...</option>
+              {carrerasDisponibles.map((c, i) => (
+                <option key={i} value={c}>{c}</option>
+              ))}
+            </select>
+          ) : (
+            <input 
+              type="text" 
+              placeholder={`Buscar por ${filtro}...`} 
+              className="px-4 py-2 w-full md:w-80 rounded-xl border outline-none"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+          )}
         </div>
       </div>
 
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-
         <TablaProyectos 
           proyectos={proyectos}
           handleEliminar={handleEliminar}
           handleEditar={handleEditar}
           handleDetalle={handleDetalle}
         />
-
       </div>
-
     </div>
   );
 };
