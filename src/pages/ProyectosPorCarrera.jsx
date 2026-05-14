@@ -62,7 +62,7 @@ const ProyectosPorCarrera = () => {
                                         <th className="px-6 py-4 font-bold uppercase text-xs">Autor(es)</th>
                                         <th className="px-6 py-4 font-bold uppercase text-xs">Tutor</th>
                                         <th className="px-6 py-4 font-bold uppercase text-xs text-center">Periodo</th>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs text-center">Acciones</th>
+                                        <th className="px-6 py-4 font-bold uppercase text-xs text-center">Detalles</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
