@@ -20,10 +20,8 @@ import Profile from './pages/Profile';
 import ActualizarProyecto from './pages/ActualizarProyecto';
 import ActualizarUsuario from './pages/ActualizarUsuario';
 import DetalleProyecto from './pages/DetalleProyecto';
-
-// ✅ NUEVAS PÁGINAS PÚBLICAS
 import ProyectosPorCarrera from './pages/ProyectosPorCarrera';
-import DetallePublico from './pages/DetallePublico';
+//import DetallePublico from './pages/DetallePublico';
 
 // Layouts e Inicio
 import Dashboard from './layout/Dashboard';
@@ -45,7 +43,7 @@ function App() {
 
         {/* ✅ Nuevas rutas de acceso libre */}
         <Route path="/proyectos/carrera/:carreraNombre" element={<ProyectosPorCarrera />} />
-        <Route path="/proyectos/detalle-publico/:id" element={<DetallePublico />} />
+        {/* <Route path="/proyectos/detalle-publico/:id" element={<DetallePublico />} /> */}
 
         <Route element={<PublicRoute />}>
 
