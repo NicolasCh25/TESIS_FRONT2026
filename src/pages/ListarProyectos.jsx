@@ -14,7 +14,6 @@ const ListarProyectos = () => {
   const [busqueda, setBusqueda] = useState("");
   const [filtro, setFiltro] = useState("autor"); 
 
-  // ✅ LISTA DE CARRERAS (Exactamente como están en tu Base de Datos)
   const carrerasDisponibles = [
     "Tecnología Superior en Desarrollo de Software",
     "Tecnología Superior en Electromecánica",
@@ -28,9 +27,11 @@ const ListarProyectos = () => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
     const valor = busqueda.trim();
 
-    // ✅ La query usará dinámicamente el valor de 'filtro' (autor, tutor, carrera, etc.)
+    // ✅ CORRECCIÓN: Mapeo del filtro para que coincida con el campo del Backend
+    const nombreFiltroBackend = filtro === "periodo" ? "periodoAcademico" : filtro;
+
     const query = valor
-      ? `?${filtro}=${encodeURIComponent(valor)}`
+      ? `?${nombreFiltroBackend}=${encodeURIComponent(valor)}`
       : "";
 
     const url = `${baseUrl}api/proyectos${query}`;
@@ -52,7 +53,6 @@ const ListarProyectos = () => {
     }
   };
 
-  // ✅ Limpiar la búsqueda cada vez que cambie el tipo de filtro para evitar conflictos
   useEffect(() => {
     setBusqueda("");
   }, [filtro]);
@@ -96,21 +96,18 @@ const ListarProyectos = () => {
         </h1>
 
         <div className="flex gap-2 w-full md:w-auto">
-          {/* Selector de tipo de Filtro */}
           <select
             value={filtro}
             onChange={(e) => setFiltro(e.target.value)}
             className="px-3 py-2 rounded-xl border outline-none bg-white font-bold text-sm"
           >
             <option value="autor">Autor</option>
-            {/* ✅ OPCIÓN AGREGADA: TUTOR */}
             <option value="tutor">Tutor</option>
             <option value="carrera">Carrera</option>
             <option value="periodo">Periodo</option>
             <option value="titulo">Título</option>
           </select>
 
-          {/* RENDERIZADO CONDICIONAL DEL INPUT DE BÚSQUEDA */}
           {filtro === "carrera" ? (
             <select
               value={busqueda}
