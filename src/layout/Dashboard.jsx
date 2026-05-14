@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { MdMenu, MdClose, MdDashboard, MdFolder, MdAddCircle, MdGroup, MdBarChart, MdPerson, MdLogout } from "react-icons/md";
 import { storeAuth } from "../context/storeAuth"; 
+// ✅ Importamos el componente modular del chatbot
+import ChatbotFloating from "../components/chatbot/ChatbotFloating";
 
 export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -11,14 +13,14 @@ export default function Dashboard() {
   // 1. Extraemos los datos del store global
   const { clearToken, rol, nombre, apellido } = storeAuth();
   
-  // 2. Construcción del nombre completo (Nombre + Apellido)
+  // 2. Construcción del nombre completo
   const nombreCompleto = (nombre || apellido) 
     ? `${nombre || ""} ${apellido || ""}`.trim() 
     : "Usuario ESFOT";
 
   const rolUsuario = rol || "Personal"; 
   
-  // 3. Generador de iniciales (Usa la primera letra de nombre y la primera de apellido)
+  // 3. Generador de iniciales
   const obtenerInicialesDashboard = () => {
     const n = nombre ? nombre.trim().split(" ")[0] : "";
     const a = apellido ? apellido.trim().split(" ")[0] : "";
@@ -94,7 +96,7 @@ export default function Dashboard() {
       </aside>
 
       {/* ÁREA DE CONTENIDO PRINCIPAL */}
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col overflow-hidden relative">
         
         {/* HEADER SUPERIOR */}
         <header className="h-20 bg-white shadow-sm flex items-center justify-between px-4 lg:px-10 z-10 border-b border-gray-100">
@@ -105,23 +107,25 @@ export default function Dashboard() {
 
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
-              {/* ✅ Muestra Nombre y Apellido completo en el Header */}
               <p className="text-sm font-black text-gray-800 leading-none mb-1">{nombreCompleto}</p>
               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{rolUsuario}</p>
             </div>
             
-            {/* ✅ Avatar con iniciales dinámicas (Nombre + Apellido) */}
             <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-[#17243D] border-2 border-[#F5BD45] flex items-center justify-center text-white font-black shadow-md uppercase transition-transform hover:scale-105 cursor-pointer text-sm md:text-base">
               {iniciales}
             </div>
           </div>
         </header>
 
+        {/* CONTENIDO DINÁMICO */}
         <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-10 bg-gray-50/50">
             <div className="max-w-7xl mx-auto">
                 <Outlet />
             </div>
         </div>
+
+        {/* ✅ EL CHATBOT FLOTANTE APARECERÁ AQUÍ */}
+        <ChatbotFloating />
       </main>
     </div>
   );

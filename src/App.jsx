@@ -21,7 +21,7 @@ import ActualizarProyecto from './pages/ActualizarProyecto';
 import ActualizarUsuario from './pages/ActualizarUsuario';
 import DetalleProyecto from './pages/DetalleProyecto';
 import ProyectosPorCarrera from './pages/ProyectosPorCarrera';
-//import DetallePublico from './pages/DetallePublico';
+
 
 // Layouts e Inicio
 import Dashboard from './layout/Dashboard';
@@ -43,7 +43,6 @@ function App() {
 
         {/* ✅ Nuevas rutas de acceso libre */}
         <Route path="/proyectos/carrera/:carreraNombre" element={<ProyectosPorCarrera />} />
-        {/* <Route path="/proyectos/detalle-publico/:id" element={<DetallePublico />} /> */}
 
         <Route element={<PublicRoute />}>
 
