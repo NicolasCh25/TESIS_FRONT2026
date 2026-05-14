@@ -38,13 +38,12 @@ const CrearProyecto = () => {
       formData.append("carrera", dataForm.carrera);
 
       // ✅ Campos opcionales (Repositorio y Video)
-      // Si vienen vacíos desde el formulario, se envían como strings vacíos
       formData.append("repositorio", dataForm.repositorio || "");
       formData.append("video", dataForm.video || "");
       
-      // Formateo de fecha automática
+      // ✅ CORRECCIÓN DE FECHA: Se envía en formato YYYY-MM-DD para evitar el error de "Cast to date failed"
       const f = new Date();
-      const fecha = `${String(f.getDate()).padStart(2, '0')}-${String(f.getMonth() + 1).padStart(2, '0')}-${f.getFullYear()}`;
+      const fecha = `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`;
       formData.append("fecha", fecha);
 
       // Manejo del archivo PDF
