@@ -28,7 +28,7 @@ const ListarProyectos = () => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
     const valor = busqueda.trim();
 
-    // ✅ Si el filtro es periodo, enviamos 'periodo' en la query pero el valor del estado
+    // ✅ La query usará dinámicamente el valor de 'filtro' (autor, tutor, carrera, etc.)
     const query = valor
       ? `?${filtro}=${encodeURIComponent(valor)}`
       : "";
@@ -103,12 +103,14 @@ const ListarProyectos = () => {
             className="px-3 py-2 rounded-xl border outline-none bg-white font-bold text-sm"
           >
             <option value="autor">Autor</option>
+            {/* ✅ OPCIÓN AGREGADA: TUTOR */}
+            <option value="tutor">Tutor</option>
             <option value="carrera">Carrera</option>
             <option value="periodo">Periodo</option>
             <option value="titulo">Título</option>
           </select>
 
-          {/* ✅ RENDERIZADO CONDICIONAL DEL INPUT DE BÚSQUEDA */}
+          {/* RENDERIZADO CONDICIONAL DEL INPUT DE BÚSQUEDA */}
           {filtro === "carrera" ? (
             <select
               value={busqueda}
