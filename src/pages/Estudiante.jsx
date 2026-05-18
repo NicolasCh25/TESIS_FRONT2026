@@ -34,10 +34,10 @@ const Estudiante = () => {
     const query = valor ? `?${campoBackend}=${encodeURIComponent(valor)}` : "";
 
     try {
+      // ✅ SIN SLASH MANUAL: concatenación directa
       const response = await fetchDataBackend(`${baseUrl}api/proyectos${query}`, null, "GET", {
         Authorization: `Bearer ${token}`
       });
-      // ✅ Si no hay resultados, nos aseguramos de que sea un array vacío
       setProyectos(response?.resultados || []);
     } catch (error) { 
       setProyectos([]);
@@ -48,11 +48,10 @@ const Estudiante = () => {
   const obtenerFavoritos = async () => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
     try {
+      // ✅ SIN SLASH MANUAL
       const response = await fetchDataBackend(`${baseUrl}api/favoritos`, null, "GET", {
         Authorization: `Bearer ${token}`
       });
-      
-      // ✅ IMPORTANTE: Validar si la respuesta es el array directo o viene dentro de un objeto
       const listaFavs = Array.isArray(response) ? response : (response?.favoritos || []);
       setFavoritos(listaFavs);
     } catch (error) { 
@@ -72,12 +71,14 @@ const Estudiante = () => {
     
     try {
       if (esFav) {
+        // ✅ SIN SLASH MANUAL
         await fetchDataBackend(`${baseUrl}api/favoritos/${pro._id}`, null, "DELETE", {
           Authorization: `Bearer ${token}`
         });
         setFavoritos(prev => prev.filter(f => f._id !== pro._id));
         toast.info("Eliminado de favoritos");
       } else {
+        // ✅ SIN SLASH MANUAL
         await fetchDataBackend(`${baseUrl}api/favoritos/${pro._id}`, null, "POST", {
           Authorization: `Bearer ${token}`
         });
@@ -89,7 +90,6 @@ const Estudiante = () => {
     }
   };
 
-  // ✅ 4. Lógica de renderizado segura (Evita el error insertBefore)
   const listaAMostrar = useMemo(() => {
     const data = verFavoritos ? favoritos : proyectos;
     return Array.isArray(data) ? data : [];
@@ -105,16 +105,18 @@ const Estudiante = () => {
 
         <div className="flex flex-wrap gap-2">
           <button 
-            onClick={() => setVerFavoritos(!verFavoritos)}
+            onClick={() => {
+              setVerFavoritos(!verFavoritos);
+              setBusqueda(""); 
+            }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all ${
               verFavoritos ? "bg-[#F5BD45] text-[#17243D]" : "bg-white text-gray-400 border"
             }`}
           >
             {verFavoritos ? <MdStar size={18}/> : <MdStarBorder size={18}/>}
-            {verFavoritos ? "Viendo Favoritos" : "Todos los Proyectos"}
+            {verFavoritos ? "Mis Favoritos" : "Todos los Proyectos"}
           </button>
 
-          {/* Filtros */}
           <select 
             value={filtro} 
             onChange={(e) => {setFiltro(e.target.value); setBusqueda("")}}
@@ -147,13 +149,15 @@ const Estudiante = () => {
         </div>
       </div>
 
-      {/* ✅ Pasamos los datos siempre validados como Array */}
-      <TablaEstudiante 
-        proyectos={listaAMostrar}
-        onVer={setProyectoSeleccionado}
-        favoritos={favoritos}
-        onToggleFav={toggleFav}
-      />
+      {/* ✅ KEY DINÁMICA: Esto soluciona el error 'insertBefore' al cambiar de lista */}
+      <div key={verFavoritos ? 'favs' : 'all'}>
+        <TablaEstudiante 
+          proyectos={listaAMostrar}
+          onVer={setProyectoSeleccionado}
+          favoritos={favoritos}
+          onToggleFav={toggleFav}
+        />
+      </div>
 
       {proyectoSeleccionado && (
         <DetalleModal 
