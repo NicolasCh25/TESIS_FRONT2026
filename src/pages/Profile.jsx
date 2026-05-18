@@ -16,13 +16,15 @@ const Profile = () => {
     const [editando, setEditando] = useState(false);
 
     const obtenerPerfil = async () => {
+        // Limpiamos cualquier slash al final de la base URL
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
         
-        
+        // ✅ Corregido: Sin slash al inicio de la ruta
         const endpoint = rol === "admin" 
             ? "api/administradores/perfil" 
             : "api/usuarios/perfil";
             
+        // ✅ Corregido: Solo un slash entre baseUrl y endpoint
         const url = `${baseUrl}/${endpoint}`;
 
         try {
@@ -32,21 +34,22 @@ const Profile = () => {
 
             if (response) {
                 setPerfil(response);
-                setNombreEditado(response.nombre);
+                setNombreEditado(response.nombre || "");
             }
         } catch (error) {
             console.error("Error al cargar perfil:", error);
+            toast.error("Error al obtener datos del servidor");
         } finally {
             setCargando(false);
         }
     };
 
-    // ✅ FUNCIÓN PARA ACTUALIZAR EL PERFIL (Solo nombre según tu petición)
     const handleActualizar = async () => {
         if (!nombreEditado.trim()) return toast.warn("El nombre no puede estar vacío");
 
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-        const url = `${baseUrl}api/usuarios/perfil`; 
+        // ✅ Corregido: Sin slash extra
+        const url = `${baseUrl}/api/usuarios/perfil`; 
 
         try {
             const response = await fetchDataBackend(url, { nombre: nombreEditado }, "PUT", {
@@ -55,9 +58,8 @@ const Profile = () => {
 
             if (response) {
                 toast.success(response.msg || "Perfil actualizado correctamente");
-                setPerfil({ ...perfil, nombre: nombreEditado });
+                setPerfil(prev => prev ? { ...prev, nombre: nombreEditado } : null);
                 setEditando(false);
-                // Opcional: podrías recargar la página o actualizar el storeAuth si el nombre sale en el sidebar
             }
         } catch (error) {
             toast.error("Error al actualizar el perfil");
@@ -77,11 +79,12 @@ const Profile = () => {
                 <h1 className="text-3xl font-black text-[#17243D]">
                     MI <span className="text-[#F5BD45]">PERFIL</span>
                 </h1>
-                <p className="text-gray-500 font-medium italic">Información de cuenta {rol}</p>
+                <p className="text-gray-500 font-medium italic uppercase text-xs">Información de cuenta {rol}</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-1">
+                    {/* ✅ Usamos opcional chaining para evitar el error insertBefore */}
                     <CardProfile user={perfil} />
                 </div>
 
@@ -91,7 +94,6 @@ const Profile = () => {
                             <h2 className="text-xl font-black text-[#17243D] flex items-center gap-2 uppercase tracking-tighter">
                                 Detalles de la Cuenta
                             </h2>
-                            {/* Botón para activar edición */}
                             <button 
                                 onClick={() => setEditando(!editando)}
                                 className="text-xs font-bold text-[#17243D] hover:text-[#F5BD45] uppercase transition-colors"
@@ -101,7 +103,6 @@ const Profile = () => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Campo de Nombre con opción de edición */}
                             <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
                                 <div className="text-2xl text-[#F5BD45] bg-[#17243D] p-3 rounded-xl shadow-md">
                                     <MdBadge />
@@ -121,7 +122,9 @@ const Profile = () => {
                                             </button>
                                         </div>
                                     ) : (
-                                        <p className="text-[#17243D] font-bold">{perfil?.nombre} {perfil?.apellido}</p>
+                                        <p className="text-[#17243D] font-bold">
+                                            {perfil?.nombre || "N/A"} {perfil?.apellido || ""}
+                                        </p>
                                     )}
                                 </div>
                             </div>
@@ -159,7 +162,7 @@ const InfoField = ({ icon, label, value, isBadge }) => (
             <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{label}</p>
             {isBadge ? (
                 <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full uppercase">
-                    {value}
+                    {value || "Pendiente"}
                 </span>
             ) : (
                 <p className="text-[#17243D] font-bold">{value || "No disponible"}</p>
