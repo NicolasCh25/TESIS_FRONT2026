@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 // Importación de tus archivos de protección
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -21,19 +21,17 @@ import ActualizarProyecto from './pages/ActualizarProyecto';
 import ActualizarUsuario from './pages/ActualizarUsuario';
 import DetalleProyecto from './pages/DetalleProyecto';
 import ProyectosPorCarrera from './pages/ProyectosPorCarrera';
-
-// ✅ NUEVA PÁGINA PARA ESTUDIANTE
 import Estudiante from './pages/Estudiante';
 
 // Layouts e Inicio
 import Dashboard from './layout/Dashboard';
 import InicioAdmin from './pages/InicioAdmin'; 
 
-// ✅ IMPORTAMOS EL STORE PARA VALIDAR EL ROL
+// ✅ IMPORTAMOS EL STORE
 import { storeAuth } from './context/storeAuth';
 
 function App() {
-  // Extraemos el rol para decidir qué mostrar en la ruta "/" del dashboard
+  // Extraemos el rol del store global
   const { rol } = storeAuth();
 
   return (
@@ -59,16 +57,16 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />}>
             
-            {/* ✅ RUTA INDEX DINÁMICA:
-                Si es admin va a InicioAdmin (Estadísticas), 
-                si es estudiante va a Estudiante (Explorar) */}
+            {/* ✅ CORRECCIÓN: Lógica dinámica basada en el valor actual del rol */}
             <Route 
               index 
-              element={rol === 'admin' ? <InicioAdmin /> : <Estudiante />} 
+              element={
+                rol === 'admin' ? <InicioAdmin /> : <Estudiante />
+              } 
             />
 
             {/* =======================
-                PROYECTOS
+                PROYECTOS (Solo visibles si el sidebar los permite)
             ======================= */}
             <Route path="create" element={<CrearProyecto />} />
             <Route path="list" element={<ListarProyectos />} />
