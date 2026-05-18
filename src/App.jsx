@@ -1,5 +1,5 @@
-import { useEffect } from 'react'; // ✅ Importamos useEffect
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 // Importación de tus archivos de protección
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -23,23 +23,20 @@ import ActualizarUsuario from './pages/ActualizarUsuario';
 import DetalleProyecto from './pages/DetalleProyecto';
 import ProyectosPorCarrera from './pages/ProyectosPorCarrera';
 import Estudiante from './pages/Estudiante';
+import Favoritos from './pages/Favoritos'; // ✅ NUEVA PÁGINA
 
 // Layouts e Inicio
 import Dashboard from './layout/Dashboard';
 import InicioAdmin from './pages/InicioAdmin'; 
 
-// ✅ RUTA CORREGIDA: App.jsx está en /src, por lo que entra directo a /context
 import { storeAuth } from './context/storeAuth';
 
 function App() {
-  // Extraemos clearToken para la limpieza de seguridad
   const { rol, clearToken } = storeAuth(); 
   const rolLimpio = rol?.toLowerCase().trim();
   const esAdmin = rolLimpio === 'admin' || rolLimpio === 'administrador';
 
-  // ✅ SOLUCIÓN AL PROBLEMA DE SESIÓN PERSISTENTE:
-  // Si el usuario navega a la raíz (/), borramos el token. 
-  // Así, al dar clic en "Ingresar" desde la Landing, el PublicRoute no lo mandará al Dashboard automáticamente.
+  // ✅ SEGURIDAD: Limpiar sesión al estar en la Landing (/)
   useEffect(() => {
     if (window.location.pathname === '/') {
       clearToken();
@@ -67,11 +64,11 @@ function App() {
             
             <Route 
               index 
-              element={esAdmin ? <InicioAdmin /> : <Estudiante vistaFavoritos={false} />} 
+              element={esAdmin ? <InicioAdmin /> : <Estudiante />} 
             />
 
-            {/* Ruta para favoritos separada para evitar el error de insertBefore */}
-            <Route path="favoritos" element={<Estudiante vistaFavoritos={true} />} />
+            {/* ✅ AHORA USA UN COMPONENTE INDEPENDIENTE */}
+            <Route path="favoritos" element={<Favoritos />} />
 
             <Route path="create" element={<CrearProyecto />} />
             <Route path="list" element={<ListarProyectos />} />
@@ -85,7 +82,6 @@ function App() {
           </Route>
         </Route>
 
-        {/* MANEJO DE ERROR 404 */}
         <Route path="*" element={
           <div className="flex h-screen items-center justify-center bg-gray-50 flex-col text-center p-4">
             <h1 className="text-9xl font-black text-[#17243D] opacity-20">404</h1>
