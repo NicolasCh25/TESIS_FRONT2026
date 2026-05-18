@@ -1,3 +1,4 @@
+import { useEffect } from 'react'; // ✅ Importamos useEffect
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 // Importación de tus archivos de protección
@@ -31,9 +32,19 @@ import InicioAdmin from './pages/InicioAdmin';
 import { storeAuth } from './context/storeAuth';
 
 function App() {
-  const { rol } = storeAuth();
+  // Extraemos clearToken para la limpieza de seguridad
+  const { rol, clearToken } = storeAuth(); 
   const rolLimpio = rol?.toLowerCase().trim();
   const esAdmin = rolLimpio === 'admin' || rolLimpio === 'administrador';
+
+  // ✅ SOLUCIÓN AL PROBLEMA DE SESIÓN PERSISTENTE:
+  // Si el usuario navega a la raíz (/), borramos el token. 
+  // Así, al dar clic en "Ingresar" desde la Landing, el PublicRoute no lo mandará al Dashboard automáticamente.
+  useEffect(() => {
+    if (window.location.pathname === '/') {
+      clearToken();
+    }
+  }, [clearToken]);
 
   return (
     <BrowserRouter>
