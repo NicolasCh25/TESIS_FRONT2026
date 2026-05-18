@@ -54,7 +54,7 @@ const Estudiante = () => {
         ? `?${campoBackend}=${encodeURIComponent(valor)}`
         : "";
 
-      const url = `${baseUrl}/api/proyectos${query}`;
+      const url = `${baseUrl}api/proyectos${query}`;
 
       const response = await fetchDataBackend(
         url,
@@ -92,7 +92,7 @@ const Estudiante = () => {
 
       const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
 
-      const url = `${baseUrl}/api/favoritos`;
+      const url = `${baseUrl}api/favoritos`;
 
       const response = await fetchDataBackend(
         url,
@@ -146,7 +146,7 @@ const Estudiante = () => {
 
       const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
 
-      const url = `${baseUrl}/api/favoritos/${proyecto._id}`;
+      const url = `${baseUrl}api/favoritos/${proyecto._id}`;
 
       const esFavorito = favoritos.some(
         (f) => f && f._id === proyecto._id
