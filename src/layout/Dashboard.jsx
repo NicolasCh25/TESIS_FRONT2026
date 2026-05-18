@@ -95,7 +95,7 @@ export default function Dashboard() {
               <Link to="/dashboard/users" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/users')}>
                 <MdGroup size={22} /> Usuarios
               </Link>
-              <Link to="/dashboard" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard')}>
+              <Link to="/dashboard/stats" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/stats')}>
                 <MdBarChart size={22} /> Estadísticas
               </Link>
             </>
