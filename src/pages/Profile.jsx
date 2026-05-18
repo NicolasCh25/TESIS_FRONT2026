@@ -18,7 +18,7 @@ const Profile = () => {
     const obtenerPerfil = async () => {
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
         
-        // ✅ URL DINÁMICA: Si es admin usa una ruta, si es estudiante (usuario) usa la otra
+        
         const endpoint = rol === "admin" 
             ? "api/administradores/perfil" 
             : "api/usuarios/perfil";

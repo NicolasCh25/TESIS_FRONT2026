@@ -15,7 +15,7 @@ const Estudiante = () => {
   const [filtro, setFiltro] = useState("titulo");
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState(null);
   const [verFavoritos, setVerFavoritos] = useState(false);
-  const [favoritos, setFavoritos] = useState([]); // ✅ Siempre inicia como array
+  const [favoritos, setFavoritos] = useState([]); 
 
   const carrerasDisponibles = [
     "Tecnología Superior en Desarrollo de Software",
@@ -34,7 +34,7 @@ const Estudiante = () => {
     const query = valor ? `?${campoBackend}=${encodeURIComponent(valor)}` : "";
 
     try {
-      const response = await fetchDataBackend(`${baseUrl}/api/proyectos${query}`, null, "GET", {
+      const response = await fetchDataBackend(`${baseUrl}api/proyectos${query}`, null, "GET", {
         Authorization: `Bearer ${token}`
       });
       // ✅ Si no hay resultados, nos aseguramos de que sea un array vacío
@@ -48,7 +48,7 @@ const Estudiante = () => {
   const obtenerFavoritos = async () => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
     try {
-      const response = await fetchDataBackend(`${baseUrl}/api/favoritos`, null, "GET", {
+      const response = await fetchDataBackend(`${baseUrl}api/favoritos`, null, "GET", {
         Authorization: `Bearer ${token}`
       });
       
@@ -72,13 +72,13 @@ const Estudiante = () => {
     
     try {
       if (esFav) {
-        await fetchDataBackend(`${baseUrl}/api/favoritos/${pro._id}`, null, "DELETE", {
+        await fetchDataBackend(`${baseUrl}api/favoritos/${pro._id}`, null, "DELETE", {
           Authorization: `Bearer ${token}`
         });
         setFavoritos(prev => prev.filter(f => f._id !== pro._id));
         toast.info("Eliminado de favoritos");
       } else {
-        await fetchDataBackend(`${baseUrl}/api/favoritos/${pro._id}`, null, "POST", {
+        await fetchDataBackend(`${baseUrl}api/favoritos/${pro._id}`, null, "POST", {
           Authorization: `Bearer ${token}`
         });
         setFavoritos(prev => [...prev, pro]);
