@@ -1,17 +1,17 @@
 import { useEffect, useState, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom"; // ✅ Agregamos useNavigate
+import { useLocation, useNavigate } from "react-router-dom"; 
 import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
 import TablaEstudiante from "../components/list/TablaEstudiante";
 import DetalleModal from "../components/public/DetalleModal";
-import { MdStar, MdStarBorder } from "react-icons/md"; // ✅ Icono para el botón
+import { MdStar } from "react-icons/md"; 
 import { toast, ToastContainer } from "react-toastify";
 
 const Estudiante = ({ vistaFavoritos = false }) => {
   const fetchDataBackend = useFetch();
   const { token } = storeAuth();
   const location = useLocation();
-  const navigate = useNavigate(); // ✅ Hook para la navegación
+  const navigate = useNavigate();
 
   const [proyectos, setProyectos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
@@ -101,48 +101,78 @@ const Estudiante = ({ vistaFavoritos = false }) => {
   return (
     <div className="p-6 min-h-screen bg-gray-50">
       <ToastContainer />
+      
       <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
         <h1 className="text-3xl font-black text-[#17243D] uppercase">
           {verFavoritos ? "Mis" : "Repositorio"} <span className="text-[#F5BD45]">{verFavoritos ? "Favoritos" : "PIC"}</span>
         </h1>
 
-        <div className="flex flex-wrap gap-2">
-          {/* ✅ BOTÓN AGREGADO PARA IR A LA PÁGINA DE FAVORITOS */}
-          {!verFavoritos && (
-            <button
-              onClick={() => navigate("/dashboard/favoritos")}
-              className="flex items-center gap-2 px-4 py-2 bg-[#F5BD45] text-[#17243D] rounded-xl font-bold text-xs uppercase shadow-md hover:bg-[#e2ad3a] transition-all"
-            >
-              <MdStar size={18} /> Mis Favoritos
-            </button>
-          )}
-
+        {/* CONTENEDOR UNIFICADO: Botón + Filtros + Buscador */}
+        <div className="flex flex-wrap items-center justify-end gap-2 w-full md:w-auto">
+          
           {!verFavoritos && (
             <>
-              <select value={filtro} onChange={(e) => { setFiltro(e.target.value); setBusqueda(""); }} className="px-3 py-2 rounded-xl border bg-white font-bold text-xs text-[#17243D] uppercase outline-none">
+              {/* BOTÓN IR A FAVORITOS */}
+              <button
+                onClick={() => navigate("/dashboard/favoritos")}
+                className="flex items-center gap-2 px-4 py-2 bg-[#F5BD45] text-[#17243D] rounded-xl font-bold text-xs uppercase shadow-md hover:bg-[#e2ad3a] transition-all h-[42px]"
+              >
+                <MdStar size={18} /> Mis Favoritos
+              </button>
+
+              {/* SELECT DE FILTRO */}
+              <select 
+                value={filtro} 
+                onChange={(e) => { setFiltro(e.target.value); setBusqueda(""); }} 
+                className="px-3 py-2 rounded-xl border bg-white font-bold text-xs text-[#17243D] uppercase outline-none h-[42px] cursor-pointer"
+              >
                 <option value="titulo">Título</option>
                 <option value="autor">Autor</option>
                 <option value="carrera">Carrera</option>
                 <option value="periodo">Periodo</option>
               </select>
+
+              {/* BARRA DE BÚSQUEDA DINÁMICA */}
               {filtro === "carrera" ? (
-                <select value={busqueda} onChange={(e) => setBusqueda(e.target.value)} className="px-4 py-2 w-full md:w-72 rounded-xl border bg-white text-sm outline-none">
+                <select 
+                  value={busqueda} 
+                  onChange={(e) => setBusqueda(e.target.value)} 
+                  className="px-4 py-2 w-full md:w-72 rounded-xl border bg-white text-sm outline-none h-[42px] cursor-pointer"
+                >
                   <option value="">Selecciona carrera...</option>
                   {carrerasDisponibles.map((c, i) => <option key={i} value={c}>{c}</option>)}
                 </select>
               ) : (
-                <input type="text" placeholder={`Buscar por ${filtro}...`} className="px-4 py-2 w-full md:w-72 rounded-xl border text-sm outline-none" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+                <input 
+                  type="text" 
+                  placeholder={`Buscar por ${filtro}...`} 
+                  className="px-4 py-2 w-full md:w-72 rounded-xl border text-sm outline-none h-[42px]" 
+                  value={busqueda} 
+                  onChange={(e) => setBusqueda(e.target.value)} 
+                />
               )}
             </>
           )}
         </div>
       </div>
 
-      <div key={location.pathname}>
-        <TablaEstudiante proyectos={listaAMostrar} onVer={setProyectoSeleccionado} favoritos={favoritos} onToggleFav={toggleFav} />
+      {/* CONTENEDOR DE TABLA */}
+      <div key={location.pathname} className="bg-white rounded-3xl shadow-sm overflow-hidden">
+        <TablaEstudiante 
+          proyectos={listaAMostrar} 
+          onVer={setProyectoSeleccionado} 
+          favoritos={favoritos} 
+          onToggleFav={toggleFav} 
+        />
       </div>
 
-      {proyectoSeleccionado && <DetalleModal proyecto={proyectoSeleccionado} onClose={() => setProyectoSeleccionado(null)} />}
+      {/* MODAL DE DETALLE */}
+      {proyectoSeleccionado && (
+        <DetalleModal 
+          proyecto={proyectoSeleccionado} 
+          onClose={() => setProyectoSeleccionado(null)} 
+        />
+      )}
     </div>
   );
 };
