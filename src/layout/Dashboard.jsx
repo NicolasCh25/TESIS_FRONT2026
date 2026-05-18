@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
-import { MdMenu, MdClose, MdDashboard, MdFolder, MdAddCircle, MdGroup, MdBarChart, MdPerson, MdLogout } from "react-icons/md";
+import { 
+  MdMenu, MdClose, MdDashboard, MdFolder, MdAddCircle, 
+  MdGroup, MdBarChart, MdPerson, MdLogout, MdSearch, MdStar 
+} from "react-icons/md";
 import { storeAuth } from "../context/storeAuth"; 
-// ✅ Importamos el componente modular del chatbot
 import ChatbotFloating from "../components/chatbot/ChatbotFloating";
 
 export default function Dashboard() {
@@ -13,28 +15,21 @@ export default function Dashboard() {
   // 1. Extraemos los datos del store global
   const { clearToken, rol, nombre, apellido } = storeAuth();
   
-  // 2. Construcción del nombre completo
+  // 2. Construcción del nombre completo y rol
   const nombreCompleto = (nombre || apellido) 
     ? `${nombre || ""} ${apellido || ""}`.trim() 
     : "Usuario ESFOT";
 
-  const rolUsuario = rol || "Personal"; 
+  const rolUsuario = rol === 'admin' ? "Administrador" : "Estudiante"; 
   
   // 3. Generador de iniciales
   const obtenerInicialesDashboard = () => {
     const n = nombre ? nombre.trim().split(" ")[0] : "";
     const a = apellido ? apellido.trim().split(" ")[0] : "";
-
-    if (n && a) {
-      return `${n[0]}${a[0]}`.toUpperCase();
-    }
-    if (n || a) {
-      return (n || a).substring(0, 2).toUpperCase();
-    }
+    if (n && a) return `${n[0]}${a[0]}`.toUpperCase();
+    if (n || a) return (n || a).substring(0, 2).toUpperCase();
     return "U";
   };
-
-  const iniciales = obtenerInicialesDashboard();
 
   const handleLogout = () => {
     clearToken(); 
@@ -61,7 +56,7 @@ export default function Dashboard() {
         ></div>
       )}
 
-      {/* SIDEBAR */}
+      {/* SIDEBAR DINÁMICO */}
       <aside className={`
         fixed inset-y-0 left-0 z-40 w-64 bg-[#17243D] text-white flex flex-col shadow-2xl transition-transform duration-300 ease-in-out
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -78,14 +73,39 @@ export default function Dashboard() {
         </div>
         
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-          <p className="px-2 text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4 opacity-50">Menú Principal</p>
-          <Link to="/dashboard" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard')}><MdDashboard size={22} /> Inicio</Link>
-          <Link to="/dashboard/list" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/list')}><MdFolder size={22} /> Proyectos</Link>
-          <Link to="/dashboard/create" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/create')}><MdAddCircle size={22} /> Crear Nuevo</Link>
-          <Link to="/dashboard/users" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/users')}><MdGroup size={22} /> Usuarios</Link>
-          <Link to="/dashboard/stats" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/stats')}><MdBarChart size={22} /> Estadísticas</Link>
+          <p className="px-2 text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4 opacity-50">
+            Menú {rolUsuario}
+          </p>
+
+          {/* 🛠️ RUTAS PARA ADMINISTRADOR */}
+          {rol === 'admin' ? (
+            <>
+              <Link to="/dashboard" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard')}>
+                <MdBarChart size={22} /> Estadísticas
+              </Link>
+              <Link to="/dashboard/list" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/list')}>
+                <MdFolder size={22} /> Proyectos
+              </Link>
+              <Link to="/dashboard/create" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/create')}>
+                <MdAddCircle size={22} /> Crear Nuevo
+              </Link>
+              <Link to="/dashboard/users" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/users')}>
+                <MdGroup size={22} /> Usuarios
+              </Link>
+            </>
+          ) : (
+            /* 🎓 RUTAS PARA ESTUDIANTE */
+            <>
+              <Link to="/dashboard" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard')}>
+                <MdSearch size={22} /> Explorar Proyectos
+              </Link>
+            </>
+          )}
+
           <p className="px-2 text-xs font-semibold text-gray-400 uppercase tracking-widest pt-6 mb-4 opacity-50">Cuenta</p>
-          <Link to="/dashboard/profile" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/profile')}><MdPerson size={22} /> Perfil</Link>
+          <Link to="/dashboard/profile" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/profile')}>
+            <MdPerson size={22} /> Mi Perfil
+          </Link>
         </nav>
 
         <div className="p-4 border-t border-gray-700/50">
@@ -95,14 +115,16 @@ export default function Dashboard() {
         </div>
       </aside>
 
-      {/* ÁREA DE CONTENIDO PRINCIPAL */}
+      {/* ÁREA DE CONTENIDO */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        
-        {/* HEADER SUPERIOR */}
         <header className="h-20 bg-white shadow-sm flex items-center justify-between px-4 lg:px-10 z-10 border-b border-gray-100">
           <div className="flex items-center gap-4">
-            <button onClick={toggleSidebar} className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"><MdMenu size={28} /></button>
-            <h1 className="text-xl md:text-2xl font-black text-[#17243D] tracking-tight">DASHBOARD <span className="text-[#F5BD45] hidden sm:inline">| ESFOT</span></h1>
+            <button onClick={toggleSidebar} className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">
+              <MdMenu size={28} />
+            </button>
+            <h1 className="text-xl md:text-2xl font-black text-[#17243D] tracking-tight uppercase">
+              {rol === 'admin' ? 'Gestión' : 'Consulta'} <span className="text-[#F5BD45] hidden sm:inline">| ESFOT</span>
+            </h1>
           </div>
 
           <div className="flex items-center gap-4">
@@ -112,19 +134,17 @@ export default function Dashboard() {
             </div>
             
             <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-[#17243D] border-2 border-[#F5BD45] flex items-center justify-center text-white font-black shadow-md uppercase transition-transform hover:scale-105 cursor-pointer text-sm md:text-base">
-              {iniciales}
+              {obtenerInicialesDashboard()}
             </div>
           </div>
         </header>
 
-        {/* CONTENIDO DINÁMICO */}
         <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-10 bg-gray-50/50">
             <div className="max-w-7xl mx-auto">
                 <Outlet />
             </div>
         </div>
 
-        {/* ✅ EL CHATBOT FLOTANTE APARECERÁ AQUÍ */}
         <ChatbotFloating />
       </main>
     </div>
