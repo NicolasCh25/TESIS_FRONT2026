@@ -11,20 +11,19 @@ const Profile = () => {
     const [perfil, setPerfil] = useState(null);
     const [cargando, setCargando] = useState(true);
     
-    // ✅ Estado para edición
     const [nombreEditado, setNombreEditado] = useState("");
     const [editando, setEditando] = useState(false);
 
     const obtenerPerfil = async () => {
-        // Limpiamos cualquier slash al final de la base URL
-        const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+        // Aseguramos que la base URL termine en / para que la unión sea limpia
+        const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith('/') 
+            ? import.meta.env.VITE_BACKEND_URL 
+            : `${import.meta.env.VITE_BACKEND_URL}/`;
         
-        // ✅ Corregido: Sin slash al inicio de la ruta
         const endpoint = rol === "admin" 
             ? "api/administradores/perfil" 
             : "api/usuarios/perfil";
             
-    
         const url = `${baseUrl}${endpoint}`;
 
         try {
@@ -47,7 +46,9 @@ const Profile = () => {
     const handleActualizar = async () => {
         if (!nombreEditado.trim()) return toast.warn("El nombre no puede estar vacío");
 
-        const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+        const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith('/') 
+            ? import.meta.env.VITE_BACKEND_URL 
+            : `${import.meta.env.VITE_BACKEND_URL}/`;
 
         const url = `${baseUrl}api/usuarios/perfil`; 
 
@@ -73,7 +74,7 @@ const Profile = () => {
     if (cargando) return <div className="p-10 text-center font-bold text-[#17243D] animate-pulse">Cargando información...</div>;
 
     return (
-        <div className="p-6 lg:p-10 animate-fadeIn">
+        <div className="p-6 lg:p-10 animate-fadeIn" key={perfil?._id || 'profile'}>
             <ToastContainer />
             <div className="mb-8 border-b-2 border-[#F5BD45] pb-4 inline-block">
                 <h1 className="text-3xl font-black text-[#17243D]">
@@ -84,7 +85,6 @@ const Profile = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-1">
-                    {/* ✅ Usamos opcional chaining para evitar el error insertBefore */}
                     <CardProfile user={perfil} />
                 </div>
 
@@ -129,22 +129,9 @@ const Profile = () => {
                                 </div>
                             </div>
 
-                            <InfoField 
-                                icon={<MdEmail />} 
-                                label="Correo Electrónico" 
-                                value={perfil?.email} 
-                            />
-                            <InfoField 
-                                icon={<MdVerifiedUser />} 
-                                label="Estado de Cuenta" 
-                                value={perfil?.confirmEmail ? "Verificada" : "Pendiente"} 
-                                isBadge
-                            />
-                            <InfoField 
-                                icon={<MdCalendarMonth />} 
-                                label="Miembro desde" 
-                                value={perfil?.createdAt ? new Date(perfil.createdAt).toLocaleDateString() : "N/A"} 
-                            />
+                            <InfoField icon={<MdEmail />} label="Correo Electrónico" value={perfil?.email} />
+                            <InfoField icon={<MdVerifiedUser />} label="Estado" value={perfil?.confirmEmail ? "Verificada" : "Pendiente"} isBadge />
+                            <InfoField icon={<MdCalendarMonth />} label="Desde" value={perfil?.createdAt ? new Date(perfil.createdAt).toLocaleDateString() : "N/A"} />
                         </div>
                     </div>
                 </div>
@@ -155,15 +142,11 @@ const Profile = () => {
 
 const InfoField = ({ icon, label, value, isBadge }) => (
     <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-        <div className="text-2xl text-[#F5BD45] bg-[#17243D] p-3 rounded-xl shadow-md">
-            {icon}
-        </div>
+        <div className="text-2xl text-[#F5BD45] bg-[#17243D] p-3 rounded-xl shadow-md">{icon}</div>
         <div>
             <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{label}</p>
             {isBadge ? (
-                <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full uppercase">
-                    {value || "Pendiente"}
-                </span>
+                <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full uppercase">{value}</span>
             ) : (
                 <p className="text-[#17243D] font-bold">{value || "No disponible"}</p>
             )}
