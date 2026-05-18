@@ -34,6 +34,11 @@ function App() {
   // Extraemos el rol del store global
   const { rol } = storeAuth();
 
+  // ✅ CORRECCIÓN DE SEGURIDAD: 
+  // Normalizamos el texto para que "administrador", "ADMIN" o "admin" funcionen igual.
+  const rolLimpio = rol?.toLowerCase().trim();
+  const esAdmin = rolLimpio === 'admin' || rolLimpio === 'administrador';
+
   return (
     <BrowserRouter>
       <Routes>
@@ -57,16 +62,15 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />}>
             
-            {/* ✅ CORRECCIÓN: Lógica dinámica basada en el valor actual del rol */}
+            {/* ✅ RUTA INDEX DINÁMICA CORREGIDA:
+                Ahora usa la validación 'esAdmin' para no fallar si el back manda "administrador" */}
             <Route 
               index 
-              element={
-                rol === 'admin' ? <InicioAdmin /> : <Estudiante />
-              } 
+              element={esAdmin ? <InicioAdmin /> : <Estudiante />} 
             />
 
             {/* =======================
-                PROYECTOS (Solo visibles si el sidebar los permite)
+                PROYECTOS
             ======================= */}
             <Route path="create" element={<CrearProyecto />} />
             <Route path="list" element={<ListarProyectos />} />

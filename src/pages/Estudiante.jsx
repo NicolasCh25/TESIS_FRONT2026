@@ -29,7 +29,7 @@ const Estudiante = () => {
   const obtenerProyectos = async () => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith('/') 
         ? import.meta.env.VITE_BACKEND_URL 
-        : `${import.meta.env.VITE_BACKEND_URL}/`;
+        : `${import.meta.env.VITE_BACKEND_URL}`;
         
     const valor = busqueda.trim();
     const campoBackend = filtro === "periodo" ? "periodoAcademico" : filtro;
@@ -47,7 +47,7 @@ const Estudiante = () => {
   const obtenerFavoritos = async () => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith('/') 
         ? import.meta.env.VITE_BACKEND_URL 
-        : `${import.meta.env.VITE_BACKEND_URL}/`;
+        : `${import.meta.env.VITE_BACKEND_URL}`;
         
     try {
       const url = `${baseUrl}api/favoritos`;
@@ -67,7 +67,7 @@ const Estudiante = () => {
   const toggleFav = async (pro) => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith('/') 
         ? import.meta.env.VITE_BACKEND_URL 
-        : `${import.meta.env.VITE_BACKEND_URL}/`;
+        : `${import.meta.env.VITE_BACKEND_URL}`;
 
     const esFav = favoritos.some(f => f._id === pro._id);
     const urlFav = `${baseUrl}api/favoritos/${pro._id}`;
