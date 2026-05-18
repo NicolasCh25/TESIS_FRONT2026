@@ -1,16 +1,17 @@
 import { useEffect, useState, useMemo } from "react";
-import { Link, useLocation } from "react-router-dom"; // ✅ Importamos Link y useLocation
+import { useLocation, useNavigate } from "react-router-dom"; // ✅ Cambiamos Link por useNavigate
 import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
 import TablaEstudiante from "../components/list/TablaEstudiante";
 import DetalleModal from "../components/public/DetalleModal";
-import { MdStar, MdStarBorder, MdArrowBack } from "react-icons/md"; // ✅ Agregamos iconos
+import { MdStar, MdStarBorder, MdArrowBack } from "react-icons/md"; 
 import { toast, ToastContainer } from "react-toastify";
 
 const Estudiante = ({ vistaFavoritos = false }) => {
   const fetchDataBackend = useFetch();
   const { token } = storeAuth();
-  const location = useLocation(); // ✅ Para el manejo de la key del div
+  const location = useLocation();
+  const navigate = useNavigate(); // ✅ Usaremos navigate para forzar el refresco limpio
 
   const [proyectos, setProyectos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
@@ -33,15 +34,15 @@ const Estudiante = ({ vistaFavoritos = false }) => {
     setVerFavoritos(vistaFavoritos);
   }, [vistaFavoritos]);
 
+  // ... (Tus funciones obtenerProyectos, obtenerFavoritos y toggleFav se quedan EXACTAMENTE IGUAL)
+
   const obtenerProyectos = async () => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/")
       ? import.meta.env.VITE_BACKEND_URL
       : `${import.meta.env.VITE_BACKEND_URL}`;
-
     const valor = busqueda.trim();
     const campoBackend = filtro === "periodo" ? "periodoAcademico" : filtro;
     const query = valor ? `?${campoBackend}=${encodeURIComponent(valor)}` : "";
-
     try {
       const url = `${baseUrl}api/proyectos${query}`;
       const response = await fetchDataBackend(url, null, "GET", { Authorization: `Bearer ${token}` });
@@ -54,7 +55,6 @@ const Estudiante = ({ vistaFavoritos = false }) => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/")
       ? import.meta.env.VITE_BACKEND_URL
       : `${import.meta.env.VITE_BACKEND_URL}`;
-
     try {
       const url = `${baseUrl}api/favoritos`;
       const response = await fetchDataBackend(url, null, "GET", { Authorization: `Bearer ${token}` });
@@ -74,7 +74,6 @@ const Estudiante = ({ vistaFavoritos = false }) => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/") ? import.meta.env.VITE_BACKEND_URL : `${import.meta.env.VITE_BACKEND_URL}`;
     const esFav = favoritos.some(f => f && f._id === pro._id);
     const urlFav = `${baseUrl}api/favoritos/${pro._id}`;
-
     try {
       if (esFav) {
         await fetchDataBackend(urlFav, null, "DELETE", { Authorization: `Bearer ${token}` });
@@ -106,9 +105,9 @@ const Estudiante = ({ vistaFavoritos = false }) => {
         </h1>
 
         <div className="flex flex-wrap gap-2">
-          {/* ✅ BOTÓN DE ACCESO RÁPIDO A FAVORITOS O VOLVER */}
-          <Link
-            to={verFavoritos ? "/dashboard" : "/dashboard/favoritos"}
+          {/* ✅ CAMBIO CLAVE: Usamos un botón con navigate para forzar la limpieza del DOM */}
+          <button
+            onClick={() => navigate(verFavoritos ? "/dashboard" : "/dashboard/favoritos")}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all shadow-sm ${
               verFavoritos 
                 ? "bg-white text-gray-700 border hover:bg-gray-50" 
@@ -117,7 +116,7 @@ const Estudiante = ({ vistaFavoritos = false }) => {
           >
             {verFavoritos ? <MdArrowBack size={18} /> : <MdStar size={18} />}
             {verFavoritos ? "Volver al Repositorio" : "Ver Favoritos"}
-          </Link>
+          </button>
 
           {!verFavoritos && (
             <>
@@ -140,6 +139,7 @@ const Estudiante = ({ vistaFavoritos = false }) => {
         </div>
       </div>
 
+      {/* ✅ La key basada en el pathname asegura que React desmonte todo antes de cambiar */}
       <div key={location.pathname}>
         <TablaEstudiante proyectos={listaAMostrar} onVer={setProyectoSeleccionado} favoritos={favoritos} onToggleFav={toggleFav} />
       </div>
