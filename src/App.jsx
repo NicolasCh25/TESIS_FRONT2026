@@ -33,9 +33,6 @@ import { storeAuth } from './context/storeAuth';
 function App() {
   // Extraemos el rol del store global
   const { rol } = storeAuth();
-
-  // ✅ CORRECCIÓN DE SEGURIDAD: 
-  // Normalizamos el texto para que "administrador", "ADMIN" o "admin" funcionen igual.
   const rolLimpio = rol?.toLowerCase().trim();
   const esAdmin = rolLimpio === 'admin' || rolLimpio === 'administrador';
 
@@ -62,8 +59,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />}>
             
-            {/* ✅ RUTA INDEX DINÁMICA CORREGIDA:
-                Ahora usa la validación 'esAdmin' para no fallar si el back manda "administrador" */}
+             
             <Route 
               index 
               element={esAdmin ? <InicioAdmin /> : <Estudiante />} 

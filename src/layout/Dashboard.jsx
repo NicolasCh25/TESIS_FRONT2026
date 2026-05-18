@@ -85,9 +85,7 @@ export default function Dashboard() {
           {/* 🛠️ RUTAS PARA ADMINISTRADOR (Ahora validado con esAdmin) */}
           {esAdmin ? (
             <>
-              <Link to="/dashboard" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard')}>
-                <MdBarChart size={22} /> Estadísticas
-              </Link>
+              
               <Link to="/dashboard/list" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/list')}>
                 <MdFolder size={22} /> Proyectos
               </Link>
@@ -96,6 +94,9 @@ export default function Dashboard() {
               </Link>
               <Link to="/dashboard/users" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/users')}>
                 <MdGroup size={22} /> Usuarios
+              </Link>
+              <Link to="/dashboard" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard')}>
+                <MdBarChart size={22} /> Estadísticas
               </Link>
             </>
           ) : (
