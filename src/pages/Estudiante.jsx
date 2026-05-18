@@ -15,6 +15,8 @@ const Estudiante = () => {
   const [filtro, setFiltro] = useState("titulo");
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState(null);
   const [verFavoritos, setVerFavoritos] = useState(false);
+  
+  // ✅ CORRECCIÓN 1: Siempre inicializar como arreglo vacío para evitar crash
   const [favoritos, setFavoritos] = useState([]);
 
   const carrerasDisponibles = [
@@ -26,7 +28,6 @@ const Estudiante = () => {
     "Tecnología Superior en Redes y Telecomunicaciones"
   ];
 
-  // ✅ 1. OBTENER PROYECTOS DESDE EL BACKEND
   const obtenerProyectos = async () => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
     const valor = busqueda.trim();
@@ -37,20 +38,29 @@ const Estudiante = () => {
       const response = await fetchDataBackend(`${baseUrl}api/proyectos${query}`, null, "GET", {
         Authorization: `Bearer ${token}`
       });
-      if (response?.resultados) setProyectos(response.resultados);
-    } catch (error) { console.error(error); }
+      // ✅ CORRECCIÓN 2: Validar la estructura de la respuesta
+      setProyectos(response?.resultados || []);
+    } catch (error) { 
+        console.error(error);
+        setProyectos([]); 
+    }
   };
 
-  // ✅ 2. OBTENER FAVORITOS REALES DESDE EL BACKEND
   const obtenerFavoritos = async () => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
     try {
       const response = await fetchDataBackend(`${baseUrl}api/favoritos`, null, "GET", {
         Authorization: `Bearer ${token}`
       });
-      // Ajusta esto según si el back devuelve el array directo o dentro de un objeto
-      if (response) setFavoritos(response); 
-    } catch (error) { console.error("Error al obtener favoritos"); }
+      
+      // ✅ CORRECCIÓN 3: Asegurar que 'favoritos' sea un arreglo plano
+      // Si el back devuelve { favoritos: [...] }, usa response.favoritos
+      const data = Array.isArray(response) ? response : (response?.favoritos || []);
+      setFavoritos(data); 
+    } catch (error) { 
+        console.error("Error al obtener favoritos");
+        setFavoritos([]);
+    }
   };
 
   useEffect(() => { 
@@ -60,14 +70,13 @@ const Estudiante = () => {
 
   useEffect(() => { setBusqueda(""); }, [filtro]);
 
-  // ✅ 3. LÓGICA DE FAVORITOS CON ENDPOINTS (POST Y DELETE)
   const toggleFav = async (pro) => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-    const esFav = favoritos.some(f => f._id === pro._id);
+    // Usamos el operador opcional ?. para evitar errores si favoritos no ha cargado
+    const esFav = favoritos?.some(f => f._id === pro._id);
     
     try {
       if (esFav) {
-        // DELETE: Eliminar de favoritos
         const res = await fetchDataBackend(`${baseUrl}api/favoritos/${pro._id}`, null, "DELETE", {
           Authorization: `Bearer ${token}`
         });
@@ -76,7 +85,6 @@ const Estudiante = () => {
           toast.info("Eliminado de favoritos");
         }
       } else {
-        // POST: Agregar a favoritos
         const res = await fetchDataBackend(`${baseUrl}api/favoritos/${pro._id}`, null, "POST", {
           Authorization: `Bearer ${token}`
         });
@@ -90,28 +98,31 @@ const Estudiante = () => {
     }
   };
 
-  const listaAMostrar = verFavoritos ? favoritos : proyectos;
+  // ✅ CORRECCIÓN FINAL: Seguridad extra al renderizar la lista
+  const listaAMostrar = verFavoritos 
+    ? (Array.isArray(favoritos) ? favoritos : []) 
+    : (Array.isArray(proyectos) ? proyectos : []);
 
   return (
     <div className="p-6 min-h-screen bg-gray-50">
-      <ToastContainer />
+      <ToastContainer position="top-right" autoClose={2000} />
       <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
         <div>
           <h1 className="text-3xl font-black text-[#17243D] uppercase">
             Repositorio <span className="text-[#F5BD45]">PIC</span>
           </h1>
-          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">Panel de Consulta Estudiantil</p>
+          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">Sesión: Estudiante</p>
         </div>
 
         <div className="flex flex-wrap gap-2 w-full md:w-auto">
           <button 
             onClick={() => setVerFavoritos(!verFavoritos)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all ${
-              verFavoritos ? "bg-[#F5BD45] text-[#17243D] shadow-lg" : "bg-white text-gray-400 border border-gray-200"
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all shadow-sm ${
+              verFavoritos ? "bg-[#F5BD45] text-[#17243D] border-[#F5BD45]" : "bg-white text-gray-400 border border-gray-200"
             }`}
           >
             {verFavoritos ? <MdStar size={18}/> : <MdStarBorder size={18}/>}
-            {verFavoritos ? "Mis Favoritos" : "Todos"}
+            {verFavoritos ? "Ver Todos" : "Mis Favoritos"}
           </button>
 
           <select 
@@ -149,7 +160,7 @@ const Estudiante = () => {
       <TablaEstudiante 
         proyectos={listaAMostrar}
         onVer={setProyectoSeleccionado}
-        favoritos={favoritos}
+        favoritos={Array.isArray(favoritos) ? favoritos : []}
         onToggleFav={toggleFav}
       />
 
