@@ -48,8 +48,8 @@ const Profile = () => {
         if (!nombreEditado.trim()) return toast.warn("El nombre no puede estar vacío");
 
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-        // ✅ Corregido: Sin slash extra
-        const url = `${baseUrl}/api/usuarios/perfil`; 
+
+        const url = `${baseUrl}api/usuarios/perfil`; 
 
         try {
             const response = await fetchDataBackend(url, { nombre: nombreEditado }, "PUT", {
