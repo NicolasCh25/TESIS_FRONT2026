@@ -1,23 +1,21 @@
 import { useEffect, useState, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom"; // ✅ Cambiamos Link por useNavigate
 import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
 import TablaEstudiante from "../components/list/TablaEstudiante";
 import DetalleModal from "../components/public/DetalleModal";
-import { MdStar, MdStarBorder, MdArrowBack } from "react-icons/md"; 
+import { MdStar, MdStarBorder } from "react-icons/md";
 import { toast, ToastContainer } from "react-toastify";
 
 const Estudiante = ({ vistaFavoritos = false }) => {
   const fetchDataBackend = useFetch();
   const { token } = storeAuth();
-  const location = useLocation();
-  const navigate = useNavigate(); // ✅ Usaremos navigate para forzar el refresco limpio
 
   const [proyectos, setProyectos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [filtro, setFiltro] = useState("titulo");
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState(null);
   
+  // ✅ Sincronizamos con la ruta
   const [verFavoritos, setVerFavoritos] = useState(vistaFavoritos);
   const [favoritos, setFavoritos] = useState([]);
 
@@ -30,19 +28,20 @@ const Estudiante = ({ vistaFavoritos = false }) => {
     "Tecnología Superior en Redes y Telecomunicaciones"
   ];
 
+  // Actualizar el estado si cambia la prop por navegación
   useEffect(() => {
     setVerFavoritos(vistaFavoritos);
   }, [vistaFavoritos]);
-
-  // ... (Tus funciones obtenerProyectos, obtenerFavoritos y toggleFav se quedan EXACTAMENTE IGUAL)
 
   const obtenerProyectos = async () => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/")
       ? import.meta.env.VITE_BACKEND_URL
       : `${import.meta.env.VITE_BACKEND_URL}`;
+
     const valor = busqueda.trim();
     const campoBackend = filtro === "periodo" ? "periodoAcademico" : filtro;
     const query = valor ? `?${campoBackend}=${encodeURIComponent(valor)}` : "";
+
     try {
       const url = `${baseUrl}api/proyectos${query}`;
       const response = await fetchDataBackend(url, null, "GET", { Authorization: `Bearer ${token}` });
@@ -55,6 +54,7 @@ const Estudiante = ({ vistaFavoritos = false }) => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/")
       ? import.meta.env.VITE_BACKEND_URL
       : `${import.meta.env.VITE_BACKEND_URL}`;
+
     try {
       const url = `${baseUrl}api/favoritos`;
       const response = await fetchDataBackend(url, null, "GET", { Authorization: `Bearer ${token}` });
@@ -74,6 +74,7 @@ const Estudiante = ({ vistaFavoritos = false }) => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/") ? import.meta.env.VITE_BACKEND_URL : `${import.meta.env.VITE_BACKEND_URL}`;
     const esFav = favoritos.some(f => f && f._id === pro._id);
     const urlFav = `${baseUrl}api/favoritos/${pro._id}`;
+
     try {
       if (esFav) {
         await fetchDataBackend(urlFav, null, "DELETE", { Authorization: `Bearer ${token}` });
@@ -105,41 +106,27 @@ const Estudiante = ({ vistaFavoritos = false }) => {
         </h1>
 
         <div className="flex flex-wrap gap-2">
-          {/* ✅ CAMBIO CLAVE: Usamos un botón con navigate para forzar la limpieza del DOM */}
-          <button
-            onClick={() => navigate(verFavoritos ? "/dashboard" : "/dashboard/favoritos")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all shadow-sm ${
-              verFavoritos 
-                ? "bg-white text-gray-700 border hover:bg-gray-50" 
-                : "bg-[#F5BD45] text-[#17243D] hover:bg-[#e2ad3a]"
-            }`}
-          >
-            {verFavoritos ? <MdArrowBack size={18} /> : <MdStar size={18} />}
-            {verFavoritos ? "Volver al Repositorio" : "Ver Favoritos"}
-          </button>
-
           {!verFavoritos && (
             <>
-              <select value={filtro} onChange={(e) => { setFiltro(e.target.value); setBusqueda(""); }} className="px-3 py-2 rounded-xl border bg-white font-bold text-xs text-[#17243D] uppercase outline-none">
+              <select value={filtro} onChange={(e) => { setFiltro(e.target.value); setBusqueda(""); }} className="px-3 py-2 rounded-xl border bg-white font-bold text-xs text-[#17243D] uppercase">
                 <option value="titulo">Título</option>
                 <option value="autor">Autor</option>
                 <option value="carrera">Carrera</option>
                 <option value="periodo">Periodo</option>
               </select>
               {filtro === "carrera" ? (
-                <select value={busqueda} onChange={(e) => setBusqueda(e.target.value)} className="px-4 py-2 w-full md:w-72 rounded-xl border bg-white text-sm outline-none">
+                <select value={busqueda} onChange={(e) => setBusqueda(e.target.value)} className="px-4 py-2 w-full md:w-72 rounded-xl border bg-white text-sm">
                   <option value="">Selecciona carrera...</option>
                   {carrerasDisponibles.map((c, i) => <option key={i} value={c}>{c}</option>)}
                 </select>
               ) : (
-                <input type="text" placeholder={`Buscar por ${filtro}...`} className="px-4 py-2 w-full md:w-72 rounded-xl border text-sm outline-none" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+                <input type="text" placeholder={`Buscar por ${filtro}...`} className="px-4 py-2 w-full md:w-72 rounded-xl border text-sm" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
               )}
             </>
           )}
         </div>
       </div>
 
-      {/* ✅ La key basada en el pathname asegura que React desmonte todo antes de cambiar */}
       <div key={location.pathname}>
         <TablaEstudiante proyectos={listaAMostrar} onVer={setProyectoSeleccionado} favoritos={favoritos} onToggleFav={toggleFav} />
       </div>
