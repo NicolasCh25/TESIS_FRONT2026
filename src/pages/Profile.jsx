@@ -24,8 +24,8 @@ const Profile = () => {
             ? "api/administradores/perfil" 
             : "api/usuarios/perfil";
             
-        // ✅ Corregido: Solo un slash entre baseUrl y endpoint
-        const url = `${baseUrl}/${endpoint}`;
+    
+        const url = `${baseUrl}${endpoint}`;
 
         try {
             const response = await fetchDataBackend(url, null, "GET", {
