@@ -356,9 +356,10 @@ const Estudiante = () => {
 
       </div>
 
-      {/* TABLA */}
-
-      <div>
+      {/* ✅ SOLUCIÓN AL ERROR insertBefore:
+          Usamos una key dinámica para que al cambiar el estado de 'verFavoritos',
+          React re-renderice este bloque desde cero en lugar de intentar mover nodos. */}
+      <div key={verFavoritos ? "tabla-favoritos" : "tabla-proyectos"}>
 
         <TablaEstudiante
           proyectos={listaAMostrar}
