@@ -109,6 +109,10 @@ export default function Dashboard() {
               <Link to="/dashboard" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard')}>
                 <MdSearch size={22} /> Explorar Proyectos
               </Link>
+              {/* ✅ AGREGADO: RUTA DE FAVORITOS PARA EL ESTUDIANTE */}
+              <Link to="/dashboard/favoritos" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/favoritos')}>
+                <MdStar size={22} /> Mis Favoritos
+              </Link>
             </>
           )}
 
