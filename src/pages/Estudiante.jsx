@@ -39,20 +39,22 @@ const Estudiante = () => {
 
   const obtenerProyectos = async () => {
 
+    const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/")
+      ? import.meta.env.VITE_BACKEND_URL
+      : `${import.meta.env.VITE_BACKEND_URL}`;
+
+    const valor = busqueda.trim();
+
+    const campoBackend =
+      filtro === "periodo"
+        ? "periodoAcademico"
+        : filtro;
+
+    const query = valor
+      ? `?${campoBackend}=${encodeURIComponent(valor)}`
+      : "";
+
     try {
-
-      const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-
-      const valor = busqueda.trim();
-
-      const campoBackend =
-        filtro === "periodo"
-          ? "periodoAcademico"
-          : filtro;
-
-      const query = valor
-        ? `?${campoBackend}=${encodeURIComponent(valor)}`
-        : "";
 
       const url = `${baseUrl}api/proyectos${query}`;
 
@@ -66,9 +68,7 @@ const Estudiante = () => {
       );
 
       const resultados = Array.isArray(response?.resultados)
-        ? response.resultados.filter(
-            (p) => p && p._id
-          )
+        ? response.resultados.filter(p => p && p._id)
         : [];
 
       setProyectos(resultados);
@@ -88,9 +88,11 @@ const Estudiante = () => {
 
   const obtenerFavoritos = async () => {
 
-    try {
+    const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/")
+      ? import.meta.env.VITE_BACKEND_URL
+      : `${import.meta.env.VITE_BACKEND_URL}`;
 
-      const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+    try {
 
       const url = `${baseUrl}api/favoritos`;
 
@@ -105,10 +107,10 @@ const Estudiante = () => {
 
       const listaFavs = Array.isArray(response)
         ? response
-        : response?.favoritos || [];
+        : (response?.favoritos || []);
 
       const favoritosValidos = listaFavs.filter(
-        (f) => f && f._id
+        f => f && f._id
       );
 
       setFavoritos(favoritosValidos);
@@ -123,7 +125,7 @@ const Estudiante = () => {
   };
 
   // =========================
-  // EFFECT
+  // EFECTOS
   // =========================
 
   useEffect(() => {
@@ -135,27 +137,29 @@ const Estudiante = () => {
   }, [busqueda, filtro, token]);
 
   // =========================
-  // TOGGLE FAVORITOS
+  // FAVORITOS
   // =========================
 
-  const toggleFav = async (proyecto) => {
+  const toggleFav = async (pro) => {
 
-    if (!proyecto || !proyecto._id) return;
+    if (!pro || !pro._id) return;
+
+    const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/")
+      ? import.meta.env.VITE_BACKEND_URL
+      : `${import.meta.env.VITE_BACKEND_URL}`;
+
+    const esFav = favoritos.some(
+      f => f && f._id === pro._id
+    );
+
+    const urlFav = `${baseUrl}api/favoritos/${pro._id}`;
 
     try {
 
-      const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-
-      const url = `${baseUrl}api/favoritos/${proyecto._id}`;
-
-      const esFavorito = favoritos.some(
-        (f) => f && f._id === proyecto._id
-      );
-
-      if (esFavorito) {
+      if (esFav) {
 
         await fetchDataBackend(
-          url,
+          urlFav,
           null,
           "DELETE",
           {
@@ -163,28 +167,18 @@ const Estudiante = () => {
           }
         );
 
-        setFavoritos((prev) =>
+        setFavoritos(prev =>
           prev.filter(
-            (f) => f && f._id !== proyecto._id
+            f => f && f._id !== pro._id
           )
         );
-
-        // SI EL MODAL ESTÁ ABIERTO Y ELIMINAS
-        // EL FAVORITO, CERRAMOS EL MODAL
-
-        if (
-          proyectoSeleccionado &&
-          proyectoSeleccionado._id === proyecto._id
-        ) {
-          setProyectoSeleccionado(null);
-        }
 
         toast.info("Eliminado de favoritos");
 
       } else {
 
         await fetchDataBackend(
-          url,
+          urlFav,
           null,
           "POST",
           {
@@ -192,20 +186,19 @@ const Estudiante = () => {
           }
         );
 
-        setFavoritos((prev) => {
+        setFavoritos(prev => {
 
           const existe = prev.some(
-            (f) => f && f._id === proyecto._id
+            f => f && f._id === pro._id
           );
 
           if (existe) return prev;
 
-          return [...prev, proyecto];
+          return [...prev, pro];
 
         });
 
-        toast.success("Agregado a favoritos");
-
+        toast.success("¡Agregado a favoritos!");
       }
 
     } catch (error) {
@@ -218,39 +211,22 @@ const Estudiante = () => {
   };
 
   // =========================
-  // LISTA FINAL
+  // LISTA A MOSTRAR
   // =========================
 
   const listaAMostrar = useMemo(() => {
 
-    const lista = verFavoritos
+    const data = verFavoritos
       ? favoritos
       : proyectos;
 
-    if (!Array.isArray(lista)) return [];
+    if (!Array.isArray(data)) return [];
 
-    return lista.filter(
-      (p) => p && p._id
+    return data.filter(
+      p => p && p._id
     );
 
   }, [verFavoritos, favoritos, proyectos]);
-
-  // =========================
-  // CAMBIAR ENTRE FAVORITOS
-  // =========================
-
-  const cambiarVista = () => {
-
-    // IMPORTANTE:
-    // CERRAMOS MODAL ANTES DE CAMBIAR TABLA
-
-    setProyectoSeleccionado(null);
-
-    setBusqueda("");
-
-    setVerFavoritos((prev) => !prev);
-
-  };
 
   // =========================
   // RENDER
@@ -261,8 +237,6 @@ const Estudiante = () => {
     <div className="p-6 min-h-screen bg-gray-50">
 
       <ToastContainer />
-
-      {/* HEADER */}
 
       <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
 
@@ -275,7 +249,13 @@ const Estudiante = () => {
           {/* BOTON FAVORITOS */}
 
           <button
-            onClick={cambiarVista}
+            onClick={() => {
+
+              setVerFavoritos(!verFavoritos);
+
+              setBusqueda("");
+
+            }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all ${
               verFavoritos
                 ? "bg-[#F5BD45] text-[#17243D]"
@@ -363,10 +343,10 @@ const Estudiante = () => {
 
               <input
                 type="text"
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
                 placeholder={`Buscar por ${filtro}...`}
                 className="px-4 py-2 w-full md:w-72 rounded-xl border text-sm"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
               />
 
             )
@@ -378,12 +358,16 @@ const Estudiante = () => {
 
       {/* TABLA */}
 
-      <TablaEstudiante
-        proyectos={listaAMostrar}
-        onVer={setProyectoSeleccionado}
-        favoritos={favoritos}
-        onToggleFav={toggleFav}
-      />
+      <div>
+
+        <TablaEstudiante
+          proyectos={listaAMostrar}
+          onVer={setProyectoSeleccionado}
+          favoritos={favoritos}
+          onToggleFav={toggleFav}
+        />
+
+      </div>
 
       {/* MODAL */}
 
@@ -391,7 +375,6 @@ const Estudiante = () => {
         proyectoSeleccionado && (
 
           <DetalleModal
-            key={proyectoSeleccionado._id}
             proyecto={proyectoSeleccionado}
             onClose={() => setProyectoSeleccionado(null)}
           />
