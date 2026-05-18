@@ -15,12 +15,17 @@ export default function Dashboard() {
   // 1. Extraemos los datos del store global
   const { clearToken, rol, nombre, apellido } = storeAuth();
   
-  // 2. Construcción del nombre completo y rol
+  // ✅ NORMALIZACIÓN DE ROL: Aceptamos 'admin' y 'administrador'
+  const rolLimpio = rol?.toLowerCase().trim();
+  const esAdmin = rolLimpio === 'admin' || rolLimpio === 'administrador';
+
+  // 2. Construcción del nombre completo y texto del rol
   const nombreCompleto = (nombre || apellido) 
     ? `${nombre || ""} ${apellido || ""}`.trim() 
     : "Usuario ESFOT";
 
-  const rolUsuario = rol === 'admin' ? "Administrador" : "Estudiante"; 
+  // Texto visual para el encabezado
+  const rolVisual = esAdmin ? "Administrador" : "Estudiante"; 
   
   // 3. Generador de iniciales
   const obtenerInicialesDashboard = () => {
@@ -74,11 +79,11 @@ export default function Dashboard() {
         
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
           <p className="px-2 text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4 opacity-50">
-            Menú {rolUsuario}
+            Menú {rolVisual}
           </p>
 
-          {/* 🛠️ RUTAS PARA ADMINISTRADOR */}
-          {rol === 'admin' ? (
+          {/* 🛠️ RUTAS PARA ADMINISTRADOR (Ahora validado con esAdmin) */}
+          {esAdmin ? (
             <>
               <Link to="/dashboard" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard')}>
                 <MdBarChart size={22} /> Estadísticas
@@ -123,14 +128,14 @@ export default function Dashboard() {
               <MdMenu size={28} />
             </button>
             <h1 className="text-xl md:text-2xl font-black text-[#17243D] tracking-tight uppercase">
-              {rol === 'admin' ? 'Gestión' : 'Consulta'} <span className="text-[#F5BD45] hidden sm:inline">| ESFOT</span>
+              {esAdmin ? 'Gestión' : 'Consulta'} <span className="text-[#F5BD45] hidden sm:inline">| ESFOT</span>
             </h1>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
               <p className="text-sm font-black text-gray-800 leading-none mb-1">{nombreCompleto}</p>
-              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{rolUsuario}</p>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{rolVisual}</p>
             </div>
             
             <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-[#17243D] border-2 border-[#F5BD45] flex items-center justify-center text-white font-black shadow-md uppercase transition-transform hover:scale-105 cursor-pointer text-sm md:text-base">
