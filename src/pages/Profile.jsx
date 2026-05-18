@@ -7,7 +7,7 @@ import { toast, ToastContainer } from "react-toastify";
 
 const Profile = () => {
     const fetchDataBackend = useFetch();
-    const { token, rol } = storeAuth(); // ✅ Extraemos el rol del store
+    const { token, rol } = storeAuth(); 
     const [perfil, setPerfil] = useState(null);
     const [cargando, setCargando] = useState(true);
     
@@ -32,7 +32,7 @@ const Profile = () => {
 
             if (response) {
                 setPerfil(response);
-                setNombreEditado(response.nombre); // Inicializamos el valor a editar
+                setNombreEditado(response.nombre);
             }
         } catch (error) {
             console.error("Error al cargar perfil:", error);
@@ -46,7 +46,7 @@ const Profile = () => {
         if (!nombreEditado.trim()) return toast.warn("El nombre no puede estar vacío");
 
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-        const url = `${baseUrl}/api/usuarios/perfil`; // Ruta PUT enviada por ti
+        const url = `${baseUrl}api/usuarios/perfil`; 
 
         try {
             const response = await fetchDataBackend(url, { nombre: nombreEditado }, "PUT", {

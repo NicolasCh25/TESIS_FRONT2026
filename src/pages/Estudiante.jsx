@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
 import TablaEstudiante from "../components/list/TablaEstudiante";
@@ -15,9 +15,7 @@ const Estudiante = () => {
   const [filtro, setFiltro] = useState("titulo");
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState(null);
   const [verFavoritos, setVerFavoritos] = useState(false);
-  
-  // ✅ CORRECCIÓN 1: Siempre inicializar como arreglo vacío para evitar crash
-  const [favoritos, setFavoritos] = useState([]);
+  const [favoritos, setFavoritos] = useState([]); // ✅ Siempre inicia como array
 
   const carrerasDisponibles = [
     "Tecnología Superior en Desarrollo de Software",
@@ -28,6 +26,7 @@ const Estudiante = () => {
     "Tecnología Superior en Redes y Telecomunicaciones"
   ];
 
+  // 1. Obtener Proyectos
   const obtenerProyectos = async () => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
     const valor = busqueda.trim();
@@ -35,100 +34,91 @@ const Estudiante = () => {
     const query = valor ? `?${campoBackend}=${encodeURIComponent(valor)}` : "";
 
     try {
-      const response = await fetchDataBackend(`${baseUrl}api/proyectos${query}`, null, "GET", {
+      const response = await fetchDataBackend(`${baseUrl}/api/proyectos${query}`, null, "GET", {
         Authorization: `Bearer ${token}`
       });
-      // ✅ CORRECCIÓN 2: Validar la estructura de la respuesta
+      // ✅ Si no hay resultados, nos aseguramos de que sea un array vacío
       setProyectos(response?.resultados || []);
     } catch (error) { 
-        console.error(error);
-        setProyectos([]); 
+      setProyectos([]);
     }
   };
 
+  // 2. Obtener Favoritos
   const obtenerFavoritos = async () => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
     try {
-      const response = await fetchDataBackend(`${baseUrl}api/favoritos`, null, "GET", {
+      const response = await fetchDataBackend(`${baseUrl}/api/favoritos`, null, "GET", {
         Authorization: `Bearer ${token}`
       });
       
-      // ✅ CORRECCIÓN 3: Asegurar que 'favoritos' sea un arreglo plano
-      // Si el back devuelve { favoritos: [...] }, usa response.favoritos
-      const data = Array.isArray(response) ? response : (response?.favoritos || []);
-      setFavoritos(data); 
+      // ✅ IMPORTANTE: Validar si la respuesta es el array directo o viene dentro de un objeto
+      const listaFavs = Array.isArray(response) ? response : (response?.favoritos || []);
+      setFavoritos(listaFavs);
     } catch (error) { 
-        console.error("Error al obtener favoritos");
-        setFavoritos([]);
+      setFavoritos([]);
     }
   };
 
   useEffect(() => { 
     obtenerProyectos(); 
     obtenerFavoritos();
-  }, [busqueda, filtro]);
+  }, [busqueda, filtro, token]);
 
-  useEffect(() => { setBusqueda(""); }, [filtro]);
-
+  // 3. Agregar/Quitar Favoritos
   const toggleFav = async (pro) => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-    // Usamos el operador opcional ?. para evitar errores si favoritos no ha cargado
-    const esFav = favoritos?.some(f => f._id === pro._id);
+    const esFav = favoritos.some(f => f._id === pro._id);
     
     try {
       if (esFav) {
-        const res = await fetchDataBackend(`${baseUrl}api/favoritos/${pro._id}`, null, "DELETE", {
+        await fetchDataBackend(`${baseUrl}/api/favoritos/${pro._id}`, null, "DELETE", {
           Authorization: `Bearer ${token}`
         });
-        if (res) {
-          setFavoritos(prev => prev.filter(f => f._id !== pro._id));
-          toast.info("Eliminado de favoritos");
-        }
+        setFavoritos(prev => prev.filter(f => f._id !== pro._id));
+        toast.info("Eliminado de favoritos");
       } else {
-        const res = await fetchDataBackend(`${baseUrl}api/favoritos/${pro._id}`, null, "POST", {
+        await fetchDataBackend(`${baseUrl}/api/favoritos/${pro._id}`, null, "POST", {
           Authorization: `Bearer ${token}`
         });
-        if (res) {
-          setFavoritos(prev => [...prev, pro]);
-          toast.success("¡Agregado a favoritos!");
-        }
+        setFavoritos(prev => [...prev, pro]);
+        toast.success("¡Agregado a favoritos!");
       }
     } catch (error) {
       toast.error("Error al actualizar favoritos");
     }
   };
 
-  // ✅ CORRECCIÓN FINAL: Seguridad extra al renderizar la lista
-  const listaAMostrar = verFavoritos 
-    ? (Array.isArray(favoritos) ? favoritos : []) 
-    : (Array.isArray(proyectos) ? proyectos : []);
+  // ✅ 4. Lógica de renderizado segura (Evita el error insertBefore)
+  const listaAMostrar = useMemo(() => {
+    const data = verFavoritos ? favoritos : proyectos;
+    return Array.isArray(data) ? data : [];
+  }, [verFavoritos, favoritos, proyectos]);
 
   return (
     <div className="p-6 min-h-screen bg-gray-50">
-      <ToastContainer position="top-right" autoClose={2000} />
+      <ToastContainer />
       <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
-        <div>
-          <h1 className="text-3xl font-black text-[#17243D] uppercase">
-            Repositorio <span className="text-[#F5BD45]">PIC</span>
-          </h1>
-          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">Sesión: Estudiante</p>
-        </div>
+        <h1 className="text-3xl font-black text-[#17243D] uppercase">
+          Repositorio <span className="text-[#F5BD45]">PIC</span>
+        </h1>
 
-        <div className="flex flex-wrap gap-2 w-full md:w-auto">
+        <div className="flex flex-wrap gap-2">
           <button 
             onClick={() => setVerFavoritos(!verFavoritos)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all shadow-sm ${
-              verFavoritos ? "bg-[#F5BD45] text-[#17243D] border-[#F5BD45]" : "bg-white text-gray-400 border border-gray-200"
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all ${
+              verFavoritos ? "bg-[#F5BD45] text-[#17243D]" : "bg-white text-gray-400 border"
             }`}
           >
             {verFavoritos ? <MdStar size={18}/> : <MdStarBorder size={18}/>}
-            {verFavoritos ? "Ver Todos" : "Mis Favoritos"}
+            {verFavoritos ? "Viendo Favoritos" : "Todos los Proyectos"}
           </button>
 
+          {/* Filtros */}
           <select 
             value={filtro} 
-            onChange={(e) => setFiltro(e.target.value)}
-            className="px-3 py-2 rounded-xl border outline-none bg-white font-bold text-xs text-[#17243D] uppercase"
+            onChange={(e) => {setFiltro(e.target.value); setBusqueda("")}}
+            className="px-3 py-2 rounded-xl border bg-white font-bold text-xs text-[#17243D] uppercase"
           >
             <option value="titulo">Título</option>
             <option value="autor">Autor</option>
@@ -140,16 +130,16 @@ const Estudiante = () => {
             <select 
               value={busqueda} 
               onChange={(e) => setBusqueda(e.target.value)}
-              className="px-4 py-2 w-full md:w-72 rounded-xl border outline-none bg-white text-sm"
+              className="px-4 py-2 w-full md:w-72 rounded-xl border bg-white text-sm"
             >
-              <option value="">Todas las carreras...</option>
+              <option value="">Selecciona carrera...</option>
               {carrerasDisponibles.map((c, i) => <option key={i} value={c}>{c}</option>)}
             </select>
           ) : (
             <input 
               type="text" 
               placeholder={`Buscar por ${filtro}...`}
-              className="px-4 py-2 w-full md:w-72 rounded-xl border outline-none text-sm"
+              className="px-4 py-2 w-full md:w-72 rounded-xl border text-sm"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
             />
@@ -157,10 +147,11 @@ const Estudiante = () => {
         </div>
       </div>
 
+      {/* ✅ Pasamos los datos siempre validados como Array */}
       <TablaEstudiante 
         proyectos={listaAMostrar}
         onVer={setProyectoSeleccionado}
-        favoritos={Array.isArray(favoritos) ? favoritos : []}
+        favoritos={favoritos}
         onToggleFav={toggleFav}
       />
 
