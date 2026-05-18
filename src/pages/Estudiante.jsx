@@ -1,21 +1,22 @@
 import { useEffect, useState, useMemo } from "react";
+import { Link, useLocation } from "react-router-dom"; // ✅ Importamos Link y useLocation
 import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
 import TablaEstudiante from "../components/list/TablaEstudiante";
 import DetalleModal from "../components/public/DetalleModal";
-import { MdStar, MdStarBorder } from "react-icons/md";
+import { MdStar, MdStarBorder, MdArrowBack } from "react-icons/md"; // ✅ Agregamos iconos
 import { toast, ToastContainer } from "react-toastify";
 
 const Estudiante = ({ vistaFavoritos = false }) => {
   const fetchDataBackend = useFetch();
   const { token } = storeAuth();
+  const location = useLocation(); // ✅ Para el manejo de la key del div
 
   const [proyectos, setProyectos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [filtro, setFiltro] = useState("titulo");
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState(null);
   
-  // ✅ Sincronizamos con la ruta
   const [verFavoritos, setVerFavoritos] = useState(vistaFavoritos);
   const [favoritos, setFavoritos] = useState([]);
 
@@ -28,7 +29,6 @@ const Estudiante = ({ vistaFavoritos = false }) => {
     "Tecnología Superior en Redes y Telecomunicaciones"
   ];
 
-  // Actualizar el estado si cambia la prop por navegación
   useEffect(() => {
     setVerFavoritos(vistaFavoritos);
   }, [vistaFavoritos]);
@@ -106,21 +106,34 @@ const Estudiante = ({ vistaFavoritos = false }) => {
         </h1>
 
         <div className="flex flex-wrap gap-2">
+          {/* ✅ BOTÓN DE ACCESO RÁPIDO A FAVORITOS O VOLVER */}
+          <Link
+            to={verFavoritos ? "/dashboard" : "/dashboard/favoritos"}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all shadow-sm ${
+              verFavoritos 
+                ? "bg-white text-gray-700 border hover:bg-gray-50" 
+                : "bg-[#F5BD45] text-[#17243D] hover:bg-[#e2ad3a]"
+            }`}
+          >
+            {verFavoritos ? <MdArrowBack size={18} /> : <MdStar size={18} />}
+            {verFavoritos ? "Volver al Repositorio" : "Ver Favoritos"}
+          </Link>
+
           {!verFavoritos && (
             <>
-              <select value={filtro} onChange={(e) => { setFiltro(e.target.value); setBusqueda(""); }} className="px-3 py-2 rounded-xl border bg-white font-bold text-xs text-[#17243D] uppercase">
+              <select value={filtro} onChange={(e) => { setFiltro(e.target.value); setBusqueda(""); }} className="px-3 py-2 rounded-xl border bg-white font-bold text-xs text-[#17243D] uppercase outline-none">
                 <option value="titulo">Título</option>
                 <option value="autor">Autor</option>
                 <option value="carrera">Carrera</option>
                 <option value="periodo">Periodo</option>
               </select>
               {filtro === "carrera" ? (
-                <select value={busqueda} onChange={(e) => setBusqueda(e.target.value)} className="px-4 py-2 w-full md:w-72 rounded-xl border bg-white text-sm">
+                <select value={busqueda} onChange={(e) => setBusqueda(e.target.value)} className="px-4 py-2 w-full md:w-72 rounded-xl border bg-white text-sm outline-none">
                   <option value="">Selecciona carrera...</option>
                   {carrerasDisponibles.map((c, i) => <option key={i} value={c}>{c}</option>)}
                 </select>
               ) : (
-                <input type="text" placeholder={`Buscar por ${filtro}...`} className="px-4 py-2 w-full md:w-72 rounded-xl border text-sm" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+                <input type="text" placeholder={`Buscar por ${filtro}...`} className="px-4 py-2 w-full md:w-72 rounded-xl border text-sm outline-none" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
               )}
             </>
           )}
