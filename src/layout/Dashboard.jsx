@@ -85,7 +85,11 @@ export default function Dashboard() {
           {/* 🛠️ RUTAS PARA ADMINISTRADOR (Ahora validado con esAdmin) */}
           {esAdmin ? (
             <>
-              
+              {/* ✅ NUEVO BOTÓN DE INICIO AGREGADO */}
+              <Link to="/dashboard" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard')}>
+                <MdDashboard size={22} /> Inicio
+              </Link>
+
               <Link to="/dashboard/list" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/list')}>
                 <MdFolder size={22} /> Proyectos
               </Link>
