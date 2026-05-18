@@ -4,6 +4,7 @@ import { storeAuth } from "../context/storeAuth";
 import TablaEstudiante from "../components/list/TablaEstudiante";
 import DetalleModal from "../components/public/DetalleModal";
 import { MdStar, MdStarBorder } from "react-icons/md";
+import { toast, ToastContainer } from "react-toastify";
 
 const Estudiante = () => {
   const fetchDataBackend = useFetch();
@@ -14,10 +15,7 @@ const Estudiante = () => {
   const [filtro, setFiltro] = useState("titulo");
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState(null);
   const [verFavoritos, setVerFavoritos] = useState(false);
-  const [favoritos, setFavoritos] = useState(() => {
-    const saved = localStorage.getItem("pic_favs");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [favoritos, setFavoritos] = useState([]);
 
   const carrerasDisponibles = [
     "Tecnología Superior en Desarrollo de Software",
@@ -28,10 +26,7 @@ const Estudiante = () => {
     "Tecnología Superior en Redes y Telecomunicaciones"
   ];
 
-  useEffect(() => {
-    localStorage.setItem("pic_favs", JSON.stringify(favoritos));
-  }, [favoritos]);
-
+  // ✅ 1. OBTENER PROYECTOS DESDE EL BACKEND
   const obtenerProyectos = async () => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
     const valor = busqueda.trim();
@@ -46,21 +41,60 @@ const Estudiante = () => {
     } catch (error) { console.error(error); }
   };
 
-  useEffect(() => { obtenerProyectos(); }, [busqueda, filtro]);
+  // ✅ 2. OBTENER FAVORITOS REALES DESDE EL BACKEND
+  const obtenerFavoritos = async () => {
+    const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+    try {
+      const response = await fetchDataBackend(`${baseUrl}api/favoritos`, null, "GET", {
+        Authorization: `Bearer ${token}`
+      });
+      // Ajusta esto según si el back devuelve el array directo o dentro de un objeto
+      if (response) setFavoritos(response); 
+    } catch (error) { console.error("Error al obtener favoritos"); }
+  };
+
+  useEffect(() => { 
+    obtenerProyectos(); 
+    obtenerFavoritos();
+  }, [busqueda, filtro]);
+
   useEffect(() => { setBusqueda(""); }, [filtro]);
 
-  const toggleFav = (pro) => {
-    setFavoritos(prev => 
-      prev.some(f => f._id === pro._id) 
-        ? prev.filter(f => f._id !== pro._id) 
-        : [...prev, pro]
-    );
+  // ✅ 3. LÓGICA DE FAVORITOS CON ENDPOINTS (POST Y DELETE)
+  const toggleFav = async (pro) => {
+    const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+    const esFav = favoritos.some(f => f._id === pro._id);
+    
+    try {
+      if (esFav) {
+        // DELETE: Eliminar de favoritos
+        const res = await fetchDataBackend(`${baseUrl}api/favoritos/${pro._id}`, null, "DELETE", {
+          Authorization: `Bearer ${token}`
+        });
+        if (res) {
+          setFavoritos(prev => prev.filter(f => f._id !== pro._id));
+          toast.info("Eliminado de favoritos");
+        }
+      } else {
+        // POST: Agregar a favoritos
+        const res = await fetchDataBackend(`${baseUrl}api/favoritos/${pro._id}`, null, "POST", {
+          Authorization: `Bearer ${token}`
+        });
+        if (res) {
+          setFavoritos(prev => [...prev, pro]);
+          toast.success("¡Agregado a favoritos!");
+        }
+      }
+    } catch (error) {
+      toast.error("Error al actualizar favoritos");
+    }
   };
 
   const listaAMostrar = verFavoritos ? favoritos : proyectos;
 
   return (
     <div className="p-6 min-h-screen bg-gray-50">
+      <ToastContainer />
       <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
         <div>
           <h1 className="text-3xl font-black text-[#17243D] uppercase">
@@ -70,7 +104,6 @@ const Estudiante = () => {
         </div>
 
         <div className="flex flex-wrap gap-2 w-full md:w-auto">
-          {/* BOTÓN FILTRO FAVORITOS */}
           <button 
             onClick={() => setVerFavoritos(!verFavoritos)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all ${
