@@ -18,7 +18,7 @@ const Profile = () => {
         // Aseguramos que la base URL termine en / para que la unión sea limpia
         const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith('/') 
             ? import.meta.env.VITE_BACKEND_URL 
-            : `${import.meta.env.VITE_BACKEND_URL}/`;
+            : `${import.meta.env.VITE_BACKEND_URL}`;
         
         const endpoint = rol === "admin" 
             ? "api/administradores/perfil" 
@@ -48,7 +48,7 @@ const Profile = () => {
 
         const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith('/') 
             ? import.meta.env.VITE_BACKEND_URL 
-            : `${import.meta.env.VITE_BACKEND_URL}/`;
+            : `${import.meta.env.VITE_BACKEND_URL}`;
 
         const url = `${baseUrl}api/usuarios/perfil`; 
 
