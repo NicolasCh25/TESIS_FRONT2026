@@ -26,23 +26,24 @@ const CrearProyecto = () => {
 
       const formData = new FormData();
       
-      // ✅ CÁLCULO AUTOMÁTICO DEL PERIODO (Igual que el CURL exitoso)
+      // ✅ CÁLCULO DE PERIODO (Igual que el CURL exitoso)
       const mesInt = parseInt(dataForm.mesSel);
       const periodoCalculado = `${dataForm.añoSel}-${mesInt <= 6 ? "a" : "b"}`;
 
-      // Enviar datos siguiendo el formato del CURL
+      // Inyectamos los datos manteniendo tu estructura original
       formData.append("titulo", dataForm.titulo);
       formData.append("descripcion", dataForm.descripcion);
       formData.append("autor", dataForm.autor);
       formData.append("tutor", dataForm.tutor);
       formData.append("palabrasClave", dataForm.palabrasClave);
       formData.append("tecnologias", dataForm.tecnologias);
-      formData.append("periodoAcademico", periodoCalculado); // Enviado como el back espera
+      formData.append("periodoAcademico", periodoCalculado);
       formData.append("carrera", dataForm.carrera);
       formData.append("repositorio", dataForm.repositorio || "");
       formData.append("video", dataForm.video || "");
       
-      // ✅ FECHA EN FORMATO DD-MM-YYYY (Como en tu CURL exitoso)
+      // ✅ FECHA EN FORMATO DD-MM-YYYY (Copiado del CURL exitoso)
+      // Usamos el día 01 por defecto para el mes seleccionado
       const fechaCURL = `01-${dataForm.mesSel}-${dataForm.añoSel}`;
       formData.append("fecha", fechaCURL);
 
@@ -77,7 +78,7 @@ const CrearProyecto = () => {
             Registrar <span className="text-[#F5BD45]">Proyecto PIC</span>
           </h1>
           <p className="text-gray-500 text-sm mt-1 font-medium">
-            Selecciona el mes y año para generar el periodo académico automáticamente.
+            Completa la información técnica y adjunta la documentación necesaria.
           </p>
         </div>
 

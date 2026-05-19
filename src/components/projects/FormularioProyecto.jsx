@@ -86,7 +86,7 @@ const FormularioProyecto = ({
         {/* SELECTORES DE MES Y AÑO */}
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className={labelClass}>Mes de Culminación</label>
+            <label className={labelClass}>Mes de Finalización</label>
             <select className={inputClass} {...register("mesSel", { required: "Requerido" })}>
               {meses.map(m => <option key={m.n} value={m.n}>{m.m}</option>)}
             </select>
@@ -110,7 +110,7 @@ const FormularioProyecto = ({
         </div>
 
         <div>
-          <label className={labelClass}>Repositorio (Opcional)</label>
+          <label className={labelClass}>Enlace del Repositorio (Opcional)</label>
           <div className="relative">
             <MdLink className="absolute left-3 top-3 text-gray-400" size={20} />
             <input type="url" className={`${inputClass} pl-10`} {...register("repositorio")} />
@@ -118,7 +118,7 @@ const FormularioProyecto = ({
         </div>
 
         <div>
-          <label className={labelClass}>Video (Opcional)</label>
+          <label className={labelClass}>Enlace del Video (Opcional)</label>
           <div className="relative">
             <MdPlayCircleOutline className="absolute left-3 top-3 text-gray-400" size={20} />
             <input type="url" className={`${inputClass} pl-10`} {...register("video")} />
