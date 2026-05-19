@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
 import TarjetasResumen from "../components/stats/TarjetasResumen";
@@ -9,9 +9,10 @@ const Estadisticas = () => {
   const fetchDataBackend = useFetch();
   const { token } = storeAuth();
   
-  const [metricas, setMetricas] = useState({ totalProyectos: 0, totalTutores: 0, totalTecnologias: 0 });
+  const [metricas, setMetricas] = useState({ totalProyectos: 0, totalTutores: 0, totalPeriodos: 0 });
   const [datosCarrera, setDatosCarrera] = useState([]);
   const [datosTutor, setDatosTutor] = useState([]);
+  const [carreraSeleccionada, setCarreraSeleccionada] = useState("Todas");
 
   const cargarDatos = async () => {
     const url = `${import.meta.env.VITE_BACKEND_URL}api/estadisticas`;
@@ -22,21 +23,21 @@ const Estadisticas = () => {
       });
       
       if (response) {
-        // 1. Mapeo para Tarjetas
+        // 1. Mapeo para Tarjetas (Cambiado Tecnologías por Periodos)
         setMetricas({
           totalProyectos: response.totalProyectos || 0,
           totalTutores: response.proyecto_tutor?.length || 0,
-          totalTecnologias: response.proyecto_tecnologias?.length || 0
+          totalPeriodos: response.proyecto_periodo?.length || 0
         });
 
-        // 2. Mapeo para Gráfico de Carreras (Recharts necesita 'name' y 'cantidad')
+        // 2. Mapeo para Gráfico de Carreras
         const formateadoCarreras = response.proyecto_carrera?.map(item => ({
           name: item._id,
           cantidad: item.total
         })) || [];
         setDatosCarrera(formateadoCarreras);
 
-        // 3. Mapeo para Gráfico de Tutores
+        // 3. Guardar tutores para el filtro dinámico (Opción para manejarlo localmente o desde el componente)
         const formateadoTutores = response.proyecto_tutor?.map(item => ({
           name: item._id,
           cantidad: item.total
@@ -71,7 +72,9 @@ const Estadisticas = () => {
       <div className="mt-8">
         <GraficosEstadisticos 
           datosCarrera={datosCarrera} 
-          datosTutor={datosTutor} 
+          datosTutor={datosTutor}
+          carreraSeleccionada={carreraSeleccionada}
+          setCarreraSeleccionada={setCarreraSeleccionada}
         />
       </div>
     </div>

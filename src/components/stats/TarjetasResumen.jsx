@@ -1,4 +1,4 @@
-import { MdSchool, MdAssignment, MdCode } from "react-icons/md";
+import { MdSchool, MdAssignment, MdDateRange } from "react-icons/md";
 
 const TarjetasResumen = ({ data }) => {
   const tarjetas = [
@@ -11,16 +11,16 @@ const TarjetasResumen = ({ data }) => {
     },
     { 
       id: 2, 
-      titulo: "Tutores Activos", 
+      titulo: "Tutores", // Cambiado
       valor: data.totalTutores, 
       icono: <MdSchool />, 
       color: "bg-blue-600" 
     },
     { 
       id: 3, 
-      titulo: "Tecnologías Usadas", 
-      valor: data.totalTecnologias, 
-      icono: <MdCode />, 
+      titulo: "Periodos Académicos", // Cambiado de Tecnologías
+      valor: data.totalPeriodos, 
+      icono: <MdDateRange />, 
       color: "bg-[#F5BD45]" 
     },
   ];

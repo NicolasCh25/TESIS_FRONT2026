@@ -4,7 +4,7 @@ import {
 } from 'recharts';
 
 const GraficosEstadisticos = ({ datosCarrera, datosTutor }) => {
-  const COLORS = ['#17243D', '#F5BD45', '#3B82F6', '#10B981', '#F43F5E'];
+  const COLORS = ['#17243D', '#F5BD45', '#3B82F6', '#10B981', '#F43F5E', '#8B5CF6'];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -15,13 +15,25 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor }) => {
           <span className="w-2 h-8 bg-[#F5BD45] rounded-full"></span>
           Proyectos por Carrera
         </h3>
-        <div className="h-[350px] w-full">
+        <div className="h-[400px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={datosCarrera}>
+            <BarChart data={datosCarrera} margin={{ bottom: 100 }}> {/* Margen para las etiquetas */}
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 10}} />
+              <XAxis 
+                dataKey="name" 
+                axisLine={false} 
+                tickLine={false} 
+                interval={0} // Obliga a mostrar todos los nombres
+                angle={-45} // Rotación para que no se choquen
+                textAnchor="end"
+                tick={{fill: '#6b7280', fontSize: 10}} 
+                height={100}
+              />
               <YAxis axisLine={false} tickLine={false} />
-              <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{ borderRadius: '15px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+              <Tooltip 
+                cursor={{fill: '#f8fafc'}} 
+                contentStyle={{ borderRadius: '15px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} 
+              />
               <Bar dataKey="cantidad" radius={[10, 10, 0, 0]}>
                 {datosCarrera.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -34,27 +46,31 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor }) => {
 
       {/* Gráfico 2: Pastel - Distribución por Tutores */}
       <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
-        <h3 className="text-xl font-bold text-[#17243D] mb-6 flex items-center gap-2">
-          <span className="w-2 h-8 bg-[#17243D] rounded-full"></span>
-          Carga por Tutores
-        </h3>
-        <div className="h-[350px] w-full">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          <h3 className="text-xl font-bold text-[#17243D] flex items-center gap-2">
+            <span className="w-2 h-8 bg-[#17243D] rounded-full"></span>
+            Carga por Tutores
+          </h3>
+        </div>
+        
+        <div className="h-[400px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={datosTutor}
                 innerRadius={70}
-                outerRadius={100}
+                outerRadius={110}
                 paddingAngle={5}
                 dataKey="cantidad"
                 nameKey="name"
+                label={({name, percent}) => `${(percent * 100).toFixed(0)}%`}
               >
                 {datosTutor.map((entry, index) => (
                   <Cell key={`cell-pie-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip />
-              <Legend verticalAlign="bottom" iconType="circle" />
+              <Legend verticalAlign="bottom" iconType="circle" wrapperStyle={{paddingTop: '20px'}}/>
             </PieChart>
           </ResponsiveContainer>
         </div>
