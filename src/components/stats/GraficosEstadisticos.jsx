@@ -1,4 +1,16 @@
-// ... (mismos imports)
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer, // ✅ IMPORTACIÓN FALTANTE CORREGIDA
+  Cell,
+  PieChart, 
+  Pie, 
+  Legend 
+} from 'recharts';
 
 const GraficosEstadisticos = ({ datosCarrera, datosTutor, carreraSeleccionada, setCarreraSeleccionada, carrerasOriginales }) => {
   const COLORS = ['#17243D', '#F5BD45', '#3B82F6', '#10B981', '#F43F5E', '#8B5CF6'];
@@ -6,7 +18,7 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, carreraSeleccionada, s
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       
-      {/* Gráfico 1: Barras (Nombres resumidos y visual perfecto) */}
+      {/* Gráfico 1: Barras - Proyectos por Carrera */}
       <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
         <h3 className="text-xl font-bold text-[#17243D] mb-6 flex items-center gap-2">
           <span className="w-2 h-8 bg-[#F5BD45] rounded-full"></span>
