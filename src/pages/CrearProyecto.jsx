@@ -26,28 +26,25 @@ const CrearProyecto = () => {
 
       const formData = new FormData();
       
-      // ✅ CÁLCULO DE PERIODO PARA EL BACKEND
+      // ✅ CÁLCULO AUTOMÁTICO DEL PERIODO (Igual que el CURL exitoso)
       const mesInt = parseInt(dataForm.mesSel);
       const periodoCalculado = `${dataForm.añoSel}-${mesInt <= 6 ? "a" : "b"}`;
 
-      // Datos obligatorios (ESTRUCTURA ORIGINAL)
+      // Enviar datos siguiendo el formato del CURL
       formData.append("titulo", dataForm.titulo);
       formData.append("descripcion", dataForm.descripcion);
       formData.append("autor", dataForm.autor);
       formData.append("tutor", dataForm.tutor);
       formData.append("palabrasClave", dataForm.palabrasClave);
       formData.append("tecnologias", dataForm.tecnologias);
-      formData.append("periodoAcademico", periodoCalculado); // Usamos el nombre que el back espera
+      formData.append("periodoAcademico", periodoCalculado); // Enviado como el back espera
       formData.append("carrera", dataForm.carrera);
-
-      // Campos opcionales (COMO LO TENÍAS ANTES)
       formData.append("repositorio", dataForm.repositorio || "");
       formData.append("video", dataForm.video || "");
       
-      // ✅ FORMATO DE FECHA ORIGINAL
-      // Usamos el mes y año seleccionado para armar la fecha YYYY-MM-DD que el back ya aceptaba
-      const fechaParaEnviar = `${dataForm.añoSel}-${dataForm.mesSel}-01`;
-      formData.append("fecha", fechaParaEnviar);
+      // ✅ FECHA EN FORMATO DD-MM-YYYY (Como en tu CURL exitoso)
+      const fechaCURL = `01-${dataForm.mesSel}-${dataForm.añoSel}`;
+      formData.append("fecha", fechaCURL);
 
       if (archivo) {
         formData.append("archivoPDF", archivo);
@@ -80,7 +77,7 @@ const CrearProyecto = () => {
             Registrar <span className="text-[#F5BD45]">Proyecto PIC</span>
           </h1>
           <p className="text-gray-500 text-sm mt-1 font-medium">
-            Completa la información técnica y adjunta la documentación necesaria.
+            Selecciona el mes y año para generar el periodo académico automáticamente.
           </p>
         </div>
 
