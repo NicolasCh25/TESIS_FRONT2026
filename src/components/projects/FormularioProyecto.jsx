@@ -17,7 +17,7 @@ const FormularioProyecto = ({
     reset
   } = useForm();
 
-  // Listas para el selector de fecha
+  // Opciones para los selectores
   const años = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
   const meses = [
     { n: "01", m: "Enero" }, { n: "02", m: "Febrero" }, { n: "03", m: "Marzo" },
@@ -101,7 +101,7 @@ const FormularioProyecto = ({
           {errors.carrera && <p className="text-red-500 text-xs mt-1">{errors.carrera.message}</p>}
         </div>
 
-        {/* ✅ CAMBIO SOLICITADO: MES Y AÑO */}
+        {/* ✅ SELECTORES DE MES Y AÑO */}
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className={labelClass}>Mes</label>
