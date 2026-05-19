@@ -27,9 +27,8 @@ const CrearProyecto = () => {
       const formData = new FormData();
       
       // ✅ CALCULAR PERIODO AUTOMÁTICO
-      // Enero a Junio -> periodo -a | Julio a Diciembre -> periodo -b
       const mes = parseInt(dataForm.mesEntrega);
-      const año = dataForm.añoEntrega;
+      const año = parseInt(dataForm.añoEntrega);
       const letraPeriodo = mes <= 6 ? "a" : "b";
       const periodoCalculado = `${año}-${letraPeriodo}`;
 
@@ -40,15 +39,16 @@ const CrearProyecto = () => {
       formData.append("tutor", dataForm.tutor);
       formData.append("palabrasClave", dataForm.palabrasClave);
       formData.append("tecnologias", dataForm.tecnologias);
-      formData.append("periodoAcademico", periodoCalculado); // Enviado como el backend espera
+      formData.append("periodoAcademico", periodoCalculado); 
       formData.append("carrera", dataForm.carrera);
       formData.append("repositorio", dataForm.repositorio || "");
       formData.append("video", dataForm.video || "");
       
-      // ✅ FECHA BASADA EN LA SELECCIÓN
-      // Se envía el primer día del mes seleccionado
-      const fechaFormateada = `${año}-${dataForm.mesEntrega}-01`;
-      formData.append("fecha", fechaFormateada);
+      // ✅ CORRECCIÓN DE FECHA (Status 500 Fix)
+      // Creamos un objeto Date real para asegurar que el formato sea aceptado por el Backend/MongoDB
+      // mes - 1 porque en JS los meses van de 0 a 11
+      const fechaObjeto = new Date(año, mes - 1, 1, 12, 0, 0); 
+      formData.append("fecha", fechaObjeto.toISOString());
 
       if (archivo) {
         formData.append("archivoPDF", archivo);
@@ -64,7 +64,8 @@ const CrearProyecto = () => {
       }
 
     } catch (error) {
-      const msg = error.response?.data?.error || error.response?.data?.msg || "Error interno al registrar";
+      // Capturamos el error de forma más detallada para el Toast
+      const msg = error.response?.data?.error || error.response?.data?.msg || "Error en el servidor al registrar";
       toast.error(msg);
     } finally {
       setCargando(false);
