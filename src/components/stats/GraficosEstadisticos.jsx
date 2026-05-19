@@ -6,37 +6,54 @@ import {
 const GraficosEstadisticos = ({ datosCarrera, datosTutor }) => {
   const COLORS = ['#17243D', '#F5BD45', '#3B82F6', '#10B981', '#F43F5E', '#8B5CF6'];
 
+  // Personalización del Tooltip para mostrar el nombre completo
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-4 shadow-2xl rounded-2xl border-none">
+          <p className="text-xs font-black text-gray-400 uppercase mb-1">
+            {payload[0].payload.fullName || payload[0].payload.name}
+          </p>
+          <p className="text-lg font-black text-[#17243D]">
+            {payload[0].value} Proyectos
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       
       {/* Gráfico 1: Barras - Proyectos por Carrera */}
-      <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
-        <h3 className="text-xl font-bold text-[#17243D] mb-6 flex items-center gap-2">
-          <span className="w-2 h-8 bg-[#F5BD45] rounded-full"></span>
+      <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 flex flex-col">
+        <h3 className="text-xl font-bold text-[#17243D] mb-8 flex items-center gap-3">
+          <span className="flex h-8 w-1.5 bg-[#F5BD45] rounded-full"></span>
           Proyectos por Carrera
         </h3>
         <div className="h-[400px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={datosCarrera} margin={{ bottom: 100 }}> {/* Margen para las etiquetas */}
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+            <BarChart data={datosCarrera} margin={{ bottom: 60, left: -20 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis 
                 dataKey="name" 
                 axisLine={false} 
                 tickLine={false} 
-                interval={0} // Obliga a mostrar todos los nombres
-                angle={-45} // Rotación para que no se choquen
+                interval={0}
+                angle={-25}
                 textAnchor="end"
-                tick={{fill: '#6b7280', fontSize: 10}} 
-                height={100}
+                tick={{fill: '#64748b', fontSize: 11, fontWeight: 600}} 
               />
-              <YAxis axisLine={false} tickLine={false} />
-              <Tooltip 
-                cursor={{fill: '#f8fafc'}} 
-                contentStyle={{ borderRadius: '15px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} 
-              />
-              <Bar dataKey="cantidad" radius={[10, 10, 0, 0]}>
+              <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
+              <Tooltip content={<CustomTooltip />} cursor={{fill: '#f8fafc'}} />
+              <Bar dataKey="cantidad" barSize={45}>
                 {datosCarrera.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={COLORS[index % COLORS.length]} 
+                    radius={[8, 8, 0, 0]}
+                  />
                 ))}
               </Bar>
             </BarChart>
@@ -46,31 +63,32 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor }) => {
 
       {/* Gráfico 2: Pastel - Distribución por Tutores */}
       <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <h3 className="text-xl font-bold text-[#17243D] flex items-center gap-2">
-            <span className="w-2 h-8 bg-[#17243D] rounded-full"></span>
-            Carga por Tutores
-          </h3>
-        </div>
-        
+        <h3 className="text-xl font-bold text-[#17243D] mb-8 flex items-center gap-3">
+          <span className="flex h-8 w-1.5 bg-[#17243D] rounded-full"></span>
+          Carga por Tutores
+        </h3>
         <div className="h-[400px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={datosTutor}
-                innerRadius={70}
-                outerRadius={110}
-                paddingAngle={5}
+                innerRadius={80}
+                outerRadius={120}
+                paddingAngle={8}
                 dataKey="cantidad"
                 nameKey="name"
-                label={({name, percent}) => `${(percent * 100).toFixed(0)}%`}
+                stroke="none"
               >
                 {datosTutor.map((entry, index) => (
                   <Cell key={`cell-pie-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip />
-              <Legend verticalAlign="bottom" iconType="circle" wrapperStyle={{paddingTop: '20px'}}/>
+              <Tooltip content={<CustomTooltip />} />
+              <Legend 
+                verticalAlign="bottom" 
+                iconType="circle" 
+                formatter={(value) => <span className="text-gray-600 font-bold text-xs uppercase">{value}</span>}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
