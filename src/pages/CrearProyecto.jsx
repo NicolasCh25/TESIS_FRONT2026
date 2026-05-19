@@ -26,29 +26,24 @@ const CrearProyecto = () => {
 
       const formData = new FormData();
       
-      // ✅ CALCULAR PERIODO AUTOMÁTICO
-      const mes = parseInt(dataForm.mesEntrega);
-      const año = parseInt(dataForm.añoEntrega);
-      const letraPeriodo = mes <= 6 ? "a" : "b";
-      const periodoCalculado = `${año}-${letraPeriodo}`;
+      // ✅ CÁLCULO DE PERIODO
+      const mesInt = parseInt(dataForm.mesSel);
+      const periodoCalculado = `${dataForm.añoSel}-${mesInt <= 6 ? "a" : "b"}`;
 
-      // Datos obligatorios
       formData.append("titulo", dataForm.titulo);
       formData.append("descripcion", dataForm.descripcion);
       formData.append("autor", dataForm.autor);
       formData.append("tutor", dataForm.tutor);
       formData.append("palabrasClave", dataForm.palabrasClave);
       formData.append("tecnologias", dataForm.tecnologias);
-      formData.append("periodoAcademico", periodoCalculado); 
+      formData.append("periodoAcademico", periodoCalculado);
       formData.append("carrera", dataForm.carrera);
       formData.append("repositorio", dataForm.repositorio || "");
       formData.append("video", dataForm.video || "");
       
-      // ✅ CORRECCIÓN DE FECHA (Status 500 Fix)
-      // Creamos un objeto Date real para asegurar que el formato sea aceptado por el Backend/MongoDB
-      // mes - 1 porque en JS los meses van de 0 a 11
-      const fechaObjeto = new Date(año, mes - 1, 1, 12, 0, 0); 
-      formData.append("fecha", fechaObjeto.toISOString());
+      // ✅ FECHA EN FORMATO YYYY-MM-DD
+      const fecha = `${dataForm.añoSel}-${dataForm.mesSel}-01`;
+      formData.append("fecha", fecha);
 
       if (archivo) {
         formData.append("archivoPDF", archivo);
@@ -64,8 +59,7 @@ const CrearProyecto = () => {
       }
 
     } catch (error) {
-      // Capturamos el error de forma más detallada para el Toast
-      const msg = error.response?.data?.error || error.response?.data?.msg || "Error en el servidor al registrar";
+      const msg = error.response?.data?.error || error.response?.data?.msg || "Error interno al registrar";
       toast.error(msg);
     } finally {
       setCargando(false);
@@ -82,7 +76,7 @@ const CrearProyecto = () => {
             Registrar <span className="text-[#F5BD45]">Proyecto PIC</span>
           </h1>
           <p className="text-gray-500 text-sm mt-1 font-medium">
-            Selecciona el mes y año de culminación para generar el periodo automáticamente.
+            Completa la información técnica y adjunta la documentación necesaria.
           </p>
         </div>
 

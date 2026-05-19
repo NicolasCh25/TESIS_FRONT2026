@@ -9,6 +9,7 @@ const FormularioProyecto = ({
   cargando,
   defaultValues
 }) => {
+
   const {
     register,
     handleSubmit,
@@ -16,9 +17,8 @@ const FormularioProyecto = ({
     reset
   } = useForm();
 
-  // Generar lista de años (últimos 10 años)
+  // Listas para el selector de fecha
   const años = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
-  
   const meses = [
     { n: "01", m: "Enero" }, { n: "02", m: "Febrero" }, { n: "03", m: "Marzo" },
     { n: "04", m: "Abril" }, { n: "05", m: "Mayo" }, { n: "06", m: "Junio" },
@@ -38,21 +38,21 @@ const FormularioProyecto = ({
         descripcion: defaultValues.descripcion || "",
         repositorio: defaultValues.repositorio || "",
         video: defaultValues.video || "",
-        // Nota: El periodo se calcula automáticamente, no se resetea aquí
       });
     }
   }, [defaultValues, reset]);
 
   const inputClass =
-    "block w-full rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:border-[#17243D] focus:outline-none focus:ring-1 focus:ring-[#17243D] py-2.5 px-4 text-gray-700 transition-all duration-200 cursor-pointer";
+    "block w-full rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:border-[#17243D] focus:outline-none focus:ring-1 focus:ring-[#17243D] py-2.5 px-4 text-gray-700 transition-all duration-200";
 
   const labelClass =
     "mb-1.5 block text-sm font-bold text-[#17243D]";
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        
+
         <div className="md:col-span-2">
           <label className={labelClass}>Título del Proyecto</label>
           <input
@@ -101,25 +101,17 @@ const FormularioProyecto = ({
           {errors.carrera && <p className="text-red-500 text-xs mt-1">{errors.carrera.message}</p>}
         </div>
 
-        {/* ✅ NUEVO SELECTOR DE MES Y AÑO */}
+        {/* ✅ CAMBIO SOLICITADO: MES Y AÑO */}
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className={labelClass}>Mes de Entrega</label>
-            <select
-              className={inputClass}
-              {...register("mesEntrega", { required: "Mes requerido" })}
-            >
-              <option value="">Mes...</option>
+            <label className={labelClass}>Mes</label>
+            <select className={inputClass} {...register("mesSel", { required: "Requerido" })}>
               {meses.map(m => <option key={m.n} value={m.n}>{m.m}</option>)}
             </select>
           </div>
           <div>
             <label className={labelClass}>Año</label>
-            <select
-              className={inputClass}
-              {...register("añoEntrega", { required: "Año requerido" })}
-            >
-              <option value="">Año...</option>
+            <select className={inputClass} {...register("añoSel", { required: "Requerido" })}>
               {años.map(a => <option key={a} value={a}>{a}</option>)}
             </select>
           </div>
@@ -144,7 +136,7 @@ const FormularioProyecto = ({
         </div>
 
         <div>
-          <label className={labelClass}>Repositorio (Opcional)</label>
+          <label className={labelClass}>Enlace del Repositorio (Opcional)</label>
           <div className="relative">
             <MdLink className="absolute left-3 top-3 text-gray-400" size={20} />
             <input
@@ -157,7 +149,7 @@ const FormularioProyecto = ({
         </div>
 
         <div>
-          <label className={labelClass}>Enlace Video (Opcional)</label>
+          <label className={labelClass}>Enlace del Video (Opcional)</label>
           <div className="relative">
             <MdPlayCircleOutline className="absolute left-3 top-3 text-gray-400" size={20} />
             <input
@@ -168,6 +160,7 @@ const FormularioProyecto = ({
             />
           </div>
         </div>
+
       </div>
 
       <div>
@@ -184,7 +177,7 @@ const FormularioProyecto = ({
         <input
           type="file"
           accept=".pdf"
-          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#17243D] file:text-white cursor-pointer"
+          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#17243D] file:text-white"
           onChange={(e) => setArchivo(e.target.files[0] || null)}
         />
       </div>
@@ -196,6 +189,7 @@ const FormularioProyecto = ({
       >
         {cargando ? "PROCESANDO..." : "FINALIZAR REGISTRO"}
       </button>
+
     </form>
   );
 };
