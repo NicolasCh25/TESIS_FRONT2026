@@ -21,32 +21,35 @@ const CrearProyecto = () => {
 
     setCargando(true);
     try {
-      // ✅ Limpieza de la URL para evitar errores de conexión
       const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
       const url = `${baseUrl}api/proyectos`;
 
       const formData = new FormData();
       
-      // Datos obligatorios y descriptivos
+      // ✅ CALCULAR PERIODO AUTOMÁTICO
+      // Enero a Junio -> periodo -a | Julio a Diciembre -> periodo -b
+      const mes = parseInt(dataForm.mesEntrega);
+      const año = dataForm.añoEntrega;
+      const letraPeriodo = mes <= 6 ? "a" : "b";
+      const periodoCalculado = `${año}-${letraPeriodo}`;
+
+      // Datos obligatorios
       formData.append("titulo", dataForm.titulo);
       formData.append("descripcion", dataForm.descripcion);
       formData.append("autor", dataForm.autor);
       formData.append("tutor", dataForm.tutor);
       formData.append("palabrasClave", dataForm.palabrasClave);
       formData.append("tecnologias", dataForm.tecnologias);
-      formData.append("periodoAcademico", dataForm.periodoAcademico);
+      formData.append("periodoAcademico", periodoCalculado); // Enviado como el backend espera
       formData.append("carrera", dataForm.carrera);
-
-      // ✅ Campos opcionales (Repositorio y Video)
       formData.append("repositorio", dataForm.repositorio || "");
       formData.append("video", dataForm.video || "");
       
-      // ✅ CORRECCIÓN DE FECHA: Se envía en formato YYYY-MM-DD para evitar el error de "Cast to date failed"
-      const f = new Date();
-      const fecha = `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`;
-      formData.append("fecha", fecha);
+      // ✅ FECHA BASADA EN LA SELECCIÓN
+      // Se envía el primer día del mes seleccionado
+      const fechaFormateada = `${año}-${dataForm.mesEntrega}-01`;
+      formData.append("fecha", fechaFormateada);
 
-      // Manejo del archivo PDF
       if (archivo) {
         formData.append("archivoPDF", archivo);
       }
@@ -78,7 +81,7 @@ const CrearProyecto = () => {
             Registrar <span className="text-[#F5BD45]">Proyecto PIC</span>
           </h1>
           <p className="text-gray-500 text-sm mt-1 font-medium">
-            Completa la información técnica y adjunta la documentación necesaria.
+            Selecciona el mes y año de culminación para generar el periodo automáticamente.
           </p>
         </div>
 
