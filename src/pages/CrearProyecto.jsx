@@ -21,32 +21,33 @@ const CrearProyecto = () => {
 
     setCargando(true);
     try {
-      // ✅ Limpieza de la URL para evitar errores de conexión
       const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
       const url = `${baseUrl}api/proyectos`;
 
       const formData = new FormData();
       
-      // Datos obligatorios y descriptivos
+      // ✅ Cálculo de periodo (Ene-Jun: a, Jul-Dic: b)
+      const mesInt = parseInt(dataForm.mesSel);
+      const periodoCalculado = `${dataForm.añoSel}-${mesInt <= 6 ? "a" : "b"}`;
+
+      // Inyectamos los datos manteniendo tu estructura original
       formData.append("titulo", dataForm.titulo);
       formData.append("descripcion", dataForm.descripcion);
       formData.append("autor", dataForm.autor);
       formData.append("tutor", dataForm.tutor);
       formData.append("palabrasClave", dataForm.palabrasClave);
       formData.append("tecnologias", dataForm.tecnologias);
-      formData.append("periodoAcademico", dataForm.periodoAcademico);
+      formData.append("periodoAcademico", periodoCalculado);
       formData.append("carrera", dataForm.carrera);
-
-      // ✅ Campos opcionales (Repositorio y Video)
+      
+      // Enviamos como strings vacíos solo si no existen (igual que el CURL anterior)
       formData.append("repositorio", dataForm.repositorio || "");
       formData.append("video", dataForm.video || "");
       
-      // ✅ CORRECCIÓN DE FECHA: Se envía en formato YYYY-MM-DD para evitar el error de "Cast to date failed"
-      const f = new Date();
-      const fecha = `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`;
-      formData.append("fecha", fecha);
+      // ✅ FECHA EN EL FORMATO DEL CURL EXITOSO (DD-MM-YYYY)
+      const fechaCURL = `01-${dataForm.mesSel}-${dataForm.añoSel}`;
+      formData.append("fecha", fechaCURL);
 
-      // Manejo del archivo PDF
       if (archivo) {
         formData.append("archivoPDF", archivo);
       }
@@ -71,17 +72,12 @@ const CrearProyecto = () => {
   return (
     <div className="relative w-full min-h-[calc(100vh-4rem)] flex justify-center items-center py-10 px-4 bg-gray-50">
       <ToastContainer position="top-right" autoClose={3000} />
-      
       <div className="relative z-10 w-full max-w-4xl bg-white rounded-3xl shadow-2xl p-8 border border-gray-100 animate-fadeIn">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-black text-[#17243D] uppercase tracking-tighter">
             Registrar <span className="text-[#F5BD45]">Proyecto PIC</span>
           </h1>
-          <p className="text-gray-500 text-sm mt-1 font-medium">
-            Completa la información técnica y adjunta la documentación necesaria.
-          </p>
         </div>
-
         <FormularioProyecto 
           onSubmit={registrarProyecto} 
           setArchivo={setArchivo} 
