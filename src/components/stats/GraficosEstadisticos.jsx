@@ -1,7 +1,4 @@
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
-  PieChart, Pie, Legend 
-} from 'recharts';
+// ... (mismos imports)
 
 const GraficosEstadisticos = ({ datosCarrera, datosTutor, carreraSeleccionada, setCarreraSeleccionada, carrerasOriginales }) => {
   const COLORS = ['#17243D', '#F5BD45', '#3B82F6', '#10B981', '#F43F5E', '#8B5CF6'];
@@ -9,7 +6,7 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, carreraSeleccionada, s
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       
-      {/* 📊 GRÁFICO DE BARRAS: Se mantiene perfecto como estaba */}
+      {/* Gráfico 1: Barras (Nombres resumidos y visual perfecto) */}
       <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
         <h3 className="text-xl font-bold text-[#17243D] mb-6 flex items-center gap-2">
           <span className="w-2 h-8 bg-[#F5BD45] rounded-full"></span>
@@ -30,7 +27,7 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, carreraSeleccionada, s
                 height={80} 
               />
               <YAxis axisLine={false} tickLine={false} />
-              <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{ borderRadius: '15px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+              <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{ borderRadius: '15px', border: 'none' }} />
               <Bar dataKey="cantidad" radius={[10, 10, 0, 0]}>
                 {datosCarrera.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -41,7 +38,7 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, carreraSeleccionada, s
         </div>
       </div>
 
-      {/* 🍰 GRÁFICO CIRCULAR: Con selector de carrera */}
+      {/* Gráfico 2: Pastel (DINÁMICO) */}
       <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <h3 className="text-xl font-bold text-[#17243D] flex items-center gap-2">
@@ -56,7 +53,7 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, carreraSeleccionada, s
           >
             <option value="Todas">Todas las Carreras</option>
             {carrerasOriginales.map((c, i) => (
-              <option key={i} value={c.fullName}>{c.name}</option>
+              <option key={i} value={c.fullName}>{c.name}</option> 
             ))}
           </select>
         </div>
@@ -78,7 +75,7 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, carreraSeleccionada, s
                 ))}
               </Pie>
               <Tooltip />
-              <Legend verticalAlign="bottom" iconType="circle" wrapperStyle={{paddingTop: '20px'}}/>
+              <Legend verticalAlign="bottom" iconType="circle" />
             </PieChart>
           </ResponsiveContainer>
         </div>

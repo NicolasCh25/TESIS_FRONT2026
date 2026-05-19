@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
 import TarjetasResumen from "../components/stats/TarjetasResumen";
@@ -11,22 +11,29 @@ const Estadisticas = () => {
   
   const [metricas, setMetricas] = useState({ totalProyectos: 0, totalTutores: 0, totalPeriodos: 0 });
   const [datosCarrera, setDatosCarrera] = useState([]);
-  const [tutoresRaw, setTutoresRaw] = useState([]); 
+  const [datosTutor, setDatosTutor] = useState([]);
   const [carreraSeleccionada, setCarreraSeleccionada] = useState("Todas");
+  
+  // Guardamos los tutores generales para cuando la opción sea "Todas"
+  const [tutoresGenerales, setTutoresGenerales] = useState([]);
 
   const resumirNombre = (nombre) => {
     return nombre
       .replace("Tecnología Superior en ", "")
       .replace("Tecnología Superior de ", "")
-      .replace("Procesamiento Industrial de la Madera", "Madera")
+      .replace("Procesamiento Industrial de la Madera", "Maderas")
       .replace("Agua y Saniamiento Ambiental", "Agua y Saneamiento")
       .trim();
   };
 
-  const cargarDatos = async () => {
+  // Carga inicial de estadísticas globales
+  const cargarDatosGlobales = async () => {
     const url = `${import.meta.env.VITE_BACKEND_URL}api/estadisticas`;
     try {
-      const response = await fetchDataBackend(url, null, "GET", { Authorization: `Bearer ${token}` });
+      const response = await fetchDataBackend(url, null, "GET", {
+        Authorization: `Bearer ${token}`
+      });
+      
       if (response) {
         setMetricas({
           totalProyectos: response.totalProyectos || 0,
@@ -34,30 +41,68 @@ const Estadisticas = () => {
           totalPeriodos: response.proyecto_periodo?.length || 0
         });
 
-        // ✅ Gráfico de barras (intacto)
         setDatosCarrera(response.proyecto_carrera?.map(item => ({
           name: resumirNombre(item._id),
           fullName: item._id,
           cantidad: item.total
         })) || []);
 
-        setTutoresRaw(response.proyecto_tutor || []);
+        const tutoresFormateados = response.proyecto_tutor?.map(item => ({
+          name: item._id,
+          cantidad: item.total
+        })) || [];
+        
+        setTutoresGenerales(tutoresFormateados);
+        if (carreraSeleccionada === "Todas") {
+          setDatosTutor(tutoresFormateados);
+        }
       }
     } catch (error) {
-      toast.error("Error al sincronizar estadísticas");
+      toast.error("Error al cargar estadísticas globales");
     }
   };
 
-  useEffect(() => { cargarDatos(); }, []);
-
-  // ✅ Filtro que solo afecta al gráfico de pastel
-  const datosTutorFiltrados = useMemo(() => {
-    if (carreraSeleccionada === "Todas") {
-      return tutoresRaw.map(t => ({ name: t._id, cantidad: t.total }));
+  // Función para filtrar tutores usando el endpoint de proyectos
+  const filtrarTutoresPorCarrera = async (carrera) => {
+    if (carrera === "Todas") {
+      setDatosTutor(tutoresGenerales);
+      return;
     }
-    // Aquí filtramos los top tutores para que el gráfico no se amontone
-    return tutoresRaw.slice(0, 6).map(t => ({ name: t._id, cantidad: t.total }));
-  }, [carreraSeleccionada, tutoresRaw]);
+
+    const url = `${import.meta.env.VITE_BACKEND_URL}api/proyectos?carrera=${encodeURIComponent(carrera)}`;
+    try {
+      const response = await fetchDataBackend(url, null, "GET", {
+        Authorization: `Bearer ${token}`
+      });
+
+      if (response?.resultados) {
+        // Agrupamos y contamos proyectos por tutor en esta carrera
+        const conteo = response.resultados.reduce((acc, pro) => {
+          const nombreTutor = pro.tutor || "Sin asignar";
+          acc[nombreTutor] = (acc[nombreTutor] || 0) + 1;
+          return acc;
+        }, {});
+
+        const datosFiltrados = Object.keys(conteo).map(tutor => ({
+          name: tutor,
+          cantidad: conteo[tutor]
+        }));
+
+        setDatosTutor(datosFiltrados);
+      }
+    } catch (error) {
+      toast.error("Error al filtrar tutores por carrera");
+    }
+  };
+
+  useEffect(() => {
+    cargarDatosGlobales();
+  }, []);
+
+  // Escucha cambios en el combo box
+  useEffect(() => {
+    filtrarTutoresPorCarrera(carreraSeleccionada);
+  }, [carreraSeleccionada]);
 
   return (
     <div className="p-6 lg:p-10 min-h-screen bg-gray-50 animate-fadeIn">
@@ -73,7 +118,7 @@ const Estadisticas = () => {
       <div className="mt-8">
         <GraficosEstadisticos 
           datosCarrera={datosCarrera} 
-          datosTutor={datosTutorFiltrados}
+          datosTutor={datosTutor}
           carreraSeleccionada={carreraSeleccionada}
           setCarreraSeleccionada={setCarreraSeleccionada}
           carrerasOriginales={datosCarrera} 
