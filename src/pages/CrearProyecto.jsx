@@ -26,11 +26,12 @@ const CrearProyecto = () => {
 
       const formData = new FormData();
       
-      // ✅ Cálculo de periodo (Ene-Jun: a, Jul-Dic: b)
+      // ✅ CÁLCULO DE PERIODO
       const mesInt = parseInt(dataForm.mesSel);
-      const periodoCalculado = `${dataForm.añoSel}-${mesInt <= 6 ? "a" : "b"}`;
+      const añoInt = parseInt(dataForm.añoSel);
+      const periodoCalculado = `${añoInt}-${mesInt <= 6 ? "a" : "b"}`;
 
-      // Mantenemos tus append originales
+      // Append de datos exactamente como estaban
       formData.append("titulo", dataForm.titulo);
       formData.append("descripcion", dataForm.descripcion);
       formData.append("autor", dataForm.autor);
@@ -42,9 +43,10 @@ const CrearProyecto = () => {
       formData.append("repositorio", dataForm.repositorio || "");
       formData.append("video", dataForm.video || "");
       
-      // ✅ Fecha en formato simple YYYY-MM-DD para evitar el error 500 de casteo
-      const fecha = `${dataForm.añoSel}-${dataForm.mesSel}-01`;
-      formData.append("fecha", fecha);
+      // ✅ FECHA EN FORMATO ISO SIMPLE (YYYY-MM-DD)
+      // Usamos el primer día del mes seleccionado
+      const fechaParaBackend = `${añoInt}-${dataForm.mesSel}-01`;
+      formData.append("fecha", fechaParaBackend);
 
       if (archivo) {
         formData.append("archivoPDF", archivo);

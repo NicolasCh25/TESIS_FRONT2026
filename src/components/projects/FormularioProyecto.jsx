@@ -17,7 +17,6 @@ const FormularioProyecto = ({
     reset
   } = useForm();
 
-  // Opciones para los selectores
   const años = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
   const meses = [
     { n: "01", m: "Enero" }, { n: "02", m: "Febrero" }, { n: "03", m: "Marzo" },
@@ -50,14 +49,11 @@ const FormularioProyecto = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
         <div className="md:col-span-2">
           <label className={labelClass}>Título del Proyecto</label>
           <input
             type="text"
-            placeholder="Título del proyecto"
             className={inputClass}
             {...register("titulo", { required: "El título es obligatorio" })}
           />
@@ -66,30 +62,17 @@ const FormularioProyecto = ({
 
         <div>
           <label className={labelClass}>Autor</label>
-          <input
-            type="text"
-            className={inputClass}
-            {...register("autor", { required: "Requerido" })}
-          />
-          {errors.autor && <p className="text-red-500 text-xs mt-1">{errors.autor.message}</p>}
+          <input type="text" className={inputClass} {...register("autor", { required: "Requerido" })} />
         </div>
 
         <div>
           <label className={labelClass}>Tutor</label>
-          <input
-            type="text"
-            className={inputClass}
-            {...register("tutor", { required: "Requerido" })}
-          />
-          {errors.tutor && <p className="text-red-500 text-xs mt-1">{errors.tutor.message}</p>}
+          <input type="text" className={inputClass} {...register("tutor", { required: "Requerido" })} />
         </div>
 
         <div>
           <label className={labelClass}>Carrera</label>
-          <select
-            className={inputClass}
-            {...register("carrera", { required: "La carrera es obligatoria" })}
-          >
+          <select className={inputClass} {...register("carrera", { required: "La carrera es obligatoria" })}>
             <option value="">Seleccione una carrera</option>
             <option value="Tecnología Superior en Desarrollo de Software">Tecnología Superior en Desarrollo de Software</option>
             <option value="Tecnología Superior en Redes y Telecomunicaciones">Tecnología Superior en Redes y Telecomunicaciones</option>
@@ -98,10 +81,8 @@ const FormularioProyecto = ({
             <option value="Tecnología Superior en Procesamiento Industrial de la Madera">Tecnología Superior en Procesamiento Industrial de la Madera</option>
             <option value="Tecnología Superior en Procesamiento de Alimentos">Tecnología Superior en Procesamiento de Alimentos</option>
           </select>
-          {errors.carrera && <p className="text-red-500 text-xs mt-1">{errors.carrera.message}</p>}
         </div>
 
-        {/* ✅ SELECTORES DE MES Y AÑO */}
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className={labelClass}>Mes</label>
@@ -119,57 +100,34 @@ const FormularioProyecto = ({
 
         <div>
           <label className={labelClass}>Palabras Clave</label>
-          <input
-            className={inputClass}
-            {...register("palabrasClave", { required: "Requerido" })}
-          />
-          {errors.palabrasClave && <p className="text-red-500 text-xs mt-1">{errors.palabrasClave.message}</p>}
+          <input className={inputClass} {...register("palabrasClave", { required: "Requerido" })} />
         </div>
 
         <div>
           <label className={labelClass}>Tecnologías</label>
-          <input
-            className={inputClass}
-            {...register("tecnologias", { required: "Requerido" })}
-          />
-          {errors.tecnologias && <p className="text-red-500 text-xs mt-1">{errors.tecnologias.message}</p>}
+          <input className={inputClass} {...register("tecnologias", { required: "Requerido" })} />
         </div>
 
         <div>
-          <label className={labelClass}>Enlace del Repositorio (Opcional)</label>
+          <label className={labelClass}>Repositorio (Opcional)</label>
           <div className="relative">
             <MdLink className="absolute left-3 top-3 text-gray-400" size={20} />
-            <input
-              type="url"
-              placeholder="https://github.com/..."
-              className={`${inputClass} pl-10`}
-              {...register("repositorio")}
-            />
+            <input type="url" className={`${inputClass} pl-10`} {...register("repositorio")} />
           </div>
         </div>
 
         <div>
-          <label className={labelClass}>Enlace del Video (Opcional)</label>
+          <label className={labelClass}>Video (Opcional)</label>
           <div className="relative">
             <MdPlayCircleOutline className="absolute left-3 top-3 text-gray-400" size={20} />
-            <input
-              type="url"
-              placeholder="https://youtube.com/..."
-              className={`${inputClass} pl-10`}
-              {...register("video")}
-            />
+            <input type="url" className={`${inputClass} pl-10`} {...register("video")} />
           </div>
         </div>
-
       </div>
 
       <div>
         <label className={labelClass}>Descripción</label>
-        <textarea
-          className={`${inputClass} h-32 resize-none`}
-          {...register("descripcion", { required: "Requerido" })}
-        />
-        {errors.descripcion && <p className="text-red-500 text-xs mt-1">{errors.descripcion.message}</p>}
+        <textarea className={`${inputClass} h-32 resize-none`} {...register("descripcion", { required: "Requerido" })} />
       </div>
 
       <div className="p-5 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
@@ -189,7 +147,6 @@ const FormularioProyecto = ({
       >
         {cargando ? "PROCESANDO..." : "FINALIZAR REGISTRO"}
       </button>
-
     </form>
   );
 };
