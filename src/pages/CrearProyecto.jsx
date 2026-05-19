@@ -21,32 +21,32 @@ const CrearProyecto = () => {
 
     setCargando(true);
     try {
+      // ✅ Limpieza de la URL para evitar errores de conexión
       const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
       const url = `${baseUrl}api/proyectos`;
 
       const formData = new FormData();
       
-      // ✅ CÁLCULO DE PERIODO (Igual que el CURL exitoso)
-      const mesInt = parseInt(dataForm.mesSel);
-      const periodoCalculado = `${dataForm.añoSel}-${mesInt <= 6 ? "a" : "b"}`;
-
-      // Inyectamos los datos manteniendo tu estructura original
+      // Datos obligatorios y descriptivos
       formData.append("titulo", dataForm.titulo);
       formData.append("descripcion", dataForm.descripcion);
       formData.append("autor", dataForm.autor);
       formData.append("tutor", dataForm.tutor);
       formData.append("palabrasClave", dataForm.palabrasClave);
       formData.append("tecnologias", dataForm.tecnologias);
-      formData.append("periodoAcademico", periodoCalculado);
+      formData.append("periodoAcademico", dataForm.periodoAcademico);
       formData.append("carrera", dataForm.carrera);
+
+      // ✅ Campos opcionales (Repositorio y Video)
       formData.append("repositorio", dataForm.repositorio || "");
       formData.append("video", dataForm.video || "");
       
-      // ✅ FECHA EN FORMATO DD-MM-YYYY (Copiado del CURL exitoso)
-      // Usamos el día 01 por defecto para el mes seleccionado
-      const fechaCURL = `01-${dataForm.mesSel}-${dataForm.añoSel}`;
-      formData.append("fecha", fechaCURL);
+      // ✅ CORRECCIÓN DE FECHA: Se envía en formato YYYY-MM-DD para evitar el error de "Cast to date failed"
+      const f = new Date();
+      const fecha = `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`;
+      formData.append("fecha", fecha);
 
+      // Manejo del archivo PDF
       if (archivo) {
         formData.append("archivoPDF", archivo);
       }
