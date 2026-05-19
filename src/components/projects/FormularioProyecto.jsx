@@ -83,6 +83,7 @@ const FormularioProyecto = ({
           </select>
         </div>
 
+        {/* SELECTORES DE MES Y AÑO */}
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className={labelClass}>Mes</label>

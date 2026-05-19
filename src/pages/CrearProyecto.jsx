@@ -26,27 +26,28 @@ const CrearProyecto = () => {
 
       const formData = new FormData();
       
-      // ✅ CÁLCULO DE PERIODO
+      // ✅ CÁLCULO DE PERIODO PARA EL BACKEND
       const mesInt = parseInt(dataForm.mesSel);
-      const añoInt = parseInt(dataForm.añoSel);
-      const periodoCalculado = `${añoInt}-${mesInt <= 6 ? "a" : "b"}`;
+      const periodoCalculado = `${dataForm.añoSel}-${mesInt <= 6 ? "a" : "b"}`;
 
-      // Append de datos exactamente como estaban
+      // Datos obligatorios (ESTRUCTURA ORIGINAL)
       formData.append("titulo", dataForm.titulo);
       formData.append("descripcion", dataForm.descripcion);
       formData.append("autor", dataForm.autor);
       formData.append("tutor", dataForm.tutor);
       formData.append("palabrasClave", dataForm.palabrasClave);
       formData.append("tecnologias", dataForm.tecnologias);
-      formData.append("periodoAcademico", periodoCalculado);
+      formData.append("periodoAcademico", periodoCalculado); // Usamos el nombre que el back espera
       formData.append("carrera", dataForm.carrera);
+
+      // Campos opcionales (COMO LO TENÍAS ANTES)
       formData.append("repositorio", dataForm.repositorio || "");
       formData.append("video", dataForm.video || "");
       
-      // ✅ FECHA EN FORMATO ISO SIMPLE (YYYY-MM-DD)
-      // Usamos el primer día del mes seleccionado
-      const fechaParaBackend = `${añoInt}-${dataForm.mesSel}-01`;
-      formData.append("fecha", fechaParaBackend);
+      // ✅ FORMATO DE FECHA ORIGINAL
+      // Usamos el mes y año seleccionado para armar la fecha YYYY-MM-DD que el back ya aceptaba
+      const fechaParaEnviar = `${dataForm.añoSel}-${dataForm.mesSel}-01`;
+      formData.append("fecha", fechaParaEnviar);
 
       if (archivo) {
         formData.append("archivoPDF", archivo);
