@@ -15,7 +15,7 @@ const Estudiante = ({ vistaFavoritos = false }) => {
 
   const [proyectos, setProyectos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
-  const [filtro, setFiltro] = useState("titulo"); // Por defecto Título
+  const [filtro, setFiltro] = useState("titulo");
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState(null);
   
   const [verFavoritos, setVerFavoritos] = useState(vistaFavoritos);
@@ -34,61 +34,50 @@ const Estudiante = ({ vistaFavoritos = false }) => {
     setVerFavoritos(vistaFavoritos);
   }, [vistaFavoritos]);
 
-  // ✅ Función obtenerProyectos mejorada con mapeo de filtros
   const obtenerProyectos = async () => {
-    const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+    // ✅ MANTENEMOS TU LÓGICA DE BASEURL ORIGINAL
+    const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/")
+      ? import.meta.env.VITE_BACKEND_URL
+      : `${import.meta.env.VITE_BACKEND_URL}`;
+
     const valor = busqueda.trim();
-
-    // ✅ Mapeo idéntico al Dashboard para que coincida con el Backend
-    const nombreFiltroBackend = filtro === "periodo" ? "periodoAcademico" : filtro;
-
-    const query = valor
-      ? `?${nombreFiltroBackend}=${encodeURIComponent(valor)}`
-      : "";
-
-    const url = `${baseUrl}/api/proyectos${query}`;
+    // ✅ MAPEAMOS EL FILTRO PARA EL BACKEND
+    const campoBackend = filtro === "periodo" ? "periodoAcademico" : filtro;
+    const query = valor ? `?${campoBackend}=${encodeURIComponent(valor)}` : "";
 
     try {
-      const response = await fetchDataBackend(url, null, "GET", { 
-        Authorization: `Bearer ${token}` 
-      });
+      const url = `${baseUrl}api/proyectos${query}`;
+      const response = await fetchDataBackend(url, null, "GET", { Authorization: `Bearer ${token}` });
       const resultados = Array.isArray(response?.resultados) ? response.resultados.filter(p => p && p._id) : [];
       setProyectos(resultados);
-    } catch (error) { 
-      setProyectos([]); 
-    }
+    } catch (error) { setProyectos([]); }
   };
 
   const obtenerFavoritos = async () => {
-    const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+    // ✅ MANTENEMOS TU LÓGICA DE BASEURL ORIGINAL
+    const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/")
+      ? import.meta.env.VITE_BACKEND_URL
+      : `${import.meta.env.VITE_BACKEND_URL}`;
+
     try {
-      const url = `${baseUrl}/api/favoritos`;
+      const url = `${baseUrl}api/favoritos`;
       const response = await fetchDataBackend(url, null, "GET", { Authorization: `Bearer ${token}` });
       const listaFavs = Array.isArray(response) ? response : (response?.favoritos || []);
       const favoritosValidos = listaFavs.filter(f => f && f._id);
       setFavoritos(favoritosValidos);
-    } catch (error) { 
-      setFavoritos([]); 
-    }
+    } catch (error) { setFavoritos([]); }
   };
 
-  // ✅ Limpia la búsqueda al cambiar de tipo de filtro
   useEffect(() => {
-    setBusqueda("");
-  }, [filtro]);
-
-  useEffect(() => {
-    if (!verFavoritos) {
-      obtenerProyectos();
-    }
+    obtenerProyectos();
     obtenerFavoritos();
-  }, [busqueda, filtro, token, verFavoritos]);
+  }, [busqueda, filtro, token]);
 
   const toggleFav = async (pro) => {
     if (!pro || !pro._id) return;
-    const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+    const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/") ? import.meta.env.VITE_BACKEND_URL : `${import.meta.env.VITE_BACKEND_URL}`;
     const esFav = favoritos.some(f => f && f._id === pro._id);
-    const urlFav = `${baseUrl}/api/favoritos/${pro._id}`;
+    const urlFav = `${baseUrl}api/favoritos/${pro._id}`;
 
     try {
       if (esFav) {
@@ -104,9 +93,7 @@ const Estudiante = ({ vistaFavoritos = false }) => {
         });
         toast.success("¡Agregado a favoritos!");
       }
-    } catch (error) { 
-      toast.error("Error en favoritos"); 
-    }
+    } catch (error) { toast.error("Error en favoritos"); }
   };
 
   const listaAMostrar = useMemo(() => {
@@ -115,7 +102,7 @@ const Estudiante = ({ vistaFavoritos = false }) => {
   }, [verFavoritos, favoritos, proyectos]);
 
   return (
-    <div className="p-6 min-h-screen bg-gray-50">
+    <div className="p-6 min-h-screen bg-gray-50 font-sans">
       <ToastContainer />
       
       <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
@@ -124,40 +111,36 @@ const Estudiante = ({ vistaFavoritos = false }) => {
         </h1>
 
         <div className="flex flex-wrap items-center justify-end gap-2 w-full md:w-auto">
-          
           {!verFavoritos && (
             <>
-              {/* BOTÓN IR A FAVORITOS */}
               <button
                 onClick={() => navigate("/dashboard/favoritos")}
-                className="flex items-center gap-2 px-4 py-2 bg-[#F5BD45] text-[#17243D] rounded-xl font-bold text-xs uppercase shadow-md hover:scale-105 transition-all h-[42px]"
+                className="flex items-center gap-2 px-4 py-2 bg-[#F5BD45] text-[#17243D] rounded-xl font-bold text-xs uppercase shadow-md hover:bg-[#e2ad3a] transition-all h-[42px]"
               >
                 <MdStar size={18} /> Mis Favoritos
               </button>
 
-              {/* BARRA UNIFICADA DE FILTROS */}
-              <div className="flex items-center bg-white border rounded-xl shadow-sm overflow-hidden h-[42px]">
+              {/* ✅ BARRA UNIFICADA CON ICONO DE LUPA */}
+              <div className="flex items-center bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden h-[42px]">
                 <div className="flex items-center px-3 border-r bg-gray-50 h-full">
                   <MdSearch className="text-gray-400 mr-2" size={18} />
                   <select 
                     value={filtro} 
-                    onChange={(e) => setFiltro(e.target.value)} 
-                    className="bg-transparent font-bold text-xs text-[#17243D] uppercase outline-none cursor-pointer"
+                    onChange={(e) => { setFiltro(e.target.value); setBusqueda(""); }} 
+                    className="bg-transparent font-bold text-[10px] sm:text-xs text-[#17243D] uppercase outline-none cursor-pointer"
                   >
                     <option value="titulo">Título</option>
                     <option value="autor">Autor</option>
-                    <option value="tutor">Tutor</option>
                     <option value="carrera">Carrera</option>
                     <option value="periodo">Periodo</option>
                   </select>
                 </div>
 
-                {/* SELECT DINÁMICO PARA CARRERA O INPUT PARA TEXTO */}
                 {filtro === "carrera" ? (
                   <select 
                     value={busqueda} 
                     onChange={(e) => setBusqueda(e.target.value)} 
-                    className="px-4 py-2 w-full md:w-64 text-sm outline-none bg-white cursor-pointer font-medium"
+                    className="px-4 py-2 w-full md:w-72 text-sm outline-none bg-white cursor-pointer font-medium"
                   >
                     <option value="">Selecciona carrera...</option>
                     {carrerasDisponibles.map((c, i) => <option key={i} value={c}>{c}</option>)}
@@ -166,7 +149,7 @@ const Estudiante = ({ vistaFavoritos = false }) => {
                   <input 
                     type="text" 
                     placeholder={`Buscar por ${filtro}...`} 
-                    className="px-4 py-2 w-full md:w-64 text-sm outline-none" 
+                    className="px-4 py-2 w-full md:w-72 text-sm outline-none" 
                     value={busqueda} 
                     onChange={(e) => setBusqueda(e.target.value)} 
                   />
