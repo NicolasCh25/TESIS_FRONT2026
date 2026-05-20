@@ -11,14 +11,6 @@ const FormularioProyecto = ({
 }) => {
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
-  const años = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
-  const meses = [
-    { n: "01", m: "Enero" }, { n: "02", m: "Febrero" }, { n: "03", m: "Marzo" },
-    { n: "04", m: "Abril" }, { n: "05", m: "Mayo" }, { n: "06", m: "Junio" },
-    { n: "07", m: "Julio" }, { n: "08", m: "Agosto" }, { n: "09", m: "Septiembre" },
-    { n: "10", m: "Octubre" }, { n: "11", m: "Noviembre" }, { n: "12", m: "Diciembre" }
-  ];
-
   useEffect(() => {
     if (defaultValues) {
       reset({
@@ -65,20 +57,18 @@ const FormularioProyecto = ({
             <option value="Tecnología Superior en Procesamiento de Alimentos">Tecnología Superior en Procesamiento de Alimentos</option>
           </select>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className={labelClass}>Mes</label>
-            <select className={inputClass} {...register("mesSel", { required: "Requerido" })}>
-              {meses.map(m => <option key={m.n} value={m.n}>{m.m}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={labelClass}>Año</label>
-            <select className={inputClass} {...register("añoSel", { required: "Requerido" })}>
-              {años.map(a => <option key={a} value={a}>{a}</option>)}
-            </select>
-          </div>
+
+        {/* ✅ Único cambio: Input Month para Mes y Año */}
+        <div>
+          <label className={labelClass}>Mes y Año de Culminación</label>
+          <input 
+            type="month" 
+            className={inputClass} 
+            {...register("fechaMes", { required: "Requerido" })} 
+          />
+          {errors.fechaMes && <p className="text-red-500 text-xs mt-1">{errors.fechaMes.message}</p>}
         </div>
+
         <div>
           <label className={labelClass}>Palabras Clave</label>
           <input className={inputClass} {...register("palabrasClave", { required: "Requerido" })} />

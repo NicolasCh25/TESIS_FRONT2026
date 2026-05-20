@@ -26,11 +26,11 @@ const CrearProyecto = () => {
 
       const formData = new FormData();
       
-      // ✅ Cálculo de periodo (Ene-Jun: a, Jul-Dic: b)
-      const mesInt = parseInt(dataForm.mesSel);
-      const periodoCalculado = `${dataForm.añoSel}-${mesInt <= 6 ? "a" : "b"}`;
+      // ✅ Procesar el input month (formato YYYY-MM)
+      const [año, mes] = dataForm.fechaMes.split("-");
+      const mesInt = parseInt(mes);
+      const periodoCalculado = `${año}-${mesInt <= 6 ? "a" : "b"}`;
 
-      // Inyectamos los datos manteniendo tu estructura original
       formData.append("titulo", dataForm.titulo);
       formData.append("descripcion", dataForm.descripcion);
       formData.append("autor", dataForm.autor);
@@ -39,13 +39,11 @@ const CrearProyecto = () => {
       formData.append("tecnologias", dataForm.tecnologias);
       formData.append("periodoAcademico", periodoCalculado);
       formData.append("carrera", dataForm.carrera);
-      
-      // Enviamos como strings vacíos solo si no existen (igual que el CURL anterior)
       formData.append("repositorio", dataForm.repositorio || "");
       formData.append("video", dataForm.video || "");
       
-      // ✅ FECHA EN EL FORMATO DEL CURL EXITOSO (DD-MM-YYYY)
-      const fechaCURL = `01-${dataForm.mesSel}-${dataForm.añoSel}`;
+      // ✅ FECHA EN FORMATO DD-MM-YYYY (01-mes-año)
+      const fechaCURL = `01-${mes}-${año}`;
       formData.append("fecha", fechaCURL);
 
       if (archivo) {
