@@ -4,7 +4,7 @@ import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
 import TablaEstudiante from "../components/list/TablaEstudiante";
 import DetalleModal from "../components/public/DetalleModal";
-import { MdStar, MdSearch } from "react-icons/md"; // ✅ Agregado icono de lupa
+import { MdStar, MdSearch } from "react-icons/md"; 
 import { toast, ToastContainer } from "react-toastify";
 
 const Estudiante = ({ vistaFavoritos = false }) => {
@@ -35,7 +35,6 @@ const Estudiante = ({ vistaFavoritos = false }) => {
   }, [vistaFavoritos]);
 
   const obtenerProyectos = async () => {
-    // ⛔ NO TOCADO: Lógica original de endpoint
     const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/")
       ? import.meta.env.VITE_BACKEND_URL
       : `${import.meta.env.VITE_BACKEND_URL}`;
@@ -53,7 +52,6 @@ const Estudiante = ({ vistaFavoritos = false }) => {
   };
 
   const obtenerFavoritos = async () => {
-    // ⛔ NO TOCADO: Lógica original de endpoint
     const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/")
       ? import.meta.env.VITE_BACKEND_URL
       : `${import.meta.env.VITE_BACKEND_URL}`;
@@ -74,7 +72,6 @@ const Estudiante = ({ vistaFavoritos = false }) => {
 
   const toggleFav = async (pro) => {
     if (!pro || !pro._id) return;
-    // ⛔ NO TOCADO: Lógica original de endpoint
     const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/") ? import.meta.env.VITE_BACKEND_URL : `${import.meta.env.VITE_BACKEND_URL}`;
     const esFav = favoritos.some(f => f && f._id === pro._id);
     const urlFav = `${baseUrl}api/favoritos/${pro._id}`;
@@ -120,7 +117,6 @@ const Estudiante = ({ vistaFavoritos = false }) => {
                 <MdStar size={18} /> Mis Favoritos
               </button>
 
-              {/* ✅ DISEÑO DE BARRA UNIFICADA (Igual a Gestión) */}
               <div className="flex items-center bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden h-[42px]">
                 <div className="flex items-center px-3 border-r bg-gray-50 h-full">
                   <MdSearch className="text-gray-400 mr-2" size={18} />
@@ -131,6 +127,7 @@ const Estudiante = ({ vistaFavoritos = false }) => {
                   >
                     <option value="titulo">Título</option>
                     <option value="autor">Autor</option>
+                    <option value="tutor">Tutor</option> {/* ✅ OPCIÓN AGREGADA */}
                     <option value="carrera">Carrera</option>
                     <option value="periodo">Periodo</option>
                   </select>
