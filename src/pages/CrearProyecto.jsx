@@ -26,10 +26,8 @@ const CrearProyecto = () => {
 
       const formData = new FormData();
       
-      // ✅ Procesar el input month (formato YYYY-MM)
+      // Procesar el input month (formato YYYY-MM)
       const [año, mes] = dataForm.fechaMes.split("-");
-      const mesInt = parseInt(mes);
-      const periodoCalculado = `${año}-${mesInt <= 6 ? "a" : "b"}`;
 
       formData.append("titulo", dataForm.titulo);
       formData.append("descripcion", dataForm.descripcion);
@@ -37,12 +35,11 @@ const CrearProyecto = () => {
       formData.append("tutor", dataForm.tutor);
       formData.append("palabrasClave", dataForm.palabrasClave);
       formData.append("tecnologias", dataForm.tecnologias);
-      formData.append("periodoAcademico", periodoCalculado);
       formData.append("carrera", dataForm.carrera);
       formData.append("repositorio", dataForm.repositorio || "");
       formData.append("video", dataForm.video || "");
       
-      // ✅ FECHA EN FORMATO DD-MM-YYYY (01-mes-año)
+      // ✅ Enviamos solo la fecha. El BACKEND se encargará del periodoAcademico.
       const fechaCURL = `01-${mes}-${año}`;
       formData.append("fecha", fechaCURL);
 

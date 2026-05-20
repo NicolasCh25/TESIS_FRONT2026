@@ -58,7 +58,6 @@ const FormularioProyecto = ({
           </select>
         </div>
 
-        {/* ✅ Único cambio: Input Month para Mes y Año */}
         <div>
           <label className={labelClass}>Mes y Año de Culminación</label>
           <input 
