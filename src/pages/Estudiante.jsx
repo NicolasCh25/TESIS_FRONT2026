@@ -4,7 +4,7 @@ import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
 import TablaEstudiante from "../components/list/TablaEstudiante";
 import DetalleModal from "../components/public/DetalleModal";
-import { MdStar, MdSearch } from "react-icons/md"; 
+import { MdStar, MdSearch } from "react-icons/md"; // ✅ Agregado icono de lupa
 import { toast, ToastContainer } from "react-toastify";
 
 const Estudiante = ({ vistaFavoritos = false }) => {
@@ -35,13 +35,12 @@ const Estudiante = ({ vistaFavoritos = false }) => {
   }, [vistaFavoritos]);
 
   const obtenerProyectos = async () => {
-    // ✅ MANTENEMOS TU LÓGICA DE BASEURL ORIGINAL
+    // ⛔ NO TOCADO: Lógica original de endpoint
     const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/")
       ? import.meta.env.VITE_BACKEND_URL
       : `${import.meta.env.VITE_BACKEND_URL}`;
 
     const valor = busqueda.trim();
-    // ✅ MAPEAMOS EL FILTRO PARA EL BACKEND
     const campoBackend = filtro === "periodo" ? "periodoAcademico" : filtro;
     const query = valor ? `?${campoBackend}=${encodeURIComponent(valor)}` : "";
 
@@ -54,7 +53,7 @@ const Estudiante = ({ vistaFavoritos = false }) => {
   };
 
   const obtenerFavoritos = async () => {
-    // ✅ MANTENEMOS TU LÓGICA DE BASEURL ORIGINAL
+    // ⛔ NO TOCADO: Lógica original de endpoint
     const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/")
       ? import.meta.env.VITE_BACKEND_URL
       : `${import.meta.env.VITE_BACKEND_URL}`;
@@ -75,6 +74,7 @@ const Estudiante = ({ vistaFavoritos = false }) => {
 
   const toggleFav = async (pro) => {
     if (!pro || !pro._id) return;
+    // ⛔ NO TOCADO: Lógica original de endpoint
     const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith("/") ? import.meta.env.VITE_BACKEND_URL : `${import.meta.env.VITE_BACKEND_URL}`;
     const esFav = favoritos.some(f => f && f._id === pro._id);
     const urlFav = `${baseUrl}api/favoritos/${pro._id}`;
@@ -102,11 +102,11 @@ const Estudiante = ({ vistaFavoritos = false }) => {
   }, [verFavoritos, favoritos, proyectos]);
 
   return (
-    <div className="p-6 min-h-screen bg-gray-50 font-sans">
+    <div className="p-6 min-h-screen bg-gray-50">
       <ToastContainer />
       
       <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
-        <h1 className="text-3xl font-black text-[#17243D] uppercase tracking-tight">
+        <h1 className="text-3xl font-black text-[#17243D] uppercase">
           {verFavoritos ? "Mis" : "Repositorio"} <span className="text-[#F5BD45]">{verFavoritos ? "Favoritos" : "PIC"}</span>
         </h1>
 
@@ -120,7 +120,7 @@ const Estudiante = ({ vistaFavoritos = false }) => {
                 <MdStar size={18} /> Mis Favoritos
               </button>
 
-              {/* ✅ BARRA UNIFICADA CON ICONO DE LUPA */}
+              {/* ✅ DISEÑO DE BARRA UNIFICADA (Igual a Gestión) */}
               <div className="flex items-center bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden h-[42px]">
                 <div className="flex items-center px-3 border-r bg-gray-50 h-full">
                   <MdSearch className="text-gray-400 mr-2" size={18} />
