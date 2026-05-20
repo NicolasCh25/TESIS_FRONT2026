@@ -15,33 +15,22 @@ const ProyectosPorCarrera = () => {
     const [cargando, setCargando] = useState(true);
     const [proyectoSeleccionado, setProyectoSeleccionado] = useState(null);
 
+    // ✅ Estados para filtrar dentro de la carrera seleccionada
     const [busqueda, setBusqueda] = useState("");
     const [filtro, setFiltro] = useState("titulo"); 
-
-    // ✅ Lista de carreras de tu código de gestión
-    const carrerasDisponibles = [
-        "Tecnología Superior en Desarrollo de Software",
-        "Tecnología Superior en Electromecánica",
-        "Tecnología Superior en Agua y Saniamiento Ambiental",
-        "Tecnología Superior en Procesamiento Industrial de la Madera",
-        "Tecnología Superior en Procesamiento de Alimentos",
-        "Tecnología Superior en Redes y Telecomunicaciones"
-    ];
 
     const obtenerProyectos = async () => {
         setCargando(true);
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
         const valor = busqueda.trim();
 
+        // Mapeo para el backend (periodo -> periodoAcademico)
         const nombreFiltroBackend = filtro === "periodo" ? "periodoAcademico" : filtro;
 
-        // ✅ Si el filtro es carrera, usamos el valor seleccionado; si no, la carrera de la URL
-        const carreraAFiltar = filtro === "carrera" && valor ? valor : carreraNombre;
+        // ✅ La carrera se mantiene fija según la URL, solo añadimos el filtro de búsqueda
+        let query = `?carrera=${encodeURIComponent(carreraNombre)}`;
         
-        let query = `?carrera=${encodeURIComponent(carreraAFiltar)}`;
-        
-        // Si hay búsqueda y NO es por carrera (porque ya la incluimos arriba), añadimos el filtro extra
-        if (valor && filtro !== "carrera") {
+        if (valor) {
             query += `&${nombreFiltroBackend}=${encodeURIComponent(valor)}`;
         }
 
@@ -62,10 +51,12 @@ const ProyectosPorCarrera = () => {
         }
     };
 
+    // Limpia el input cuando el usuario cambia el tipo de filtro (Autor, Tutor, etc.)
     useEffect(() => {
         setBusqueda("");
     }, [filtro]);
 
+    // Se dispara cuando cambia la carrera en la URL o cuando el usuario escribe en la búsqueda
     useEffect(() => {
         obtenerProyectos();
     }, [carreraNombre, busqueda, filtro]);
@@ -81,7 +72,7 @@ const ProyectosPorCarrera = () => {
                         <MdArrowBack size={20} /> Volver al Inicio
                     </Link>
 
-                    {/* ✅ BARRA DE FILTROS ACTUALIZADA */}
+                    {/* ✅ BARRA DE BÚSQUEDA DINÁMICA */}
                     <div className="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 w-full md:w-auto">
                         <div className="flex items-center gap-2 px-3 border-r border-gray-100">
                             <MdSearch className="text-gray-400" size={18} />
@@ -94,47 +85,29 @@ const ProyectosPorCarrera = () => {
                                 <option value="autor">Autor</option>
                                 <option value="tutor">Tutor</option>
                                 <option value="periodo">Periodo</option>
-                                <option value="carrera">Carrera</option> {/* ✅ Cambiado por Palabras Clave */}
                             </select>
                         </div>
 
-                        {/* ✅ SELECTOR DINÁMICO SEGÚN EL FILTRO */}
-                        {filtro === "carrera" ? (
-                            <select
-                                value={busqueda}
-                                onChange={(e) => setBusqueda(e.target.value)}
-                                className="px-4 py-1.5 w-full md:w-64 text-sm outline-none bg-transparent font-medium text-gray-600"
-                            >
-                                <option value="">Selecciona carrera...</option>
-                                {carrerasDisponibles.map((c, i) => (
-                                    <option key={i} value={c}>{c}</option>
-                                ))}
-                            </select>
-                        ) : (
-                            <input 
-                                type="text" 
-                                placeholder={`Buscar por ${filtro}...`} 
-                                className="px-4 py-1.5 w-full md:w-64 text-sm outline-none bg-transparent" 
-                                value={busqueda} 
-                                onChange={(e) => setBusqueda(e.target.value)} 
-                            />
-                        )}
+                        <input 
+                            type="text" 
+                            placeholder={`Buscar en esta carrera por ${filtro}...`} 
+                            className="px-4 py-1.5 w-full md:w-64 text-sm outline-none bg-transparent" 
+                            value={busqueda} 
+                            onChange={(e) => setBusqueda(e.target.value)} 
+                        />
                     </div>
                 </div>
 
                 <header className="mb-10 border-b-4 border-[#F5BD45] pb-4">
                     <h1 className="text-3xl md:text-4xl font-black text-[#17243D] uppercase leading-tight">
-                        Proyectos de <span className="text-[#F5BD45]">
-                            {filtro === "carrera" && busqueda ? busqueda : decodeURIComponent(carreraNombre)}
-                        </span>
+                        Proyectos de <span className="text-[#F5BD45]">{decodeURIComponent(carreraNombre)}</span>
                     </h1>
                 </header>
 
-                {/* ... resto del componente (Loading, Tabla, Empty State) se mantiene igual ... */}
                 {cargando ? (
                     <div className="flex flex-col items-center justify-center py-20 animate-pulse">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#17243D]"></div>
-                        <p className="mt-4 font-black text-[#17243D] uppercase text-[10px] tracking-widest">Buscando Proyectos...</p>
+                        <p className="mt-4 font-black text-[#17243D] uppercase text-[10px] tracking-widest">Filtrando Carrera...</p>
                     </div>
                 ) : proyectos.length > 0 ? (
                     <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 animate-fadeIn">
@@ -167,13 +140,13 @@ const ProyectosPorCarrera = () => {
                     <div className="bg-white rounded-3xl p-16 flex flex-col items-center justify-center text-center shadow-sm border border-dashed border-gray-200">
                         <MdSearchOff size={60} className="text-gray-200 mb-4" />
                         <h2 className="text-xl font-black text-gray-400 uppercase">Sin resultados</h2>
-                        <p className="text-gray-400 mt-1 text-sm">No se encontraron proyectos con esos criterios.</p>
+                        <p className="text-gray-400 mt-1 text-sm font-medium">No hay coincidencias para "{busqueda}" en esta carrera.</p>
                         {busqueda && (
                             <button 
                                 onClick={() => setBusqueda("")}
                                 className="mt-6 px-6 py-2 bg-[#17243D] text-white text-[10px] font-black rounded-xl hover:bg-[#F5BD45] hover:text-[#17243D] transition-all uppercase"
                             >
-                                Limpiar búsqueda
+                                Ver todos los proyectos
                             </button>
                         )}
                     </div>
