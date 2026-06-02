@@ -23,6 +23,8 @@ const FormularioProyecto = ({
         descripcion: defaultValues.descripcion || "",
         repositorio: defaultValues.repositorio || "",
         video: defaultValues.video || "",
+        // ✅ Cargamos el valor por defecto del periodo al editar
+        periodoAcademico: defaultValues.periodoAcademico || "", 
       });
     }
   }, [defaultValues, reset]);
@@ -58,14 +60,16 @@ const FormularioProyecto = ({
           </select>
         </div>
 
+        {/* ✅ Cambiado de tipo 'month' a tipo 'text' para el Periodo Académico */}
         <div>
-          <label className={labelClass}>Mes y Año de Culminación</label>
+          <label className={labelClass}>Periodo Académico</label>
           <input 
-            type="month" 
+            type="text" 
+            placeholder="Ej. 2025-B o 2026-A"
             className={inputClass} 
-            {...register("fechaMes", { required: "Requerido" })} 
+            {...register("periodoAcademico", { required: "El periodo académico es requerido" })} 
           />
-          {errors.fechaMes && <p className="text-red-500 text-xs mt-1">{errors.fechaMes.message}</p>}
+          {errors.periodoAcademico && <p className="text-red-500 text-xs mt-1">{errors.periodoAcademico.message}</p>}
         </div>
 
         <div>

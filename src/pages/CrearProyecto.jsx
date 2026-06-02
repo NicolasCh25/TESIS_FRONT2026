@@ -26,9 +26,6 @@ const CrearProyecto = () => {
 
       const formData = new FormData();
       
-      // Procesar el input month (formato YYYY-MM)
-      const [año, mes] = dataForm.fechaMes.split("-");
-
       formData.append("titulo", dataForm.titulo);
       formData.append("descripcion", dataForm.descripcion);
       formData.append("autor", dataForm.autor);
@@ -39,9 +36,8 @@ const CrearProyecto = () => {
       formData.append("repositorio", dataForm.repositorio || "");
       formData.append("video", dataForm.video || "");
       
-      // ✅ Enviamos solo la fecha. El BACKEND se encargará del periodoAcademico.
-      const fechaCURL = `01-${mes}-${año}`;
-      formData.append("fecha", fechaCURL);
+      // ✅ Volvemos a enviar el periodoAcademico ingresado por teclado
+      formData.append("periodoAcademico", dataForm.periodoAcademico);
 
       if (archivo) {
         formData.append("archivoPDF", archivo);
