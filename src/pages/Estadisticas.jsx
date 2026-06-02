@@ -1,17 +1,17 @@
-import { useEffect, useState, useRef } from "react"; // ✅ Agregado useRef
+import { useEffect, useState, useRef } from "react"; 
 import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
 import TarjetasResumen from "../components/stats/TarjetasResumen";
 import GraficosEstadisticos from "../components/stats/GraficosEstadisticos";
 import { ToastContainer, toast } from "react-toastify";
-import { MdDownload } from "react-icons/md"; // ✅ Icono para el botón
-import jsPDF from "jspdf"; // ✅ Importar jsPDF
-import html2canvas from "html2canvas"; // ✅ Importar html2canvas
+import { MdDownload } from "react-icons/md"; 
+import jsPDF from "jspdf"; 
+import html2canvas from "html2canvas"; 
 
 const Estadisticas = () => {
   const fetchDataBackend = useFetch();
   const { token } = storeAuth();
-  const reportRef = useRef(); // ✅ Referencia para el área del PDF
+  const reportRef = useRef(); 
 
   const [metricas, setMetricas] = useState({ totalProyectos: 0, totalTutores: 0, totalPeriodos: 0 });
   const [datosCarrera, setDatosCarrera] = useState([]);
@@ -19,7 +19,6 @@ const Estadisticas = () => {
   const [carreraSeleccionada, setCarreraSeleccionada] = useState("Todas");
   const [tutoresGenerales, setTutoresGenerales] = useState([]);
 
-  // --- TUS FUNCIONES EXISTENTES (MANTENIDAS) ---
   const resumirNombre = (nombre) => {
     return nombre
       .replace("Tecnología Superior en ", "")
@@ -88,41 +87,65 @@ const Estadisticas = () => {
   useEffect(() => { cargarDatosGlobales(); }, []);
   useEffect(() => { filtrarTutoresPorCarrera(carreraSeleccionada); }, [carreraSeleccionada]);
 
-  // --- ✅ NUEVA FUNCIÓN PARA GENERAR EL PDF ---
+  // --- ✅ FUNCIÓN CORREGIDA PARA GENERAR EL PDF ---
   const descargarInforme = async () => {
     const elemento = reportRef.current;
-    const canvas = await html2canvas(elemento, {
-      scale: 2, // Mayor calidad
-      useCORS: true, // Para imágenes externas si las hubiera
-      logging: false,
-    });
+    const idToast = toast.loading("Generando informe PDF...");
 
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "mm", "a4");
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    try {
+      const canvas = await html2canvas(elemento, {
+        scale: 2, 
+        useCORS: true, 
+        logging: false,
+        backgroundColor: "#F9FAFB", // ✅ Evita errores de oklch/colores modernos
+        windowWidth: 1280, // ✅ Asegura que Recharts tenga ancho para renderizar
+        onclone: (clonedDoc) => {
+          // Forzamos el contenedor clonado a tener un ancho fijo para evitar el error -1 de Recharts
+          const el = clonedDoc.getElementById('report-container');
+          if (el) {
+            el.style.width = "1200px";
+            el.style.padding = "40px";
+          }
+        }
+      });
 
-    // Encabezado del PDF
-    pdf.setFontSize(18);
-    pdf.setTextColor(23, 36, 61); // Tu azul #17243D
-    pdf.text("REPORTE ESTADÍSTICO - PORTAL PIC", 15, 20);
-    pdf.setFontSize(10);
-    pdf.setTextColor(100);
-    pdf.text(`Fecha de generación: ${new Date().toLocaleDateString()}`, 15, 28);
-    
-    // Añadir la imagen capturada de los gráficos
-    pdf.addImage(imgData, "PNG", 0, 35, pdfWidth, pdfHeight);
-    
-    pdf.save(`Reporte_PIC_${carreraSeleccionada}.pdf`);
-    toast.success("Informe descargado correctamente");
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      // Encabezado estilizado en el PDF
+      pdf.setFillColor(23, 36, 61); // #17243D
+      pdf.rect(0, 0, pdfWidth, 40, 'F');
+      
+      pdf.setFontSize(18);
+      pdf.setTextColor(255, 255, 255);
+      pdf.text("REPORTE ESTADÍSTICO - PORTAL PIC", 15, 18);
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(245, 189, 69); // #F5BD45
+      pdf.text(`Carrera consultada: ${carreraSeleccionada}`, 15, 28);
+      
+      pdf.setTextColor(200, 200, 200);
+      pdf.text(`Fecha: ${new Date().toLocaleDateString()}`, pdfWidth - 45, 28);
+      
+      // Añadir la imagen capturada
+      pdf.addImage(imgData, "PNG", 0, 45, pdfWidth, pdfHeight);
+      
+      pdf.save(`Reporte_PIC_${carreraSeleccionada.replace(/\s+/g, '_')}.pdf`);
+      toast.update(idToast, { render: "Informe descargado con éxito", type: "success", isLoading: false, autoClose: 3000 });
+
+    } catch (error) {
+      console.error("Error PDF:", error);
+      toast.update(idToast, { render: "Error al generar el PDF", type: "error", isLoading: false, autoClose: 3000 });
+    }
   };
 
   return (
     <div className="p-6 lg:p-10 min-h-screen bg-gray-50 animate-fadeIn">
       <ToastContainer />
       
-      {/* Encabezado con Botón de Descarga */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
           <h1 className="text-3xl font-black text-[#17243D] uppercase tracking-tight">
@@ -140,8 +163,8 @@ const Estadisticas = () => {
         </button>
       </div>
 
-      {/* ÁREA QUE SERÁ CAPTURADA POR EL PDF */}
-      <div ref={reportRef} className="bg-gray-50 p-4 rounded-xl">
+      {/* ✅ id="report-container" añadido para la captura correcta */}
+      <div ref={reportRef} id="report-container" className="bg-gray-50 p-4 rounded-xl">
         <TarjetasResumen data={metricas} />
         
         <div className="mt-8">
