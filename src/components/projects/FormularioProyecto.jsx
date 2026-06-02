@@ -24,7 +24,9 @@ const FormularioProyecto = ({
         repositorio: defaultValues.repositorio || "",
         video: defaultValues.video || "",
         // ✅ Cargamos el valor por defecto del periodo al editar
-        periodoAcademico: defaultValues.periodoAcademico || "", 
+        periodoAcademico: defaultValues.periodoAcademico || "",
+        // Mantenemos la fecha original por si se necesita en el submit de edición
+        fecha: defaultValues.fecha || "" 
       });
     }
   }, [defaultValues, reset]);
@@ -60,12 +62,11 @@ const FormularioProyecto = ({
           </select>
         </div>
 
-        {/* ✅ Cambiado de tipo 'month' a tipo 'text' para el Periodo Académico */}
         <div>
           <label className={labelClass}>Periodo Académico</label>
           <input 
             type="text" 
-            placeholder="Ej. 2025-B o 2026-A"
+            placeholder="Ej. 2026-A"
             className={inputClass} 
             {...register("periodoAcademico", { required: "El periodo académico es requerido" })} 
           />
@@ -74,29 +75,29 @@ const FormularioProyecto = ({
 
         <div>
           <label className={labelClass}>Palabras Clave</label>
-          <input className={inputClass} {...register("palabrasClave", { required: "Requerido" })} />
+          <input placeholder="React, Node, IoT" className={inputClass} {...register("palabrasClave", { required: "Requerido" })} />
         </div>
         <div>
           <label className={labelClass}>Tecnologías</label>
-          <input className={inputClass} {...register("tecnologias", { required: "Requerido" })} />
+          <input placeholder="JavaScript, Tailwind, MongoDB" className={inputClass} {...register("tecnologias", { required: "Requerido" })} />
         </div>
         <div>
           <label className={labelClass}>Repositorio (Opcional)</label>
           <div className="relative">
             <MdLink className="absolute left-3 top-3 text-gray-400" size={20} />
-            <input type="url" className={`${inputClass} pl-10`} {...register("repositorio")} />
+            <input type="url" placeholder="https://github.com/..." className={`${inputClass} pl-10`} {...register("repositorio")} />
           </div>
         </div>
         <div>
           <label className={labelClass}>Video (Opcional)</label>
           <div className="relative">
             <MdPlayCircleOutline className="absolute left-3 top-3 text-gray-400" size={20} />
-            <input type="url" className={`${inputClass} pl-10`} {...register("video")} />
+            <input type="url" placeholder="https://youtube.com/..." className={`${inputClass} pl-10`} {...register("video")} />
           </div>
         </div>
       </div>
       <div>
-        <label className={labelClass}>Descripción</label>
+        <label className={labelClass}>Descripción / Resumen</label>
         <textarea className={`${inputClass} h-32 resize-none`} {...register("descripcion", { required: "Requerido" })} />
       </div>
       <div className="p-5 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
@@ -105,15 +106,18 @@ const FormularioProyecto = ({
           type="file"
           accept=".pdf"
           className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#17243D] file:text-white"
-          onChange={(e) => setArchivo(e.target.files[0] || null)}
+          onChange={(e) => {
+            const file = e.target.files[0];
+            setArchivo(file || null);
+          }}
         />
       </div>
       <button
         type="submit"
         disabled={rol === "invitado" || cargando}
-        className="w-full font-black py-4 rounded-xl shadow-lg bg-[#17243D] text-white hover:bg-[#2c3e50] transition-all disabled:opacity-50 uppercase"
+        className="w-full font-black py-4 rounded-xl shadow-lg bg-[#17243D] text-white hover:bg-[#2c3e50] transition-all disabled:opacity-50 uppercase tracking-wider"
       >
-        {cargando ? "PROCESANDO..." : "FINALIZAR REGISTRO"}
+        {cargando ? "PROCESANDO..." : defaultValues ? "ACTUALIZAR PROYECTO" : "FINALIZAR REGISTRO"}
       </button>
     </form>
   );

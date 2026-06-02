@@ -36,8 +36,15 @@ const CrearProyecto = () => {
       formData.append("repositorio", dataForm.repositorio || "");
       formData.append("video", dataForm.video || "");
       
-      // ✅ Volvemos a enviar el periodoAcademico ingresado por teclado
+      // ✅ 1. Enviamos el periodo académico tal como lo tipean por teclado
       formData.append("periodoAcademico", dataForm.periodoAcademico);
+
+      {/* ✅ 2. Tu backend exige obligatoriamente una fecha válida en formato DD-MM-YYYY.
+         Extraemos el año del texto ingresado (ej. de "2026-A" saca "2026") 
+         o usamos el año actual si no se digita bien, armando la cadena requerida. */}
+      const añoExtraido = dataForm.periodoAcademico.match(/\d{4}/)?.[0] || new Date().getFullYear();
+      const fechaComodin = `01-01-${añoExtraido}`;
+      formData.append("fecha", fechaComodin);
 
       if (archivo) {
         formData.append("archivoPDF", archivo);
