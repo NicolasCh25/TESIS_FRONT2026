@@ -28,6 +28,21 @@ const Estadisticas = () => {
       .trim();
   };
 
+  // --- ✅ A. FUNCIÓN DE LIMPIEZA DE COLORES OKLCH ---
+  const limpiarColoresParaPDF = (contenedor) => {
+    const elementos = contenedor.querySelectorAll("*");
+    elementos.forEach((el) => {
+      try {
+        const estilos = window.getComputedStyle(el);
+        if (estilos.color?.includes("oklch")) el.style.color = "#17243D";
+        if (estilos.backgroundColor?.includes("oklch")) el.style.backgroundColor = "#FFFFFF";
+        if (estilos.borderColor?.includes("oklch")) el.style.borderColor = "#E5E7EB";
+      } catch (error) {
+        console.error("Error al limpiar estilos:", error);
+      }
+    });
+  };
+
   const cargarDatosGlobales = async () => {
     const url = `${import.meta.env.VITE_BACKEND_URL}api/estadisticas`;
     try {
@@ -87,35 +102,37 @@ const Estadisticas = () => {
   useEffect(() => { cargarDatosGlobales(); }, []);
   useEffect(() => { filtrarTutoresPorCarrera(carreraSeleccionada); }, [carreraSeleccionada]);
 
-  // --- ✅ FUNCIÓN CORREGIDA CON DELAY Y LIMPIEZA DE ESTILOS ---
+  // --- ✅ B, C y D. DESCARGA DE INFORME MEJORADA ---
   const descargarInforme = async () => {
     const elemento = reportRef.current;
-    const idToast = toast.loading("Generando informe PDF...");
+    if (!elemento) {
+      toast.error("No se encontró el contenido del informe");
+      return;
+    }
+
+    const idToast = toast.loading("Generando informe PDF multi-página...");
 
     try {
+      // Limpiamos estilos antes de capturar
+      limpiarColoresParaPDF(elemento);
+      
+      // Esperamos a que Recharts termine de renderizar en el DOM real
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       const canvas = await html2canvas(elemento, {
         scale: 2, 
         useCORS: true, 
         logging: false,
-        backgroundColor: "#ffffff", // Forzamos blanco sólido (adiós oklch)
+        backgroundColor: "#ffffff",
         windowWidth: 1400, 
+        windowHeight: elemento.scrollHeight, // ✅ Sugerencia C aplicada
         onclone: async (clonedDoc) => {
           const el = clonedDoc.getElementById('report-container');
           if (el) {
-            // Aseguramos dimensiones fijas para evitar el error de Recharts (-1)
             el.style.width = "1300px";
-            el.style.height = "auto";
-            el.style.background = "#ffffff";
             el.style.padding = "40px";
-            
-            // Limpieza de colores oklch que rompen la librería
-            const allElements = el.getElementsByTagName('*');
-            for (let i = 0; i < allElements.length; i++) {
-              allElements[i].style.color = "#17243D"; 
-            }
+            el.style.background = "#ffffff";
           }
-          // Esperamos medio segundo para que los gráficos asíncronos se dibujen
-          await new Promise(resolve => setTimeout(resolve, 500));
         }
       });
 
@@ -125,29 +142,35 @@ const Estadisticas = () => {
       const imgProps = pdf.getImageProperties(imgData);
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-      // Estética del PDF
-      pdf.setFillColor(23, 36, 61); // #17243D
+      // ✅ Sugerencia D: Lógica de multi-página
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      let heightLeft = pdfHeight;
+      let position = 10; // Margen inicial
+
+      // Encabezado solo en la primera página
+      pdf.setFillColor(23, 36, 61);
       pdf.rect(0, 0, pdfWidth, 40, 'F');
-      
       pdf.setFontSize(18);
       pdf.setTextColor(255, 255, 255);
-      pdf.text("REPORTE ESTADÍSTICO - PORTAL PIC", 15, 18);
-      
-      pdf.setFontSize(10);
-      pdf.setTextColor(245, 189, 69); // #F5BD45
-      pdf.text(`Carrera consultada: ${carreraSeleccionada}`, 15, 28);
-      
-      pdf.setTextColor(200, 200, 200);
-      pdf.text(`Fecha: ${new Date().toLocaleDateString()}`, pdfWidth - 45, 28);
-      
+      pdf.text("REPORTE ESTADÍSTICO - PORTAL PIC", 15, 22);
+
+      // Añadir imagen (Manejo de múltiples páginas)
       pdf.addImage(imgData, "PNG", 0, 45, pdfWidth, pdfHeight);
-      
+      heightLeft -= (pageHeight - 45);
+
+      while (heightLeft > 0) {
+        position = heightLeft - pdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
+        heightLeft -= pageHeight;
+      }
+
       pdf.save(`Reporte_PIC_${carreraSeleccionada.replace(/\s+/g, '_')}.pdf`);
       toast.update(idToast, { render: "Informe descargado con éxito", type: "success", isLoading: false, autoClose: 3000 });
 
     } catch (error) {
       console.error("Error al generar PDF:", error);
-      toast.update(idToast, { render: "Error técnico al generar PDF", type: "error", isLoading: false, autoClose: 3000 });
+      toast.update(idToast, { render: "Error al procesar el PDF", type: "error", isLoading: false, autoClose: 3000 });
     }
   };
 
