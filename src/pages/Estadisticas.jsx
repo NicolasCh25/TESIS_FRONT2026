@@ -87,7 +87,7 @@ const Estadisticas = () => {
   useEffect(() => { cargarDatosGlobales(); }, []);
   useEffect(() => { filtrarTutoresPorCarrera(carreraSeleccionada); }, [carreraSeleccionada]);
 
-  // --- ✅ FUNCIÓN CORREGIDA PARA GENERAR EL PDF ---
+  // --- ✅ FUNCIÓN CORREGIDA CON DELAY Y LIMPIEZA DE ESTILOS ---
   const descargarInforme = async () => {
     const elemento = reportRef.current;
     const idToast = toast.loading("Generando informe PDF...");
@@ -97,15 +97,25 @@ const Estadisticas = () => {
         scale: 2, 
         useCORS: true, 
         logging: false,
-        backgroundColor: "#F9FAFB", // ✅ Evita errores de oklch/colores modernos
-        windowWidth: 1280, // ✅ Asegura que Recharts tenga ancho para renderizar
-        onclone: (clonedDoc) => {
-          // Forzamos el contenedor clonado a tener un ancho fijo para evitar el error -1 de Recharts
+        backgroundColor: "#ffffff", // Forzamos blanco sólido (adiós oklch)
+        windowWidth: 1400, 
+        onclone: async (clonedDoc) => {
           const el = clonedDoc.getElementById('report-container');
           if (el) {
-            el.style.width = "1200px";
+            // Aseguramos dimensiones fijas para evitar el error de Recharts (-1)
+            el.style.width = "1300px";
+            el.style.height = "auto";
+            el.style.background = "#ffffff";
             el.style.padding = "40px";
+            
+            // Limpieza de colores oklch que rompen la librería
+            const allElements = el.getElementsByTagName('*');
+            for (let i = 0; i < allElements.length; i++) {
+              allElements[i].style.color = "#17243D"; 
+            }
           }
+          // Esperamos medio segundo para que los gráficos asíncronos se dibujen
+          await new Promise(resolve => setTimeout(resolve, 500));
         }
       });
 
@@ -115,7 +125,7 @@ const Estadisticas = () => {
       const imgProps = pdf.getImageProperties(imgData);
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-      // Encabezado estilizado en el PDF
+      // Estética del PDF
       pdf.setFillColor(23, 36, 61); // #17243D
       pdf.rect(0, 0, pdfWidth, 40, 'F');
       
@@ -130,15 +140,14 @@ const Estadisticas = () => {
       pdf.setTextColor(200, 200, 200);
       pdf.text(`Fecha: ${new Date().toLocaleDateString()}`, pdfWidth - 45, 28);
       
-      // Añadir la imagen capturada
       pdf.addImage(imgData, "PNG", 0, 45, pdfWidth, pdfHeight);
       
       pdf.save(`Reporte_PIC_${carreraSeleccionada.replace(/\s+/g, '_')}.pdf`);
       toast.update(idToast, { render: "Informe descargado con éxito", type: "success", isLoading: false, autoClose: 3000 });
 
     } catch (error) {
-      console.error("Error PDF:", error);
-      toast.update(idToast, { render: "Error al generar el PDF", type: "error", isLoading: false, autoClose: 3000 });
+      console.error("Error al generar PDF:", error);
+      toast.update(idToast, { render: "Error técnico al generar PDF", type: "error", isLoading: false, autoClose: 3000 });
     }
   };
 
@@ -163,7 +172,6 @@ const Estadisticas = () => {
         </button>
       </div>
 
-      {/* ✅ id="report-container" añadido para la captura correcta */}
       <div ref={reportRef} id="report-container" className="bg-gray-50 p-4 rounded-xl">
         <TarjetasResumen data={metricas} />
         
