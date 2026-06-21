@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { MdSend, MdSmartToy, MdHistory, MdDelete, MdAddComment, MdClose } from "react-icons/md";
 import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
-import ChatMessage from "../components/chatbot/ChatMessage"; // Mantenemos tu componente de mensajes
+import ChatMessage from "../components/chatbot/ChatMessage"; 
 import { toast, ToastContainer } from "react-toastify";
 
 const ChatbotPage = () => {
-  const [showHistory, setShowHistory] = useState(false); // Controla el panel lateral en móviles
+  const [showHistory, setShowHistory] = useState(false); 
   const [inputValue, setInputValue] = useState("");
   const [currentChatId, setCurrentChatId] = useState(null);
   const [historialChats, setHistorialChats] = useState([]);
@@ -22,14 +22,12 @@ const ChatbotPage = () => {
     ? import.meta.env.VITE_BACKEND_URL 
     : `${import.meta.env.VITE_BACKEND_URL}`;
 
-  // Auto-scroll al recibir o enviar mensajes
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
-  // Cargar el historial cuando el token esté disponible
   useEffect(() => {
     if (token) cargarListaConversaciones();
   }, [token]);
@@ -66,7 +64,7 @@ const ChatbotPage = () => {
   };
 
   const eliminarConversacion = async (e, id) => {
-    e.stopPropagation(); // Evita que se seleccione el chat al dar clic en eliminar
+    e.stopPropagation(); 
     try {
       const response = await fetchDataBackend(`${baseUrl}api/conversaciones/${id}`, null, "DELETE", {
         Authorization: `Bearer ${token}`
@@ -111,7 +109,7 @@ const ChatbotPage = () => {
           text: response.respuesta || "Procesado correctamente.",
           proyectos: response.proyectos || []
         }]);
-        cargarListaConversaciones(); // Recarga la lista para pintar el nuevo título generado por el back
+        cargarListaConversaciones(); 
       }
     } catch (error) {
       setMessages(prev => [...prev, { sender: "bot", text: "Error de conexión con el servidor." }]);
@@ -122,7 +120,6 @@ const ChatbotPage = () => {
     <div className="p-4 lg:p-6 h-[calc(100vh-110px)] flex flex-col animate-fadeIn">
       <ToastContainer />
       
-      {/* Título superior de la sección */}
       <div className="mb-4 border-b-2 border-[#F5BD45] pb-2 inline-block self-start">
         <h1 className="text-xl lg:text-2xl font-black text-[#17243D]">
           ASISTENTE <span className="text-[#F5BD45]">VIRTUAL PIC</span>
@@ -130,10 +127,9 @@ const ChatbotPage = () => {
         <p className="text-gray-500 font-medium italic uppercase text-[9px]">Consulta inteligente de proyectos ({rol})</p>
       </div>
 
-      {/* Workspace del Chatbot */}
       <div className="flex-grow bg-white rounded-3xl shadow-xl border border-gray-100 flex overflow-hidden h-full relative">
         
-        {/* PANEL IZQUIERDO: Historial de Chats */}
+        {/* PANEL IZQUIERDO: Historial */}
         <div className={`
           ${showHistory ? "flex" : "hidden sm:flex"} 
           w-full sm:w-[260px] md:w-[290px] bg-[#17243D] text-white flex-col flex-shrink-0 border-r border-gray-200 z-20 absolute sm:relative h-full inset-0 sm:inset-auto
@@ -185,15 +181,14 @@ const ChatbotPage = () => {
           </div>
         </div>
 
-        {/* PANEL DERECHO: Sala de Chat */}
+        {/* PANEL DERECHO: Chat principal */}
         <div className="flex-grow flex flex-col bg-gray-50 h-full relative">
           
-          {/* Header del chat */}
           <div className="bg-[#17243D] p-4 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => setShowHistory(!showHistory)} 
-                className="sm:hidden bg-gray-800 text-white p-2 rounded-xl transition-colors hover:bg-gray-700"
+                className="sm:hidden bg-gray-800 text-white p-2 rounded-xl"
               >
                 <MdHistory size={18} />
               </button>
@@ -216,14 +211,12 @@ const ChatbotPage = () => {
             </button>
           </div>
 
-          {/* Área del chat scrollable */}
           <div ref={scrollRef} className="flex-grow p-4 overflow-y-auto custom-scrollbar flex flex-col gap-2">
             {messages.map((msg, index) => (
               <ChatMessage key={index} message={msg} />
             ))}
           </div>
 
-          {/* Caja del input */}
           <form onSubmit={handleSend} className="p-4 bg-white border-t border-gray-100 flex gap-2 flex-shrink-0">
             <input 
               type="text"
