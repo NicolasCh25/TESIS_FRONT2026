@@ -94,6 +94,7 @@ const ChatbotPage = () => {
     setMessages(prev => [...prev, { sender: "user", text: msgAEnviar }]);
 
     try {
+      // SOLUCIÓN DEFINITIVA DESDE EL FRONT: Usamos fetch nativo para evitar interferencias del hook personalizado
       const url = `${baseUrl}api/chatbot`;
       
       const bodyData = { mensaje: msgAEnviar };
@@ -101,9 +102,20 @@ const ChatbotPage = () => {
         bodyData.conversacionId = currentChatId;
       }
 
-      // CORRECCIÓN: Mandamos un objeto vacío en las cabeceras para heredar el comportamiento público 
-      // de Postman sin inyectar cabeceras corruptas o parciales que activen el bug del back.
-      const response = await fetchDataBackend(url, bodyData, "POST", {});
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(bodyData)
+      });
+
+      if (!res.ok) {
+        throw new Error("Error en la respuesta del servidor");
+      }
+
+      const response = await res.json();
 
       if (response) {
         if (response.conversacionId && !currentChatId) {
@@ -116,7 +128,6 @@ const ChatbotPage = () => {
           proyectos: response.proyectos || []
         }]);
 
-        // Refrescamos de manera asíncrona y segura la lista utilizando tus credenciales
         setTimeout(() => {
           if (token) cargarListaConversaciones();
         }, 800);

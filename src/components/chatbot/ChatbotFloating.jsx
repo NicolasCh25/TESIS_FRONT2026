@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { MdChat, MdClose, MdSend, MdSmartToy, MdOpenInNew } from "react-icons/md"; 
 import { useNavigate } from "react-router-dom"; 
-import { useFetch } from "../../hooks/useFetch";
+import { storeAuth } from "../../context/storeAuth";
 import ChatMessage from "./ChatMessage";
 
 const ChatbotFloating = () => {
@@ -12,7 +12,7 @@ const ChatbotFloating = () => {
     { sender: "bot", text: "¡Hola! Soy el asistente del Portal PIC. ¿En qué puedo ayudarte hoy?" }
   ]);
 
-  const fetchDataBackend = useFetch();
+  const { token } = storeAuth();
   const scrollRef = useRef(null);
   const navigate = useNavigate(); 
 
@@ -42,9 +42,21 @@ const ChatbotFloating = () => {
         bodyData.conversacionId = currentChatId;
       }
 
-      // CORRECCIÓN: Pasamos el objeto de configuración vacío en el cuarto parámetro
-      // para neutralizar el interceptor de tokens que provocaba el error 401.
-      const response = await fetchDataBackend(url, bodyData, "POST", {});
+      // Usamos fetch nativo con los encabezados requeridos para evitar el 401 de forma limpia
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(bodyData)
+      });
+
+      if (!res.ok) {
+        throw new Error("Error en el servidor");
+      }
+
+      const response = await res.json();
 
       if (response) {
         if (response.conversacionId && !currentChatId) {
