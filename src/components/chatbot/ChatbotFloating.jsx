@@ -37,27 +37,29 @@ const ChatbotFloating = () => {
         : `${import.meta.env.VITE_BACKEND_URL}`;
 
     try {
-      // Si ya existe una conversación iniciada, le pegamos a su endpoint específico; si no, creamos una nueva
-      const endpoint = currentChatId 
-        ? `api/conversaciones/${currentChatId}` 
-        : `api/conversaciones`;
-        
-      const url = `${baseUrl}${endpoint}`;
+      // Mantenemos el endpoint original que procesa la IA
+      const url = `${baseUrl}api/chatbot`;
 
-      const response = await fetchDataBackend(url, { mensaje: userMsg }, "POST", {
+      // Construimos el body dinámicamente incluyendo el conversacionId si ya existe
+      const bodyData = { mensaje: userMsg };
+      if (currentChatId) {
+        bodyData.conversacionId = currentChatId;
+      }
+
+      const response = await fetchDataBackend(url, bodyData, "POST", {
         Authorization: `Bearer ${token}`
       });
 
       if (response) {
-        // Guardamos el ID de la conversación si es la primera interacción
-        if (response.conversacion?._id && !currentChatId) {
-          setCurrentChatId(response.conversacion._id);
+        // Guardamos el ID de la conversación si nos llega en la respuesta del chatbot
+        if (response.conversacionId && !currentChatId) {
+          setCurrentChatId(response.conversacionId);
         }
 
-        // Mapeamos la respuesta del asistente virtual e incluimos los proyectos recomendados
+        // Mapeamos la respuesta usando la estructura exacta de tu curl
         setMessages(prev => [...prev, { 
           sender: "bot", 
-          text: response.respuesta || response.conversacion?.mensajes?.slice(-1)[0]?.contenido || "Procesado correctamente.",
+          text: response.respuesta || "Procesado correctamente.",
           proyectos: response.proyectos || []
         }]);
       }
