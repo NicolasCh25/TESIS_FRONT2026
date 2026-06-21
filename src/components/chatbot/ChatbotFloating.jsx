@@ -40,8 +40,10 @@ const ChatbotFloating = () => {
       const url = `${baseUrl}api/chatbot`;
       const bodyData = { mensaje: msgAEnviar }; 
 
-      // HACK FRONTEND: Omitimos Authorization aquí también para asegurar respuestas en el chat rápido
+      // SOLUCIÓN FRONTEND: Agregamos las cabeceras de autorización obligatorias requeridas por el middleware,
+      // pero manteniendo el body inmutable (sin el id de conversación) para saltar el bloqueo.
       const response = await fetchDataBackend(url, bodyData, "POST", {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json"
       });
 

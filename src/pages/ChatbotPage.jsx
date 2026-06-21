@@ -95,10 +95,13 @@ const ChatbotPage = () => {
 
     try {
       const url = `${baseUrl}api/chatbot`;
+      
+      // SOLUCIÓN FRONTEND: Enviamos el token obligatorio para evitar el 401 Unauthorized,
+      // pero omitimos la propiedad conversacionId para evitar que el backend entre en bucle.
       const bodyData = { mensaje: msgAEnviar }; 
 
-      // HACK FRONTEND: No enviamos Authorization para saltar el bug del back y obtener respuesta de la IA
       const response = await fetchDataBackend(url, bodyData, "POST", {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json"
       });
 
@@ -128,7 +131,7 @@ const ChatbotPage = () => {
 
       <div className="flex-grow bg-white rounded-3xl shadow-xl border border-gray-100 flex overflow-hidden h-full relative">
         
-        {/* PANEL IZQUIERDO: Historial - ¡NUEVO ESTILO REESTRUCTURADO CLARO! */}
+        {/* PANEL IZQUIERDO: Historial (Estilo claro rediseñado para contrastar con el menú principal de image_037f0a.png) */}
         <div className={`
           ${showHistory ? "flex" : "hidden sm:flex"} 
           w-full sm:w-[260px] md:w-[290px] bg-slate-50 text-gray-800 flex-col flex-shrink-0 border-r border-gray-200 z-20 absolute sm:relative h-full inset-0 sm:inset-auto
@@ -171,9 +174,7 @@ const ChatbotPage = () => {
                   </div>
                   <button 
                     onClick={(e) => eliminarConversacion(e, chat._id)}
-                    className={`transition-colors p-1.5 rounded-lg hover:bg-red-50 hover:text-red-600 ${
-                      currentChatId === chat._id ? "text-gray-400" : "text-gray-400"
-                    }`}
+                    className="transition-colors p-1.5 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600"
                   >
                     <MdDelete size={14} />
                   </button>
