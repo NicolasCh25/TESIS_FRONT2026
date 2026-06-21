@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { MdChat, MdClose, MdSend, MdSmartToy, MdOpenInNew } from "react-icons/md"; // Importamos MdOpenInNew para el botón de expandir
-import { useNavigate } from "react-router-dom"; // Hook para la redirección
+import { MdChat, MdClose, MdSend, MdSmartToy, MdOpenInNew } from "react-icons/md"; 
+import { useNavigate } from "react-router-dom"; 
 import { useFetch } from "../../hooks/useFetch";
 import { storeAuth } from "../../context/storeAuth";
 import ChatMessage from "./ChatMessage";
@@ -16,13 +16,12 @@ const ChatbotFloating = () => {
   const fetchDataBackend = useFetch();
   const { token } = storeAuth();
   const scrollRef = useRef(null);
-  const navigate = useNavigate(); // Instanciamos el navegador
+  const navigate = useNavigate(); 
 
   const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith('/') 
     ? import.meta.env.VITE_BACKEND_URL 
     : `${import.meta.env.VITE_BACKEND_URL}`;
 
-  // Auto-scroll al recibir o enviar mensajes
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -31,15 +30,15 @@ const ChatbotFloating = () => {
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
+    const msgAEnviar = inputValue.trim();
+    if (!msgAEnviar) return;
 
-    const userMsg = inputValue;
     setInputValue("");
-    setMessages(prev => [...prev, { sender: "user", text: userMsg }]);
+    setMessages(prev => [...prev, { sender: "user", text: msgAEnviar }]);
 
     try {
       const url = `${baseUrl}api/chatbot`;
-      const bodyData = { mensaje: userMsg };
+      const bodyData = { mensaje: msgAEnviar }; // Constante inmutable para el body
       if (currentChatId) bodyData.conversacionId = currentChatId;
 
       const response = await fetchDataBackend(url, bodyData, "POST", {
@@ -64,16 +63,14 @@ const ChatbotFloating = () => {
     }
   };
 
-  // Función para redirigir a la vista completa
   const irAVistaCompleta = () => {
-    setIsOpen(false); // Cierra el flotante
-    navigate("/dashboard/chatbot"); // Redirige a la página padre
+    setIsOpen(false); 
+    navigate("/dashboard/chatbot"); 
   };
 
   return (
     <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100]">
       
-      {/* Botón Flotante Principal */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
         className="bg-[#17243D] text-white p-3 sm:p-4 rounded-full shadow-2xl hover:bg-[#F5BD45] hover:text-[#17243D] transition-all duration-300 active:scale-90"
@@ -81,11 +78,9 @@ const ChatbotFloating = () => {
         {isOpen ? <MdClose size={24} className="sm:w-7 sm:h-7" /> : <MdChat size={24} className="sm:w-7 sm:h-7" />}
       </button>
 
-      {/* Ventana de Respuestas Rápidas */}
       {isOpen && (
         <div className="absolute bottom-16 right-0 w-[calc(100vw-2rem)] sm:w-[380px] md:w-[400px] h-[65vh] sm:h-[480px] bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-gray-200 flex flex-col overflow-hidden animate-slideUp">
           
-          {/* Header con botón para Expandir */}
           <div className="bg-[#17243D] p-4 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="bg-[#F5BD45] p-2 rounded-xl">
@@ -97,7 +92,6 @@ const ChatbotFloating = () => {
               </div>
             </div>
             
-            {/* Botón de Redirección (Ver Historial / Pantalla completa) */}
             <button 
               onClick={irAVistaCompleta}
               className="text-white bg-gray-800 hover:bg-[#F5BD45] hover:text-[#17243D] p-2 rounded-xl flex items-center gap-1 text-[9px] font-black uppercase tracking-wider transition-all"
@@ -108,14 +102,12 @@ const ChatbotFloating = () => {
             </button>
           </div>
 
-          {/* Área de Mensajes */}
           <div ref={scrollRef} className="flex-grow p-4 overflow-y-auto custom-scrollbar flex flex-col gap-2 bg-gray-50">
             {messages.map((msg, index) => (
               <ChatMessage key={index} message={msg} />
             ))}
           </div>
 
-          {/* Input Form */}
           <form onSubmit={handleSend} className="p-3 bg-white border-t border-gray-100 flex gap-2 flex-shrink-0">
             <input 
               type="text"

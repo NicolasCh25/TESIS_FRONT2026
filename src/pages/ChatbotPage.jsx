@@ -87,15 +87,16 @@ const ChatbotPage = () => {
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
+    const msgAEnviar = inputValue.trim();
+    if (!msgAEnviar) return;
 
-    const userMsg = inputValue;
+    // Seteamos de forma segura los estados visuales
     setInputValue("");
-    setMessages(prev => [...prev, { sender: "user", text: userMsg }]);
+    setMessages(prev => [...prev, { sender: "user", text: msgAEnviar }]);
 
     try {
       const url = `${baseUrl}api/chatbot`;
-      const bodyData = { mensaje: userMsg };
+      const bodyData = { mensaje: msgAEnviar }; // Aseguramos el paso de la constante fija
       if (currentChatId) bodyData.conversacionId = currentChatId;
 
       const response = await fetchDataBackend(url, bodyData, "POST", {
@@ -170,7 +171,7 @@ const ChatbotPage = () => {
                   <button 
                     onClick={(e) => eliminarConversacion(e, chat._id)}
                     className={`transition-colors p-1 rounded-lg hover:bg-black/10 ${
-                      currentChatId === chat._id ? "text-[#17243D] hover:text-red-700" : "text-gray-500 hover:text-red-500"
+                      currentChatId === chat._id ? "text-[#17243D]" : "text-gray-500 hover:text-red-500"
                     }`}
                   >
                     <MdDelete size={15} />
