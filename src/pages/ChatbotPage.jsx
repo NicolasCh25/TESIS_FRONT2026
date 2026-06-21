@@ -94,11 +94,16 @@ const ChatbotPage = () => {
     setMessages(prev => [...prev, { sender: "user", text: msgAEnviar }]);
 
     try {
-      const url = `${baseUrl}api/chatbot`;
-      
-      // SOLUCIÓN FRONTEND: Enviamos el token obligatorio para evitar el 401 Unauthorized,
-      // pero omitimos la propiedad conversacionId para evitar que el backend entre en bucle.
-      const bodyData = { mensaje: msgAEnviar }; 
+      let url = "";
+      const bodyData = { mensaje: msgAEnviar };
+
+      // Si ya hay un chat activo, enviamos el mensaje a su respectivo ID de conversación
+      if (currentChatId) {
+        url = `${baseUrl}api/conversaciones/${currentChatId}`;
+      } else {
+        // Si es nuevo, creamos la conversación base
+        url = `${baseUrl}api/conversaciones`;
+      }
 
       const response = await fetchDataBackend(url, bodyData, "POST", {
         Authorization: `Bearer ${token}`,
@@ -106,14 +111,24 @@ const ChatbotPage = () => {
       });
 
       if (response) {
+        if (response.conversacion?._id && !currentChatId) {
+          setCurrentChatId(response.conversacion._id);
+        }
+
+        // Buscamos la respuesta del bot estructurada o el último mensaje del arreglo devuelto
+        const textoBot = response.respuesta || 
+                         response.conversacion?.mensajes?.slice(-1)[0]?.contenido || 
+                         "Procesado correctamente.";
+
         setMessages(prev => [...prev, { 
           sender: "bot", 
-          text: response.respuesta || "Procesado correctamente.",
+          text: textoBot,
           proyectos: response.proyectos || []
         }]);
         cargarListaConversaciones(); 
       }
     } catch (error) {
+      console.error("Error en handleSend:", error);
       setMessages(prev => [...prev, { sender: "bot", text: "Error de conexión con el servidor." }]);
     }
   };
@@ -131,7 +146,7 @@ const ChatbotPage = () => {
 
       <div className="flex-grow bg-white rounded-3xl shadow-xl border border-gray-100 flex overflow-hidden h-full relative">
         
-        {/* PANEL IZQUIERDO: Historial (Estilo claro rediseñado para contrastar con el menú principal de image_037f0a.png) */}
+        {/* PANEL IZQUIERDO: Historial - ¡NUEVO ESTILO CLARO CON TRASFONDO DE CONTRASTE! */}
         <div className={`
           ${showHistory ? "flex" : "hidden sm:flex"} 
           w-full sm:w-[260px] md:w-[290px] bg-slate-50 text-gray-800 flex-col flex-shrink-0 border-r border-gray-200 z-20 absolute sm:relative h-full inset-0 sm:inset-auto
@@ -184,7 +199,7 @@ const ChatbotPage = () => {
           </div>
         </div>
 
-        {/* PANEL DERECHO: Chat principal */}
+        {/* PANEL DERECHO: Sala de conversación */}
         <div className="flex-grow flex flex-col bg-gray-50 h-full relative">
           
           <div className="bg-[#17243D] p-4 flex items-center justify-between flex-shrink-0">

@@ -37,23 +37,32 @@ const ChatbotFloating = () => {
     setMessages(prev => [...prev, { sender: "user", text: msgAEnviar }]);
 
     try {
-      const url = `${baseUrl}api/chatbot`;
-      const bodyData = { mensaje: msgAEnviar }; 
+      let url = "";
+      const bodyData = { mensaje: msgAEnviar };
 
-      // SOLUCIÓN FRONTEND: Agregamos las cabeceras de autorización obligatorias requeridas por el middleware,
-      // pero manteniendo el body inmutable (sin el id de conversación) para saltar el bloqueo.
+      if (currentChatId) {
+        url = `${baseUrl}api/conversaciones/${currentChatId}`;
+      } else {
+        url = `${baseUrl}api/conversaciones`;
+      }
+
       const response = await fetchDataBackend(url, bodyData, "POST", {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json"
       });
 
       if (response) {
-        if (response.conversacionId && !currentChatId) {
-          setCurrentChatId(response.conversacionId);
+        if (response.conversacion?._id && !currentChatId) {
+          setCurrentChatId(response.conversacion._id);
         }
+
+        const textoBot = response.respuesta || 
+                         response.conversacion?.mensajes?.slice(-1)[0]?.contenido || 
+                         "Procesado correctamente.";
+
         setMessages(prev => [...prev, { 
           sender: "bot", 
-          text: response.respuesta || "Procesado correctamente.",
+          text: textoBot,
           proyectos: response.proyectos || []
         }]);
       }
