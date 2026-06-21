@@ -7,6 +7,7 @@ import ChatMessage from "./ChatMessage";
 const ChatbotFloating = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [currentChatId, setCurrentChatId] = useState(null); // Almacena el ID de la conversación activa
   const [messages, setMessages] = useState([
     { sender: "bot", text: "¡Hola! Soy el asistente del Portal PIC. ¿En qué puedo ayudarte hoy?" }
   ]);
@@ -15,6 +16,7 @@ const ChatbotFloating = () => {
   const { token } = storeAuth();
   const scrollRef = useRef(null);
 
+  // Auto-scroll al recibir o enviar mensajes
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -29,20 +31,38 @@ const ChatbotFloating = () => {
     setInputValue("");
     setMessages(prev => [...prev, { sender: "user", text: userMsg }]);
 
+    // Aseguramos el formato limpio de la URL base
+    const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith('/') 
+        ? import.meta.env.VITE_BACKEND_URL 
+        : `${import.meta.env.VITE_BACKEND_URL}`;
+
     try {
-      const url = `${import.meta.env.VITE_BACKEND_URL}api/chatbot`;
+      // Si ya existe una conversación iniciada, le pegamos a su endpoint específico; si no, creamos una nueva
+      const endpoint = currentChatId 
+        ? `api/conversaciones/${currentChatId}` 
+        : `api/conversaciones`;
+        
+      const url = `${baseUrl}${endpoint}`;
+
       const response = await fetchDataBackend(url, { mensaje: userMsg }, "POST", {
         Authorization: `Bearer ${token}`
       });
 
       if (response) {
+        // Guardamos el ID de la conversación si es la primera interacción
+        if (response.conversacion?._id && !currentChatId) {
+          setCurrentChatId(response.conversacion._id);
+        }
+
+        // Mapeamos la respuesta del asistente virtual e incluimos los proyectos recomendados
         setMessages(prev => [...prev, { 
           sender: "bot", 
-          text: response.respuesta,
-          proyectos: response.proyectos 
+          text: response.respuesta || response.conversacion?.mensajes?.slice(-1)[0]?.contenido || "Procesado correctamente.",
+          proyectos: response.proyectos || []
         }]);
       }
     } catch (error) {
+      console.error("Error en la comunicación con el chatbot:", error);
       setMessages(prev => [...prev, { 
         sender: "bot", 
         text: "Lo siento, tuve un problema al conectar con el servidor. Inténtalo de nuevo." 
@@ -51,9 +71,7 @@ const ChatbotFloating = () => {
   };
 
   return (
-    // ✅ Ajustado el contenedor para que no se pegue tanto al borde en móvil
     <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100]">
-      
       {/* Botón Flotante */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
@@ -64,16 +82,7 @@ const ChatbotFloating = () => {
 
       {/* Ventana de Chat */}
       {isOpen && (
-        <div className={`
-          absolute bottom-16 right-0 
-          /* ✅ RESPONSIVIDAD CLAVE: */
-          w-[calc(100vw-2rem)] sm:w-[380px] md:w-[420px] 
-          h-[70vh] sm:h-[500px] md:h-[550px] 
-          max-h-[600px]
-          bg-gray-50 rounded-[2rem] sm:rounded-[2.5rem] 
-          shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-gray-200 
-          flex flex-col overflow-hidden animate-slideUp
-        `}>
+        <div className="absolute bottom-16 right-0 w-[calc(100vw-2rem)] sm:w-[380px] md:w-[420px] h-[70vh] sm:h-[500px] md:h-[550px] max-h-[600px] bg-gray-50 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-gray-200 flex flex-col overflow-hidden animate-slideUp">
           
           {/* Header */}
           <div className="bg-[#17243D] p-4 sm:p-5 flex items-center gap-3">
@@ -90,10 +99,7 @@ const ChatbotFloating = () => {
           </div>
 
           {/* Área de Mensajes */}
-          <div 
-            ref={scrollRef} 
-            className="flex-grow p-3 sm:p-4 overflow-y-auto custom-scrollbar flex flex-col gap-2"
-          >
+          <div ref={scrollRef} className="flex-grow p-3 sm:p-4 overflow-y-auto custom-scrollbar flex flex-col gap-2">
             {messages.map((msg, index) => (
               <ChatMessage key={index} message={msg} />
             ))}
