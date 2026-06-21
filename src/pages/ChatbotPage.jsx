@@ -94,38 +94,36 @@ const ChatbotPage = () => {
     setMessages(prev => [...prev, { sender: "user", text: msgAEnviar }]);
 
     try {
-      let url = "";
+      const url = `${baseUrl}api/chatbot`;
+      
+      // Armamos el cuerpo según lo validado en Postman
       const bodyData = { mensaje: msgAEnviar };
-
-      // Si ya hay un chat activo, enviamos el mensaje a su respectivo ID de conversación
       if (currentChatId) {
-        url = `${baseUrl}api/conversaciones/${currentChatId}`;
-      } else {
-        // Si es nuevo, creamos la conversación base
-        url = `${baseUrl}api/conversaciones`;
+        bodyData.conversacionId = currentChatId;
       }
 
+      // IMPORTANTE: Sobrescribimos Authorization como undefined para forzar una petición
+      // limpia sin tokens que puedan interferir en la respuesta de la IA en /api/chatbot
       const response = await fetchDataBackend(url, bodyData, "POST", {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": undefined 
       });
 
       if (response) {
-        if (response.conversacion?._id && !currentChatId) {
-          setCurrentChatId(response.conversacion._id);
+        if (response.conversacionId && !currentChatId) {
+          setCurrentChatId(response.conversacionId);
         }
-
-        // Buscamos la respuesta del bot estructurada o el último mensaje del arreglo devuelto
-        const textoBot = response.respuesta || 
-                         response.conversacion?.mensajes?.slice(-1)[0]?.contenido || 
-                         "Procesado correctamente.";
 
         setMessages(prev => [...prev, { 
           sender: "bot", 
-          text: textoBot,
+          text: response.respuesta || "Procesado correctamente.",
           proyectos: response.proyectos || []
         }]);
-        cargarListaConversaciones(); 
+
+        // Refrescamos la lista lateral usando las credenciales del usuario
+        setTimeout(() => {
+          if (token) cargarListaConversaciones();
+        }, 800);
       }
     } catch (error) {
       console.error("Error en handleSend:", error);
@@ -146,7 +144,7 @@ const ChatbotPage = () => {
 
       <div className="flex-grow bg-white rounded-3xl shadow-xl border border-gray-100 flex overflow-hidden h-full relative">
         
-        {/* PANEL IZQUIERDO: Historial - ¡NUEVO ESTILO CLARO CON TRASFONDO DE CONTRASTE! */}
+        {/* PANEL IZQUIERDO: Historial claro */}
         <div className={`
           ${showHistory ? "flex" : "hidden sm:flex"} 
           w-full sm:w-[260px] md:w-[290px] bg-slate-50 text-gray-800 flex-col flex-shrink-0 border-r border-gray-200 z-20 absolute sm:relative h-full inset-0 sm:inset-auto
@@ -199,7 +197,7 @@ const ChatbotPage = () => {
           </div>
         </div>
 
-        {/* PANEL DERECHO: Sala de conversación */}
+        {/* PANEL DERECHO: Chat principal */}
         <div className="flex-grow flex flex-col bg-gray-50 h-full relative">
           
           <div className="bg-[#17243D] p-4 flex items-center justify-between flex-shrink-0">

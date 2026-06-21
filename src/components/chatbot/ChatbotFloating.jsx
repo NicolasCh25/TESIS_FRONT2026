@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { MdChat, MdClose, MdSend, MdSmartToy, MdOpenInNew } from "react-icons/md"; 
 import { useNavigate } from "react-router-dom"; 
 import { useFetch } from "../../hooks/useFetch";
-import { storeAuth } from "../../context/storeAuth";
 import ChatMessage from "./ChatMessage";
 
 const ChatbotFloating = () => {
@@ -14,7 +13,6 @@ const ChatbotFloating = () => {
   ]);
 
   const fetchDataBackend = useFetch();
-  const { token } = storeAuth();
   const scrollRef = useRef(null);
   const navigate = useNavigate(); 
 
@@ -37,32 +35,26 @@ const ChatbotFloating = () => {
     setMessages(prev => [...prev, { sender: "user", text: msgAEnviar }]);
 
     try {
-      let url = "";
+      const url = `${baseUrl}api/chatbot`;
+      
       const bodyData = { mensaje: msgAEnviar };
-
       if (currentChatId) {
-        url = `${baseUrl}api/conversaciones/${currentChatId}`;
-      } else {
-        url = `${baseUrl}api/conversaciones`;
+        bodyData.conversacionId = currentChatId;
       }
 
+      // Quitamos Authorization para que simule con exactitud la prueba exitosa de Postman
       const response = await fetchDataBackend(url, bodyData, "POST", {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": undefined
       });
 
       if (response) {
-        if (response.conversacion?._id && !currentChatId) {
-          setCurrentChatId(response.conversacion._id);
+        if (response.conversacionId && !currentChatId) {
+          setCurrentChatId(response.conversacionId);
         }
-
-        const textoBot = response.respuesta || 
-                         response.conversacion?.mensajes?.slice(-1)[0]?.contenido || 
-                         "Procesado correctamente.";
-
         setMessages(prev => [...prev, { 
           sender: "bot", 
-          text: textoBot,
+          text: response.respuesta || "Procesado correctamente.",
           proyectos: response.proyectos || []
         }]);
       }
