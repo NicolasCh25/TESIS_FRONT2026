@@ -23,7 +23,8 @@ import ActualizarUsuario from './pages/ActualizarUsuario';
 import DetalleProyecto from './pages/DetalleProyecto';
 import ProyectosPorCarrera from './pages/ProyectosPorCarrera';
 import Estudiante from './pages/Estudiante';
-import Favoritos from './pages/Favoritos'; // ✅ NUEVA PÁGINA
+import Favoritos from './pages/Favoritos'; 
+import ChatbotPage from './pages/ChatbotPage'; // ✅ NUEVA PÁGINA DEL ASISTENTE VIRTUAL
 
 // Layouts e Inicio
 import Dashboard from './layout/Dashboard';
@@ -67,8 +68,10 @@ function App() {
               element={esAdmin ? <InicioAdmin /> : <Estudiante />} 
             />
 
-            {/* ✅ AHORA USA UN COMPONENTE INDEPENDIENTE */}
             <Route path="favoritos" element={<Favoritos />} />
+
+            {/* ✅ NUEVA RUTA PRIVADA PARA EL CHATBOT (Acceso: /dashboard/chatbot) */}
+            <Route path="chatbot" element={<ChatbotPage />} />
 
             <Route path="create" element={<CrearProyecto />} />
             <Route path="list" element={<ListarProyectos />} />
@@ -82,7 +85,7 @@ function App() {
           </Route>
         </Route>
 
-        <Route path="*" element={
+        <Route path="*" element = {
           <div className="flex h-screen items-center justify-center bg-gray-50 flex-col text-center p-4">
             <h1 className="text-9xl font-black text-[#17243D] opacity-20">404</h1>
             <div className="absolute">
