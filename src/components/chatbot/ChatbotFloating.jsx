@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MdChat, MdClose, MdSend, MdSmartToy, MdHistory, MdDelete, MdAddChat } from "react-icons/md";
+import { MdChat, MdClose, MdSend, MdSmartToy, MdHistory, MdDelete, MdAddComment } from "react-icons/md";
 import { useFetch } from "../../hooks/useFetch";
 import { storeAuth } from "../../context/storeAuth";
 import ChatMessage from "./ChatMessage";
