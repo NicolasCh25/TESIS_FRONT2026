@@ -42,11 +42,9 @@ const ChatbotFloating = () => {
         bodyData.conversacionId = currentChatId;
       }
 
-      // Quitamos Authorization para que simule con exactitud la prueba exitosa de Postman
-      const response = await fetchDataBackend(url, bodyData, "POST", {
-        "Content-Type": "application/json",
-        "Authorization": undefined
-      });
+      // CORRECCIÓN: Pasamos el objeto de configuración vacío en el cuarto parámetro
+      // para neutralizar el interceptor de tokens que provocaba el error 401.
+      const response = await fetchDataBackend(url, bodyData, "POST", {});
 
       if (response) {
         if (response.conversacionId && !currentChatId) {

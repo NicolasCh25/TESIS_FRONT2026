@@ -96,18 +96,14 @@ const ChatbotPage = () => {
     try {
       const url = `${baseUrl}api/chatbot`;
       
-      // Armamos el cuerpo según lo validado en Postman
       const bodyData = { mensaje: msgAEnviar };
       if (currentChatId) {
         bodyData.conversacionId = currentChatId;
       }
 
-      // IMPORTANTE: Sobrescribimos Authorization como undefined para forzar una petición
-      // limpia sin tokens que puedan interferir en la respuesta de la IA en /api/chatbot
-      const response = await fetchDataBackend(url, bodyData, "POST", {
-        "Content-Type": "application/json",
-        "Authorization": undefined 
-      });
+      // CORRECCIÓN: Mandamos un objeto vacío en las cabeceras para heredar el comportamiento público 
+      // de Postman sin inyectar cabeceras corruptas o parciales que activen el bug del back.
+      const response = await fetchDataBackend(url, bodyData, "POST", {});
 
       if (response) {
         if (response.conversacionId && !currentChatId) {
@@ -120,7 +116,7 @@ const ChatbotPage = () => {
           proyectos: response.proyectos || []
         }]);
 
-        // Refrescamos la lista lateral usando las credenciales del usuario
+        // Refrescamos de manera asíncrona y segura la lista utilizando tus credenciales
         setTimeout(() => {
           if (token) cargarListaConversaciones();
         }, 800);
@@ -144,7 +140,7 @@ const ChatbotPage = () => {
 
       <div className="flex-grow bg-white rounded-3xl shadow-xl border border-gray-100 flex overflow-hidden h-full relative">
         
-        {/* PANEL IZQUIERDO: Historial claro */}
+        {/* PANEL IZQUIERDO: Estilo claro rediseñado */}
         <div className={`
           ${showHistory ? "flex" : "hidden sm:flex"} 
           w-full sm:w-[260px] md:w-[290px] bg-slate-50 text-gray-800 flex-col flex-shrink-0 border-r border-gray-200 z-20 absolute sm:relative h-full inset-0 sm:inset-auto
@@ -197,7 +193,7 @@ const ChatbotPage = () => {
           </div>
         </div>
 
-        {/* PANEL DERECHO: Chat principal */}
+        {/* PANEL DERECHO: Sala de conversación */}
         <div className="flex-grow flex flex-col bg-gray-50 h-full relative">
           
           <div className="bg-[#17243D] p-4 flex items-center justify-between flex-shrink-0">
