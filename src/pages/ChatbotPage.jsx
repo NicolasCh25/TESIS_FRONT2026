@@ -15,8 +15,11 @@ const ChatbotPage = () => {
   ]);
 
   const fetchDataBackend = useFetch();
-  const { token, rol } = storeAuth();
   const scrollRef = useRef(null);
+
+  // ✅ CAMBIO SOLICITADO: Uso de selector individual de Zustand
+  const token = storeAuth((state) => state.token);
+  const rol = storeAuth((state) => state.rol);
 
   const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith('/') 
     ? import.meta.env.VITE_BACKEND_URL 
@@ -29,13 +32,16 @@ const ChatbotPage = () => {
   }, [messages]);
 
   useEffect(() => {
-    if (token) cargarListaConversaciones();
+    const tokenFinal = token || sessionStorage.getItem("token");
+    if (tokenFinal) cargarListaConversaciones(tokenFinal);
   }, [token]);
 
-  const cargarListaConversaciones = async () => {
+  const cargarListaConversaciones = async (tokenValido) => {
+    const authToUse = tokenValido || token || sessionStorage.getItem("token");
+    if (!authToUse) return;
     try {
       const response = await fetchDataBackend(`${baseUrl}api/conversaciones`, null, "GET", {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${authToUse}`
       });
       if (response && response.conversaciones) {
         setHistorialChats(response.conversaciones);
@@ -46,9 +52,11 @@ const ChatbotPage = () => {
   };
 
   const seleccionarConversacion = async (id) => {
+    const tokenFinal = token || sessionStorage.getItem("token");
+    if (!tokenFinal) return;
     try {
       const response = await fetchDataBackend(`${baseUrl}api/conversaciones/${id}`, null, "GET", {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${tokenFinal}`
       });
       if (response && response.conversacion) {
         setCurrentChatId(id);
@@ -65,9 +73,11 @@ const ChatbotPage = () => {
 
   const eliminarConversacion = async (e, id) => {
     e.stopPropagation(); 
+    const tokenFinal = token || sessionStorage.getItem("token");
+    if (!tokenFinal) return;
     try {
       const response = await fetchDataBackend(`${baseUrl}api/conversaciones/${id}`, null, "DELETE", {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${tokenFinal}`
       });
       if (response) {
         toast.success("Conversación eliminada");
@@ -90,11 +100,24 @@ const ChatbotPage = () => {
     const msgAEnviar = inputValue.trim();
     if (!msgAEnviar) return;
 
+    // ✅ CAMBIO SOLICITADO: Agregar validación del token antes del fetch
+    const tokenFinal = token || sessionStorage.getItem("token");
+
+    if (!tokenFinal) {
+      setMessages(prev => [
+        ...prev,
+        {
+          sender: "bot",
+          text: "No existe una sesión activa. Inicia sesión nuevamente."
+        }
+      ]);
+      return;
+    }
+
     setInputValue("");
     setMessages(prev => [...prev, { sender: "user", text: msgAEnviar }]);
 
     try {
-      // SOLUCIÓN DEFINITIVA DESDE EL FRONT: Usamos fetch nativo para evitar interferencias del hook personalizado
       const url = `${baseUrl}api/chatbot`;
       
       const bodyData = { mensaje: msgAEnviar };
@@ -102,20 +125,25 @@ const ChatbotPage = () => {
         bodyData.conversacionId = currentChatId;
       }
 
+      // ✅ CAMBIO SOLICITADO: Líneas de console.log justo antes del fetch
+      console.log("TOKEN ZUSTAND:", token);
+      console.log("TOKEN SESSION:", sessionStorage.getItem("token"));
+
+      // ✅ CAMBIO SOLICITADO: Modificación del fetch usando tokenFinal
       const res = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${tokenFinal}`
         },
         body: JSON.stringify(bodyData)
       });
 
-      if (!res.ok) {
-        throw new Error("Error en la respuesta del servidor");
-      }
-
       const response = await res.json();
+
+      if (!res.ok) {
+        throw new Error(response.msg || "Error de respuesta del servidor");
+      }
 
       if (response) {
         if (response.conversacionId && !currentChatId) {
@@ -129,12 +157,12 @@ const ChatbotPage = () => {
         }]);
 
         setTimeout(() => {
-          if (token) cargarListaConversaciones();
+          cargarListaConversaciones(tokenFinal);
         }, 800);
       }
     } catch (error) {
       console.error("Error en handleSend:", error);
-      setMessages(prev => [...prev, { sender: "bot", text: "Error de conexión con el servidor." }]);
+      setMessages(prev => [...prev, { sender: "bot", text: error.message || "Error de conexión." }]);
     }
   };
 
@@ -146,12 +174,12 @@ const ChatbotPage = () => {
         <h1 className="text-xl lg:text-2xl font-black text-[#17243D]">
           ASISTENTE <span className="text-[#F5BD45]">VIRTUAL PIC</span>
         </h1>
-        <p className="text-gray-500 font-medium italic uppercase text-[9px]">Consulta inteligente de proyectos ({rol})</p>
+        <p className="text-gray-500 font-medium italic uppercase text-[9px]">Consulta inteligente de proyectos ({rol || "Usuario"})</p>
       </div>
 
       <div className="flex-grow bg-white rounded-3xl shadow-xl border border-gray-100 flex overflow-hidden h-full relative">
         
-        {/* PANEL IZQUIERDO: Estilo claro rediseñado */}
+        {/* PANEL IZQUIERDO: Estilo claro */}
         <div className={`
           ${showHistory ? "flex" : "hidden sm:flex"} 
           w-full sm:w-[260px] md:w-[290px] bg-slate-50 text-gray-800 flex-col flex-shrink-0 border-r border-gray-200 z-20 absolute sm:relative h-full inset-0 sm:inset-auto
@@ -204,7 +232,7 @@ const ChatbotPage = () => {
           </div>
         </div>
 
-        {/* PANEL DERECHO: Sala de conversación */}
+        {/* PANEL DERECHO */}
         <div className="flex-grow flex flex-col bg-gray-50 h-full relative">
           
           <div className="bg-[#17243D] p-4 flex items-center justify-between flex-shrink-0">
@@ -240,7 +268,7 @@ const ChatbotPage = () => {
             ))}
           </div>
 
-          <form onSubmit={handleSend} className="p-4 bg-white border-t border-gray-100 flex gap-2 flex-shrink-0">
+          <form onSubmit={handleSend} className="p-4 p-white border-t border-gray-100 flex gap-2 flex-shrink-0">
             <input 
               type="text"
               value={inputValue}

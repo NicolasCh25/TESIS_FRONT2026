@@ -12,7 +12,8 @@ const ChatbotFloating = () => {
     { sender: "bot", text: "¡Hola! Soy el asistente del Portal PIC. ¿En qué puedo ayudarte hoy?" }
   ]);
 
-  const { token } = storeAuth();
+  // ✅ CAMBIO SOLICITADO: Uso de selector individual de Zustand
+  const token = storeAuth((state) => state.token);
   const scrollRef = useRef(null);
   const navigate = useNavigate(); 
 
@@ -31,6 +32,20 @@ const ChatbotFloating = () => {
     const msgAEnviar = inputValue.trim();
     if (!msgAEnviar) return;
 
+    // ✅ CAMBIO SOLICITADO: Agregar validación del token antes del fetch
+    const tokenFinal = token || sessionStorage.getItem("token");
+
+    if (!tokenFinal) {
+      setMessages(prev => [
+        ...prev,
+        {
+          sender: "bot",
+          text: "No existe una sesión activa. Inicia sesión nuevamente."
+        }
+      ]);
+      return;
+    }
+
     setInputValue("");
     setMessages(prev => [...prev, { sender: "user", text: msgAEnviar }]);
 
@@ -42,21 +57,25 @@ const ChatbotFloating = () => {
         bodyData.conversacionId = currentChatId;
       }
 
-      // Usamos fetch nativo con los encabezados requeridos para evitar el 401 de forma limpia
+      // ✅ CAMBIO SOLICITADO: Líneas de console.log justo antes del fetch
+      console.log("TOKEN ZUSTAND:", token);
+      console.log("TOKEN SESSION:", sessionStorage.getItem("token"));
+
+      // ✅ CAMBIO SOLICITADO: Modificación del fetch usando tokenFinal
       const res = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${tokenFinal}`
         },
         body: JSON.stringify(bodyData)
       });
 
-      if (!res.ok) {
-        throw new Error("Error en el servidor");
-      }
-
       const response = await res.json();
+
+      if (!res.ok) {
+        throw new Error(response.msg || "Error de procesamiento");
+      }
 
       if (response) {
         if (response.conversacionId && !currentChatId) {
@@ -71,7 +90,7 @@ const ChatbotFloating = () => {
     } catch (error) {
       setMessages(prev => [...prev, { 
         sender: "bot", 
-        text: "Lo siento, tuve un problema al conectar con el servidor." 
+        text: error.message || "Tuvimos un problema al procesar tu solicitud." 
       }]);
     }
   };
