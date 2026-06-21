@@ -20,9 +20,8 @@ const Profile = () => {
             ? import.meta.env.VITE_BACKEND_URL 
             : `${import.meta.env.VITE_BACKEND_URL}`;
         
-        const endpoint = rol === "admin" 
-            ? "api/administradores/perfil" 
-            : "api/usuarios/perfil";
+        // Corregido: El endpoint real entregado por tu curl es api/perfil
+        const endpoint = "api/perfil";
             
         const url = `${baseUrl}${endpoint}`;
 
@@ -50,7 +49,8 @@ const Profile = () => {
             ? import.meta.env.VITE_BACKEND_URL 
             : `${import.meta.env.VITE_BACKEND_URL}`;
 
-        const url = `${baseUrl}api/usuarios/perfil`; 
+        // Corregido: Se mantiene la coherencia con el endpoint raíz de perfil
+        const url = `${baseUrl}api/perfil`; 
 
         try {
             const response = await fetchDataBackend(url, { nombre: nombreEditado }, "PUT", {
