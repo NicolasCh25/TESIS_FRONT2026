@@ -21,30 +21,25 @@ const DetalleProyecto = () => {
       try {
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
         
-        // ✅ CORRECCIÓN CRÍTICA: Apuntar directamente al endpoint específico por ID de proyecto
-        const url = `${baseUrl}api/proyectos/${id}`;
+        // SOLUCIÓN DEFINITIVA: Volvemos a la ruta global pero aseguramos que vaya limpia
+        // sin arrastrar queries previas del administrador.
+        const url = `${baseUrl}api/proyectos`;
         
         const response = await fetchDataBackend(url, null, "GET", {
           Authorization: `Bearer ${token}`
         });
 
-        // ✅ CORRECCIÓN: Si el backend devuelve el objeto directo o dentro de un campo 'resultado'
-        if (response) {
-          const proyectoEncontrado = response.proyecto || response.resultado || response;
+        if (response && response.resultados) {
+          // Buscamos el proyecto dentro de la lista completa usando el ID de la URL
+          const encontrado = response.resultados.find((p) => p._id === id || p.id === id);
           
-          if (proyectoEncontrado && (proyectoEncontrado._id === id || proyectoEncontrado.id === id)) {
-            setProyecto(proyectoEncontrado);
-          } else if (response.resultados && Array.isArray(response.resultados)) {
-            // Respaldar por si el backend solo maneja el GET global en esa ruta
-            const encontrado = response.resultados.find((p) => p._id === id || p.id === id);
-            if (encontrado) {
-              setProyecto(encontrado);
-            } else {
-              toast.error("Proyecto no encontrado en el repositorio");
-            }
+          if (encontrado) {
+            setProyecto(encontrado);
           } else {
-            toast.error("Proyecto no encontrado");
+            toast.error("El proyecto no se encuentra en los resultados actuales");
           }
+        } else {
+          toast.error("No se pudo obtener la lista de proyectos");
         }
       } catch (error) {
         console.error(error);
@@ -64,7 +59,7 @@ const DetalleProyecto = () => {
     );
   }
 
-  // Helper para renderizar listas que pueden venir como String o Array (Evita el error .split)
+  // Helper para renderizar listas que pueden venir como String o Array
   const renderList = (data, colorClass) => {
     const items = Array.isArray(data) ? data : (data?.split(',') || []);
     return items.map((item, i) => (
@@ -134,7 +129,7 @@ const DetalleProyecto = () => {
               </p>
             </section>
 
-            {/* LINKS EXTERNOS (REPOSITORIO Y VIDEO) */}
+            {/* LINKS EXTERNOS */}
             <div className="grid md:grid-cols-2 gap-6">
               <section className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
                 <div className="flex items-center gap-2 mb-4 text-[#17243D]">
