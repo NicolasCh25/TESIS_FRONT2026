@@ -1,7 +1,18 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
-import { MdPictureAsPdf, MdPerson, MdComputer, MdSmartToy, MdSchool } from "react-icons/md";
+import { MdPictureAsPdf, MdPerson, MdComputer, MdSmartToy, MdSchool, MdInfo } from "react-icons/md";
+import { storeAuth } from "../../context/storeAuth";
+import { toast } from "react-toastify";
 
-
+// ✅ Función para normalizar títulos de proyectos y facilitar comparaciones
+const cleanTitle = (title) => {
+  return (title || "")
+    .toLowerCase()
+    .replace(/\*/g, "")
+    .replace(/proyecto/gi, "")
+    .trim();
+};
 
 // ✅ Función para parsear proyectos estructurados desde el texto crudo (útil para historial y F5)
 const parseProjectsFromText = (text) => {
@@ -28,7 +39,7 @@ const parseProjectsFromText = (text) => {
         projects.push(currentProject);
       }
       
-      const titulo = headerMatch[1].trim();
+      const titulo = headerMatch[1].replace(/\*/g, "").trim();
       const autorText = headerMatch[2].split("|")[0].trim();
       
       currentProject = {
@@ -38,6 +49,11 @@ const parseProjectsFromText = (text) => {
         tecnologias: "",
         archivoPDF: ""
       };
+      
+      const tutorInLine = headerMatch[2].match(/Tutor(?:a)?\s*:\s*([^|]+)/i);
+      if (tutorInLine) {
+        currentProject.tutor = tutorInLine[1].trim();
+      }
       continue;
     }
     
@@ -50,8 +66,17 @@ const parseProjectsFromText = (text) => {
       while (prevIndex >= 0) {
         const prevLine = lines[prevIndex];
         if (prevLine && !isProjectKeyword(prevLine)) {
-          titulo = prevLine;
-          break;
+          const cleanedPrev = prevLine.toLowerCase().replace(/\*/g, "").replace(/#/g, "").trim();
+          if (
+            cleanedPrev !== "proyectos" && 
+            cleanedPrev !== "proyecto" && 
+            cleanedPrev !== "proyectos recomendados" && 
+            cleanedPrev !== "proyectos relacionados" &&
+            cleanedPrev !== "proyectos relacionados con"
+          ) {
+            titulo = prevLine.replace(/\*/g, "").trim();
+            break;
+          }
         }
         prevIndex--;
       }
@@ -219,7 +244,16 @@ const cleanMessageText = (text, tieneProyectos, tieneIdeas) => {
         continue;
       }
       
-      if (projectTitles.includes(line.toLowerCase())) {
+      const cleanedLineLower = line.toLowerCase().replace(/\*/g, "").replace(/#/g, "").trim();
+      if (
+        projectTitles.includes(line.toLowerCase()) || 
+        cleanedLineLower === "proyectos" ||
+        cleanedLineLower === "proyecto" ||
+        cleanedLineLower === "proyecto sin título" ||
+        cleanedLineLower === "proyectos recomendados" ||
+        cleanedLineLower === "proyectos relacionados" ||
+        cleanedLineLower === "proyectos relacionados con"
+      ) {
         continue;
       }
       
@@ -236,31 +270,231 @@ const cleanMessageText = (text, tieneProyectos, tieneIdeas) => {
 
 const ChatMessage = ({ message, esFlotante = false }) => {
   const isBot = message.sender === "bot";
+  const navigate = useNavigate();
+  const [resolvedProjects, setResolvedProjects] = useState({});
 
-  // Unificamos los proyectos de la respuesta JSON o los parseados del texto
+  // Unificamos los proyectos de la respuesta JSON cruzando datos con los parseados del texto
   const proyectos = (() => {
-    if (message.proyectos && message.proyectos.length > 0) {
-      return message.proyectos;
-    }
     if (!isBot) return [];
-    
-    const dbProjects = parseProjectsFromText(message.text);
-    if (dbProjects.length > 0) {
-      return dbProjects;
-    }
-    
-    return parseIdeasFromText(message.text);
+
+    const textProjects = parseProjectsFromText(message.text);
+    const textIdeas = parseIdeasFromText(message.text);
+    const apiProyectos = message.proyectos || [];
+
+    let list = [];
+
+    // 1. Agregar proyectos del API y cruzarlos con los del texto
+    apiProyectos.forEach(p => {
+      const match = textProjects.find(tp => 
+        cleanTitle(p.titulo) === cleanTitle(tp.titulo) ||
+        (p.autor && tp.autor && p.autor.toLowerCase().trim() === tp.autor.toLowerCase().trim())
+      );
+      
+      list.push({
+        ...p,
+        archivoPDF: p.archivoPDF || match?.archivoPDF || "",
+        tutor: p.tutor || match?.tutor || "",
+        periodoAcademico: p.periodoAcademico || match?.periodoAcademico || "",
+        tecnologias: p.tecnologias || match?.tecnologias || "",
+        esIdea: p.esIdea !== undefined ? p.esIdea : false
+      });
+    });
+
+    // 2. Agregar los proyectos parseados de texto que no estén en la lista
+    textProjects.forEach(tp => {
+      const exists = list.some(p => 
+        cleanTitle(p.titulo) === cleanTitle(tp.titulo) ||
+        (p.archivoPDF && tp.archivoPDF && p.archivoPDF.trim() === tp.archivoPDF.trim()) ||
+        (p.autor && tp.autor && p.autor.toLowerCase().trim() === tp.autor.toLowerCase().trim())
+      );
+      if (!exists) {
+        list.push({
+          ...tp,
+          esIdea: false
+        });
+      }
+    });
+
+    // 3. Agregar las ideas parseadas de texto que no estén en la lista
+    textIdeas.forEach(ti => {
+      const exists = list.some(p => 
+        cleanTitle(p.titulo) === cleanTitle(ti.titulo)
+      );
+      if (!exists) {
+        list.push({
+          ...ti,
+          esIdea: true
+        });
+      }
+    });
+
+    return list;
   })();
 
+  // Un proyecto es real si tiene archivo PDF o no es idea
   const tieneProyectosValidos = isBot && proyectos.length > 0 && (proyectos.some(p => p.esIdea || p.archivoPDF));
   
-  const tieneIdeas = tieneProyectosValidos && proyectos[0].esIdea;
-  const tieneProyectos = tieneProyectosValidos && !proyectos[0].esIdea;
+  const tieneIdeas = tieneProyectosValidos && proyectos.every(p => p.esIdea);
+  const tieneProyectos = tieneProyectosValidos && proyectos.some(p => !p.esIdea || p.archivoPDF);
 
   // Si hay proyectos para mostrar en tarjetas, limpiamos la lista cruda del texto para que no se duplique
   const textoAMostrar = tieneProyectosValidos 
     ? cleanMessageText(message.text, tieneProyectos, tieneIdeas) 
     : message.text;
+
+  // Resolutor de proyectos en background (para buscar título real si es de historial o F5)
+  useEffect(() => {
+    if (!isBot || proyectos.length === 0) return;
+    
+    const toResolve = proyectos.filter(p => 
+      !p.esIdea && 
+      (p._id?.startsWith("parsed-") || p.titulo === "Proyectos" || p.titulo === "Proyecto sin título" || !p.titulo)
+    );
+    
+    if (toResolve.length === 0) return;
+    
+    const resolveAll = async () => {
+      const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+      const tokenFinal = sessionStorage.getItem("token") || storeAuth.getState().token;
+      
+      const newResolved = { ...resolvedProjects };
+      let changed = false;
+      
+      for (const pro of toResolve) {
+        if (newResolved[pro._id]) continue;
+        
+        try {
+          let match = null;
+          
+          // 1. Intentar buscar por autor (muy eficiente)
+          if (pro.autor && !pro.autor.toLowerCase().includes("proyecto")) {
+            const url = `${baseUrl}/api/proyectos?autor=${encodeURIComponent(pro.autor)}`;
+            const res = await fetch(url, {
+              headers: { Authorization: `Bearer ${tokenFinal}` }
+            });
+            if (res.ok) {
+              const response = await res.json();
+              const list = response.resultados || response.proyectos || (Array.isArray(response) ? response : []);
+              match = list.find(p => 
+                (p.archivoPDF && pro.archivoPDF && p.archivoPDF.trim() === pro.archivoPDF.trim()) ||
+                (p.autor && pro.autor && p.autor.toLowerCase().trim() === pro.autor.toLowerCase().trim())
+              );
+            }
+          }
+          
+          // 2. Fallback: búsqueda por paginación tradicional
+          if (!match && pro.archivoPDF) {
+            let paginaActual = 1;
+            let totalPaginas = 1;
+            do {
+              const url = `${baseUrl}/api/proyectos?limit=50&page=${paginaActual}`;
+              const res = await fetch(url, {
+                headers: { Authorization: `Bearer ${tokenFinal}` }
+              });
+              if (!res.ok) break;
+              const response = await res.json();
+              const list = response.resultados || response.proyectos || (Array.isArray(response) ? response : []);
+              match = list.find(p => 
+                (p.archivoPDF && pro.archivoPDF && p.archivoPDF.trim() === pro.archivoPDF.trim())
+              );
+              if (match) break;
+              totalPaginas = response.totalPaginas || 1;
+              paginaActual++;
+            } while (paginaActual <= totalPaginas);
+          }
+          
+          if (match) {
+            newResolved[pro._id] = {
+              _id: match._id,
+              titulo: match.titulo,
+              autor: match.autor,
+              tutor: match.tutor || match.tutora || pro.tutor || "",
+              carrera: match.carrera || pro.carrera || "",
+              periodoAcademico: match.periodoAcademico || pro.periodoAcademico || "",
+              tecnologias: match.tecnologias || pro.tecnologias || "",
+              archivoPDF: match.archivoPDF || pro.archivoPDF || "",
+              repositorio: match.repositorio || pro.repositorio || ""
+            };
+            changed = true;
+          }
+        } catch (err) {
+          console.error("Error al resolver proyecto:", err);
+        }
+      }
+      
+      if (changed) {
+        setResolvedProjects(prev => ({ ...prev, ...newResolved }));
+      }
+    };
+    
+    resolveAll();
+  }, [message.text, message.proyectos]);
+
+  // Proyectos finales con resolución de datos aplicada
+  const proyectosFinales = proyectos.map(p => {
+    if (resolvedProjects[p._id]) {
+      return {
+        ...p,
+        ...resolvedProjects[p._id]
+      };
+    }
+    return p;
+  });
+
+  // ✅ Redirección segura al Detalle del Proyecto (con búsqueda en backend por si es parseado de historial)
+  const handleVerDetalle = async (pro) => {
+    if (pro._id && !pro._id.startsWith("parsed-")) {
+      navigate(`/dashboard/detalle/${pro._id}`);
+      return;
+    }
+    
+    try {
+      const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+      const tokenFinal = sessionStorage.getItem("token") || storeAuth.getState().token;
+      
+      let encontrado = null;
+      let paginaActual = 1;
+      let totalPaginas = 1;
+
+      do {
+        const url = `${baseUrl}/api/proyectos?limit=50&page=${paginaActual}`;
+        const res = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${tokenFinal}`
+          }
+        });
+        const response = await res.json();
+
+        if (response) {
+          const listaProyectos = response.resultados || response.proyectos || (Array.isArray(response) ? response : []);
+          
+          const match = listaProyectos.find(p => 
+            (p.archivoPDF && pro.archivoPDF && p.archivoPDF.trim() === pro.archivoPDF.trim()) ||
+            cleanTitle(p.titulo) === cleanTitle(pro.titulo)
+          );
+          
+          if (match && match._id) {
+            encontrado = match;
+            break;
+          }
+          
+          totalPaginas = response.totalPaginas || 1;
+          paginaActual++;
+        } else {
+          break;
+        }
+      } while (paginaActual <= totalPaginas);
+
+      if (encontrado && encontrado._id) {
+        navigate(`/dashboard/detalle/${encontrado._id}`);
+      } else {
+        toast.error("No se pudo localizar el ID del proyecto en el servidor.");
+      }
+    } catch (error) {
+      console.error("Error al buscar ID de proyecto:", error);
+      toast.error("Error al redirigir al detalle.");
+    }
+  };
 
   return (
     <div className={`flex ${isBot ? "justify-start" : "justify-end"} mb-6 animate-fadeIn px-2`}>
@@ -303,14 +537,20 @@ const ChatMessage = ({ message, esFlotante = false }) => {
                 ? "flex flex-col gap-3" 
                 : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
             }`}>
-              {proyectos.map((pro, index) => {
-                if (!pro.archivoPDF && !pro.esIdea) return null;
+              {proyectosFinales.map((pro, index) => {
+                const esIdeaCard = pro.esIdea && !pro.archivoPDF;
+                if (!pro.archivoPDF && !esIdeaCard) return null;
+
+                // Título descriptivo si el título parseado es genérico o ausente
+                const displayTitle = (!pro.titulo || pro.titulo === "Proyectos" || pro.titulo === "Proyecto sin título")
+                  ? (pro.autor ? `Proyecto de ${pro.autor}` : "Proyecto Recomendado")
+                  : pro.titulo;
 
                 return (
                   <div 
                     key={pro._id || `parsed-pro-${index}`} 
                     className={`p-4 rounded-r-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 flex flex-col justify-between ${
-                      pro.esIdea 
+                      esIdeaCard 
                         ? "bg-blue-50/50 hover:bg-blue-50 border-l-4 border-blue-500" 
                         : "bg-gray-50/85 hover:bg-slate-50 border-l-4 border-[#F5BD45]"
                     }`}
@@ -318,16 +558,16 @@ const ChatMessage = ({ message, esFlotante = false }) => {
                     <div>
                       <div className="flex justify-between items-start gap-2 mb-2">
                         <h4 className="text-[12px] font-black text-[#17243D] uppercase leading-tight tracking-tight">
-                          {pro.titulo}
+                          {displayTitle.replace(/\*/g, '')}
                         </h4>
-                        {pro.esIdea && (
+                        {esIdeaCard && (
                           <span className="bg-blue-100 text-blue-800 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0">
                             Idea IA
                           </span>
                         )}
                       </div>
                       
-                      {pro.esIdea ? (
+                      {esIdeaCard ? (
                         <p className="text-[10px] text-gray-600 font-medium leading-relaxed mb-3">
                           {pro.descripcion}
                         </p>
@@ -337,6 +577,13 @@ const ChatMessage = ({ message, esFlotante = false }) => {
                             <MdPerson size={13} className="text-[#17243D] flex-shrink-0" />
                             <span className="truncate">{pro.autor}</span>
                           </div>
+                          
+                          {(pro.tutor || pro.tutora) && (
+                            <div className="flex items-center gap-1.5">
+                              <MdPerson size={13} className="text-[#17243D] flex-shrink-0" />
+                              <span className="truncate">Tutor: {pro.tutor || pro.tutora}</span>
+                            </div>
+                          )}
                           
                           {pro.carrera && (
                             <div className="flex items-center gap-1.5">
@@ -348,7 +595,7 @@ const ChatMessage = ({ message, esFlotante = false }) => {
                       )}
 
                       {pro.tecnologias && (
-                        <div className="flex items-center gap-1.5 text-[10px] text-gray-600 font-bold mt-1">
+                        <div className="flex items-center gap-1.5 text-[10px] text-gray-600 font-bold mt-1.5">
                           <MdComputer size={13} className="text-[#17243D] flex-shrink-0" />
                           <span className="truncate">
                             {Array.isArray(pro.tecnologias) ? pro.tecnologias.join(", ") : pro.tecnologias}
@@ -357,16 +604,25 @@ const ChatMessage = ({ message, esFlotante = false }) => {
                       )}
                     </div>
 
-                    {!pro.esIdea && (
+                    {!esIdeaCard && (
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-4 pt-3 border-t border-gray-200/50">
-                        <a 
-                          href={pro.archivoPDF} 
-                          target="_blank" 
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1.5 text-[10px] font-black text-red-600 hover:text-red-800 transition-colors uppercase tracking-wider"
+                        <button 
+                          onClick={() => handleVerDetalle(pro)}
+                          className="inline-flex items-center gap-1.5 text-[10px] font-black text-[#17243D] hover:text-[#F5BD45] cursor-pointer transition-colors uppercase tracking-wider bg-transparent border-none p-0"
                         >
-                          <MdPictureAsPdf size={14} /> PDF
-                        </a>
+                          <MdInfo size={14} className="text-[#17243D]" /> DETALLE
+                        </button>
+
+                        {pro.archivoPDF && (
+                          <a 
+                            href={pro.archivoPDF} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 text-[10px] font-black text-red-600 hover:text-red-800 transition-colors uppercase tracking-wider"
+                          >
+                            <MdPictureAsPdf size={14} /> PDF
+                          </a>
+                        )}
                         
                         {pro.repositorio && (
                           <a 
