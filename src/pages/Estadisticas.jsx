@@ -13,7 +13,6 @@ const Estadisticas = () => {
   const { token } = storeAuth();
   const reportRef = useRef(); 
 
-  // Guardamos las métricas extendidas que envió el backend
   const [metricas, setMetricas] = useState({ 
     totalProyectos: 0, 
     totalTutores: 0, 
@@ -23,7 +22,7 @@ const Estadisticas = () => {
   });
   const [datosCarrera, setDatosCarrera] = useState([]);
   const [datosTutor, setDatosTutor] = useState([]);
-  const [datosPeriodo, setDatosPeriodo] = useState([]); // Nuevo estado para periodos
+  const [datosPeriodo, setDatosPeriodo] = useState([]); 
   const [carreraSeleccionada, setCarreraSeleccionada] = useState("Todas");
   const [tutoresGenerales, setTutoresGenerales] = useState([]);
 
@@ -65,11 +64,19 @@ const Estadisticas = () => {
           totalUsuarios: response.totalUsuarios || 0
         });
 
-        setDatosCarrera(response.proyecto_carrera?.map(item => ({
-          name: resumirNombre(item._id),
-          fullName: item._id,
-          cantidad: item.total
-        })) || []);
+        // ✅ MAPEO UNIFICADO: Cruzamos los proyectos por carrera con los usuarios por carrera
+        const carrerasUnificadas = response.proyecto_carrera?.map(item => {
+          // Buscamos si la carrera actual tiene usuarios registrados en el backend
+          const usuarioCarreraMatch = response.usuario_carrera?.find(u => u._id === item._id);
+          
+          return {
+            name: resumirNombre(item._id),
+            fullName: item._id,
+            proyectos: item.total || 0,
+            usuarios: usuarioCarreraMatch ? usuarioCarreraMatch.total : 0 // Si no hay match, seteamos 0
+          };
+        }) || [];
+        setDatosCarrera(carrerasUnificadas);
 
         const tutoresFormateados = response.proyecto_tutor?.map(item => ({
           name: item._id,
@@ -78,7 +85,6 @@ const Estadisticas = () => {
         setTutoresGenerales(tutoresFormateados);
         if (carreraSeleccionada === "Todas") setDatosTutor(tutoresFormateados);
 
-        // ✅ PROCESAMIENTO NUEVO: Formateamos periodos manejando arrays u objetos del backend
         const periodosFormateados = response.proyecto_periodo?.map(item => {
           const nombrePeriodo = Array.isArray(item._id) ? item._id[0] : item._id;
           return {
@@ -216,7 +222,7 @@ const Estadisticas = () => {
           <GraficosEstadisticos 
             datosCarrera={datosCarrera} 
             datosTutor={datosTutor}
-            datosPeriodo={datosPeriodo} // Pasamos la nueva colección
+            datosPeriodo={datosPeriodo} 
             carreraSeleccionada={carreraSeleccionada}
             setCarreraSeleccionada={setCarreraSeleccionada}
             carrerasOriginales={datosCarrera} 

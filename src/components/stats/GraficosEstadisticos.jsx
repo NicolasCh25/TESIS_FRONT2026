@@ -19,11 +19,11 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, datosPeriodo, carreraS
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        {/* Gráfico 1: Barras - Proyectos por Carrera */}
+        {/* ✅ GRAFICO 1 ACTUALIZADO: Barras Comparativas (Proyectos vs Usuarios Alumnos) */}
         <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
           <h3 className="text-xl font-bold text-[#17243D] mb-6 flex items-center gap-2">
             <span className="w-2 h-8 bg-[#F5BD45] rounded-full"></span>
-            Proyectos por Carrera
+            Actividad de Proyectos y Alumnos por Carrera
           </h3>
           <div className="h-[400px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -40,12 +40,14 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, datosPeriodo, carreraS
                   height={80} 
                 />
                 <YAxis axisLine={false} tickLine={false} />
-                <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{ borderRadius: '15px', border: 'none' }} />
-                <Bar dataKey="cantidad" radius={[10, 10, 0, 0]}>
-                  {datosCarrera.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
+                <Tooltip contentStyle={{ borderRadius: '15px', border: 'none' }} />
+                <Legend verticalAlign="top" height={36} iconType="rect" />
+                
+                {/* Barra Azul: Cantidad de Proyectos de Integración */}
+                <Bar name="Proyectos Subidos" dataKey="proyectos" fill="#17243D" radius={[6, 6, 0, 0]} />
+                
+                {/* Barra Amarilla: Cantidad de Alumnos Registrados */}
+                <Bar name="Alumnos Registrados" dataKey="usuarios" fill="#F5BD45" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -95,7 +97,7 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, datosPeriodo, carreraS
         </div>
       </div>
 
-      {/* ✅ NUEVO Gráfico 3: Histórico de Proyectos por Periodo Académico */}
+      {/* Gráfico 3: Histórico de Proyectos por Periodo Académico */}
       <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 w-full">
         <h3 className="text-xl font-bold text-[#17243D] mb-6 flex items-center gap-2">
           <span className="w-2 h-8 bg-[#3B82F6] rounded-full"></span>
