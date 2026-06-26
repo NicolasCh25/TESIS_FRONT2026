@@ -17,13 +17,14 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, datosPeriodo, carreraS
 
   return (
     <div className="space-y-8">
+      {/* SECCIÓN SUPERIOR: DOS COLUMNAS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        {/* ✅ GRAFICO 1 ACTUALIZADO: Barras Comparativas (Proyectos vs Usuarios Alumnos) */}
+        {/* Gráfico 1: RESTAURADO - Proyectos por Carrera */}
         <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
           <h3 className="text-xl font-bold text-[#17243D] mb-6 flex items-center gap-2">
             <span className="w-2 h-8 bg-[#F5BD45] rounded-full"></span>
-            Actividad de Proyectos y Alumnos por Carrera
+            Proyectos por Carrera
           </h3>
           <div className="h-[400px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -40,14 +41,13 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, datosPeriodo, carreraS
                   height={80} 
                 />
                 <YAxis axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ borderRadius: '15px', border: 'none' }} />
-                <Legend verticalAlign="top" height={36} iconType="rect" />
-                
-                {/* Barra Azul: Cantidad de Proyectos de Integración */}
-                <Bar name="Proyectos Subidos" dataKey="proyectos" fill="#17243D" radius={[6, 6, 0, 0]} />
-                
-                {/* Barra Amarilla: Cantidad de Alumnos Registrados */}
-                <Bar name="Alumnos Registrados" dataKey="usuarios" fill="#F5BD45" radius={[6, 6, 0, 0]} />
+                <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{ borderRadius: '15px', border: 'none' }} />
+                {/* Volvemos a usar la propiedad de proyectos independiente */}
+                <Bar dataKey="proyectos" radius={[10, 10, 0, 0]}>
+                  {datosCarrera.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -97,32 +97,65 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, datosPeriodo, carreraS
         </div>
       </div>
 
-      {/* Gráfico 3: Histórico de Proyectos por Periodo Académico */}
-      <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 w-full">
-        <h3 className="text-xl font-bold text-[#17243D] mb-6 flex items-center gap-2">
-          <span className="w-2 h-8 bg-[#3B82F6] rounded-full"></span>
-          Proyectos por Periodo Académico
-        </h3>
-        <div className="h-[350px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={datosPeriodo}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="name" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{fill: '#4b5563', fontSize: 12, fontWeight: 'bold'}} 
-              />
-              <YAxis axisLine={false} tickLine={false} />
-              <Tooltip cursor={{fill: '#f1f5f9'}} contentStyle={{ borderRadius: '12px' }} />
-              <Bar dataKey="cantidad" fill="#17243D" radius={[8, 8, 0, 0]} maxBarSize={60}>
-                {datosPeriodo.map((entry, index) => (
-                  <Cell key={`cell-p-${index}`} fill={index % 2 === 0 ? '#17243D' : '#F5BD45'} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+      {/* ✅ SECCIÓN INFERIOR: GRÁFICOS DE ANCHO COMPLETO */}
+      <div className="grid grid-cols-1 gap-8">
+        
+        {/* ✅ NUEVO Gráfico: Alumnos Registrados por Carrera */}
+        <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 w-full">
+          <h3 className="text-xl font-bold text-[#17243D] mb-6 flex items-center gap-2">
+            <span className="w-2 h-8 bg-[#10B981] rounded-full"></span>
+            Alumnos Estudiantes Registrados por Carrera
+          </h3>
+          <div className="h-[350px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={datosCarrera} margin={{ bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#4b5563', fontSize: 11, fontWeight: 'bold'}} 
+                />
+                <YAxis axisLine={false} tickLine={false} />
+                <Tooltip cursor={{fill: '#f1f5f9'}} contentStyle={{ borderRadius: '12px' }} />
+                <Bar dataKey="usuarios" fill="#F5BD45" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                  {datosCarrera.map((entry, index) => (
+                    <Cell key={`cell-u-${index}`} fill={COLORS[(index + 1) % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
+
+        {/* Gráfico 3: Histórico de Proyectos por Periodo Académico */}
+        <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 w-full">
+          <h3 className="text-xl font-bold text-[#17243D] mb-6 flex items-center gap-2">
+            <span className="w-2 h-8 bg-[#3B82F6] rounded-full"></span>
+            Proyectos por Periodo Académico
+          </h3>
+          <div className="h-[350px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={datosPeriodo}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#4b5563', fontSize: 12, fontWeight: 'bold'}} 
+                />
+                <YAxis axisLine={false} tickLine={false} />
+                <Tooltip cursor={{fill: '#f1f5f9'}} contentStyle={{ borderRadius: '12px' }} />
+                <Bar dataKey="cantidad" fill="#17243D" radius={[8, 8, 0, 0]} maxBarSize={60}>
+                  {datosPeriodo.map((entry, index) => (
+                    <Cell key={`cell-p-${index}`} fill={index % 2 === 0 ? '#17243D' : '#F5BD45'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
       </div>
     </div>
   );
