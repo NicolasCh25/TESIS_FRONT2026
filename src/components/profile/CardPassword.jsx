@@ -33,7 +33,7 @@ export const CardPassword = () => {
     setCargando(true);
 
     const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-    const url = `${baseUrl}/api/perfil/cambiar-password`;
+    const url = `${baseUrl}api/perfil/cambiar-password`;
 
     const data = { passwordActual, passwordNueva, confirmarPassword };
 

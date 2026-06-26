@@ -127,7 +127,7 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    {/* ✅ INTEGRACIÓN DE LA TARJETA DE CAMBIO DE PASSWORD */}
+                    
                     <CardPassword />
                 </div>
             </div>
