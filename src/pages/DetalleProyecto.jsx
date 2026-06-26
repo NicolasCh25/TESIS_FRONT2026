@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom"; // Añadimos useLocation
+import { useParams, useNavigate, useLocation } from "react-router-dom"; 
 import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
 import { toast } from "react-toastify";
@@ -12,15 +12,16 @@ import {
 const DetalleProyecto = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ Captura el estado enviado por la navegación
+  const location = useLocation(); 
   const fetchDataBackend = useFetch();
   const { token } = storeAuth();
   
-  // ✅ Clonamos la lógica del estudiante: Si el proyecto ya viene en el state de navegación, lo precargamos directamente
+  // ✅ CLONACIÓN DE LÓGICA ESTUDIANTE: Cargamos el proyecto de inmediato si ya viene del state de navegación
   const [proyecto, setProyecto] = useState(location.state?.proyectoSeleccionado || null);
 
   useEffect(() => {
-    // Si ya tenemos el proyecto en el estado local, no le hacemos perder tiempo y no llamamos al backend
+    // ✅ CONTROL DE FLUJO: Si el proyecto ya está cargado mediante el state, detenemos el efecto.
+    // Esto evita que la petición del Administrador rompa o pise los datos correctos.
     if (proyecto) return;
 
     const obtenerProyecto = async () => {
@@ -33,6 +34,7 @@ const DetalleProyecto = () => {
         });
 
         if (response) {
+          // ✅ IDENTIFICACIÓN DE ESTRUCTURAS: Si viene el objeto paginado del Admin, extraemos '.resultados'
           const listaProyectos = response.resultados || response.proyectos || (Array.isArray(response) ? response : []);
           const encontrado = listaProyectos.find((p) => p._id === id || p.id === id);
           

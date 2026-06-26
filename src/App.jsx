@@ -24,7 +24,7 @@ import DetalleProyecto from './pages/DetalleProyecto';
 import ProyectosPorCarrera from './pages/ProyectosPorCarrera';
 import Estudiante from './pages/Estudiante';
 import Favoritos from './pages/Favoritos'; 
-import ChatbotPage from './pages/ChatbotPage'; // ✅ NUEVA PÁGINA DEL ASISTENTE VIRTUAL
+import ChatbotPage from './pages/ChatbotPage'; 
 
 // Layouts e Inicio
 import Dashboard from './layout/Dashboard';
@@ -70,9 +70,7 @@ function App() {
 
             <Route path="favoritos" element={<Favoritos />} />
 
-            {/* ✅ NUEVA RUTA PRIVADA PARA EL CHATBOT (Acceso: /dashboard/chatbot) */}
             <Route path="chatbot" element={<ChatbotPage />} />
-
             <Route path="create" element={<CrearProyecto />} />
             <Route path="list" element={<ListarProyectos />} />
             <Route path="detalle/:id" element={<DetalleProyecto />} />
