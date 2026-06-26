@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { 
   MdMenu, MdClose, MdDashboard, MdFolder, MdAddCircle, 
-  MdGroup, MdBarChart, MdPerson, MdLogout, MdSearch, MdStar 
+  MdGroup, MdBarChart, MdPerson, MdLogout, MdSearch, MdStar,
+  MdOutlineShield // ✅ AGREGADO: Icono de escudo para auditoría
 } from "react-icons/md";
 import { storeAuth } from "../context/storeAuth"; 
 import ChatbotFloating from "../components/chatbot/ChatbotFloating";
@@ -101,6 +102,10 @@ export default function Dashboard() {
               </Link>
               <Link to="/dashboard/stats" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/stats')}>
                 <MdBarChart size={22} /> Estadísticas
+              </Link>
+              {/* ✅ AGREGADO: BOTÓN DE AUDITORÍA LOGS EN LA BARRA AZUL DEL ADMIN */}
+              <Link to="/dashboard/logs" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/logs')}>
+                <MdOutlineShield size={22} /> Auditoría (Logs)
               </Link>
             </>
           ) : (
