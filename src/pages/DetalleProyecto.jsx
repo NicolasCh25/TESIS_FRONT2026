@@ -20,29 +20,31 @@ const DetalleProyecto = () => {
     const obtenerProyecto = async () => {
       try {
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-        
-        // SOLUCIÓN DEFINITIVA: Volvemos a la ruta global pero aseguramos que vaya limpia
-        // sin arrastrar queries previas del administrador.
         const url = `${baseUrl}api/proyectos`;
         
         const response = await fetchDataBackend(url, null, "GET", {
           Authorization: `Bearer ${token}`
         });
 
-        if (response && response.resultados) {
-          // Buscamos el proyecto dentro de la lista completa usando el ID de la URL
-          const encontrado = response.resultados.find((p) => p._id === id || p.id === id);
+        if (response) {
+          // ✅ SOLUCIÓN TOLERANTE A ROLES: Extraemos la lista de proyectos sea cual sea el formato del backend
+          // Intenta buscar en 'resultados', en 'proyectos', o asume que la respuesta ya es el array directo.
+          const listaProyectos = response.resultados || response.proyectos || (Array.isArray(response) ? response : []);
+
+          // Buscamos el proyecto usando el ID de la URL
+          const encontrado = listaProyectos.find((p) => p._id === id || p.id === id);
           
           if (encontrado) {
             setProyecto(encontrado);
           } else {
-            toast.error("El proyecto no se encuentra en los resultados actuales");
+            console.log("ID buscado:", id, "No se encontró en:", listaProyectos);
+            toast.error("Proyecto no localizado en el repositorio.");
           }
         } else {
-          toast.error("No se pudo obtener la lista de proyectos");
+          toast.error("No se recibió respuesta del servidor.");
         }
       } catch (error) {
-        console.error(error);
+        console.error("Error en DetalleProyecto:", error);
         toast.error("Error al cargar proyecto");
       }
     };
