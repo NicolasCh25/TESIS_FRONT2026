@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
-import TablaLogs from "../../components/logs/TablaLogs";
-import FiltroLogs from "../../components/logs/FiltroLogs";
+import TablaLogs from "../components/logs/TablaLogs";
+import FiltroLogs from "../components/logs/FiltroLogs";
 import { ToastContainer, toast } from "react-toastify";
 import { MdOutlineShield } from "react-icons/md";
 
@@ -24,7 +24,8 @@ const Logs = () => {
     if (filtros.resultado) queryParams.push(`resultado=${filtros.resultado}`);
     
     const query = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
-    const url = `${baseUrl}/api/logs${query}`;
+    // ✅ CORRECCIÓN DE ENDPOINT: Concatenación directa limpia sin barras duplicadas
+    const url = `${baseUrl}api/logs${query}`;
 
     try {
       const response = await fetchDataBackend(url, null, "GET", {
