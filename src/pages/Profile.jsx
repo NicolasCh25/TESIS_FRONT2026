@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
 import { CardProfile } from "../components/profile/CardProfile";
-import { CardPassword } from "../components/profile/CardPassword"; // ✅ IMPORTACIÓN DE LA NUEVA TARJETA
+import { CardPassword } from "../components/profile/CardPassword"; 
 import { MdBadge, MdEmail, MdCalendarMonth, MdVerifiedUser, MdSave } from "react-icons/md";
 import { toast, ToastContainer } from "react-toastify";
 
@@ -17,7 +17,7 @@ const Profile = () => {
 
     const obtenerPerfil = async () => {
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-        const url = `${baseUrl}/api/perfil`;
+        const url = `${baseUrl}api/perfil`;
 
         try {
             const response = await fetchDataBackend(url, null, "GET", {
@@ -40,7 +40,7 @@ const Profile = () => {
         if (!nombreEditado.trim()) return toast.warn("El nombre no puede estar vacío");
 
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-        const url = `${baseUrl}/api/perfil`; 
+        const url = `${baseUrl}api/perfil`; 
 
         try {
             const response = await fetchDataBackend(url, { nombre: nombreEditado }, "PUT", {
