@@ -64,7 +64,7 @@ const ChatbotPage = () => {
           sender: m.rol === "usuario" ? "user" : "bot",
           text: m.contenido
         })));
-        if (window.innerWidth < 640) setShowHistory(false);
+        if (window.innerWidth < 1024) setShowHistory(false);
       }
     } catch (error) {
       toast.error("No se pudo cargar la conversación");
@@ -92,7 +92,7 @@ const ChatbotPage = () => {
   const iniciarNuevoChat = () => {
     setCurrentChatId(null);
     setMessages([{ sender: "bot", text: "¡Hola! Iniciamos una nueva conversación. ¿En qué te ayudo?" }]);
-    if (window.innerWidth < 640) setShowHistory(false);
+    if (window.innerWidth < 1024) setShowHistory(false);
   };
 
   const handleSend = async (e) => {
@@ -181,8 +181,8 @@ const ChatbotPage = () => {
         
         {/* PANEL IZQUIERDO: Estilo claro */}
         <div className={`
-          ${showHistory ? "flex" : "hidden sm:flex"} 
-          w-full sm:w-[260px] md:w-[290px] bg-slate-50 text-gray-800 flex-col flex-shrink-0 border-r border-gray-200 z-20 absolute sm:relative h-full inset-0 sm:inset-auto
+          ${showHistory ? "flex" : "hidden lg:flex"} 
+          w-full lg:w-[260px] xl:w-[290px] bg-slate-50 text-gray-800 flex-col flex-shrink-0 border-r border-gray-200 z-20 absolute lg:relative h-full inset-0 lg:inset-auto
         `}>
           <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-white flex-shrink-0">
             <h4 className="text-xs font-black uppercase tracking-wider text-[#17243D]">Historial de Chats</h4>
@@ -194,7 +194,7 @@ const ChatbotPage = () => {
               >
                 <MdAddComment size={16} />
               </button>
-              <button onClick={() => setShowHistory(false)} className="sm:hidden p-2 bg-gray-100 rounded-xl text-gray-700">
+              <button onClick={() => setShowHistory(false)} className="lg:hidden p-2 bg-gray-100 rounded-xl text-gray-700">
                 <MdClose size={16} />
               </button>
             </div>
@@ -239,7 +239,7 @@ const ChatbotPage = () => {
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => setShowHistory(!showHistory)} 
-                className="sm:hidden bg-gray-800 text-white p-2 rounded-xl"
+                className="lg:hidden bg-gray-800 text-white p-2 rounded-xl"
               >
                 <MdHistory size={18} />
               </button>
