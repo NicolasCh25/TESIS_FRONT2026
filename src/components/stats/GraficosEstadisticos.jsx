@@ -17,10 +17,10 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, datosPeriodo, carreraS
 
   return (
     <div className="space-y-8">
-      {/* SECCIÓN SUPERIOR: DOS COLUMNAS */}
+      {/* PRIMERA FILA: Proyectos por Carrera y Carga por Tutores (Como en image_36c3c5.png) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        {/* Gráfico 1: RESTAURADO - Proyectos por Carrera */}
+        {/* Gráfico 1: Proyectos por Carrera */}
         <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
           <h3 className="text-xl font-bold text-[#17243D] mb-6 flex items-center gap-2">
             <span className="w-2 h-8 bg-[#F5BD45] rounded-full"></span>
@@ -42,7 +42,6 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, datosPeriodo, carreraS
                 />
                 <YAxis axisLine={false} tickLine={false} />
                 <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{ borderRadius: '15px', border: 'none' }} />
-                {/* Volvemos a usar la propiedad de proyectos independiente */}
                 <Bar dataKey="proyectos" radius={[10, 10, 0, 0]}>
                   {datosCarrera.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -97,28 +96,32 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, datosPeriodo, carreraS
         </div>
       </div>
 
-      {/* ✅ SECCIÓN INFERIOR: GRÁFICOS DE ANCHO COMPLETO */}
-      <div className="grid grid-cols-1 gap-8">
+      {/* ✅ SEGUNDA FILA CORREGIDA: Alumnos por Carrera y Periodos Académicos uno al lado del otro */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        {/* ✅ NUEVO Gráfico: Alumnos Registrados por Carrera */}
-        <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 w-full">
+        {/* Gráfico 3: Alumnos Registrados por Carrera */}
+        <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
           <h3 className="text-xl font-bold text-[#17243D] mb-6 flex items-center gap-2">
             <span className="w-2 h-8 bg-[#10B981] rounded-full"></span>
-            Alumnos Estudiantes Registrados por Carrera
+            Alumnos Estudiantes Registrados
           </h3>
           <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={datosCarrera} margin={{ bottom: 20 }}>
+              <BarChart data={datosCarrera} margin={{ bottom: 70 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                 <XAxis 
                   dataKey="name" 
                   axisLine={false} 
                   tickLine={false} 
+                  interval={0} 
+                  angle={-30} 
+                  textAnchor="end" 
                   tick={{fill: '#4b5563', fontSize: 11, fontWeight: 'bold'}} 
+                  height={80}
                 />
                 <YAxis axisLine={false} tickLine={false} />
                 <Tooltip cursor={{fill: '#f1f5f9'}} contentStyle={{ borderRadius: '12px' }} />
-                <Bar dataKey="usuarios" fill="#F5BD45" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                <Bar dataKey="usuarios" fill="#F5BD45" radius={[8, 8, 0, 0]}>
                   {datosCarrera.map((entry, index) => (
                     <Cell key={`cell-u-${index}`} fill={COLORS[(index + 1) % COLORS.length]} />
                   ))}
@@ -128,8 +131,8 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, datosPeriodo, carreraS
           </div>
         </div>
 
-        {/* Gráfico 3: Histórico de Proyectos por Periodo Académico */}
-        <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 w-full">
+        {/* Gráfico 4: Histórico de Proyectos por Periodo Académico */}
+        <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
           <h3 className="text-xl font-bold text-[#17243D] mb-6 flex items-center gap-2">
             <span className="w-2 h-8 bg-[#3B82F6] rounded-full"></span>
             Proyectos por Periodo Académico
@@ -137,7 +140,7 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, datosPeriodo, carreraS
           <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={datosPeriodo}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                 <XAxis 
                   dataKey="name" 
                   axisLine={false} 
@@ -146,7 +149,7 @@ const GraficosEstadisticos = ({ datosCarrera, datosTutor, datosPeriodo, carreraS
                 />
                 <YAxis axisLine={false} tickLine={false} />
                 <Tooltip cursor={{fill: '#f1f5f9'}} contentStyle={{ borderRadius: '12px' }} />
-                <Bar dataKey="cantidad" fill="#17243D" radius={[8, 8, 0, 0]} maxBarSize={60}>
+                <Bar dataKey="cantidad" fill="#17243D" radius={[8, 8, 0, 0]}>
                   {datosPeriodo.map((entry, index) => (
                     <Cell key={`cell-p-${index}`} fill={index % 2 === 0 ? '#17243D' : '#F5BD45'} />
                   ))}
