@@ -21,130 +21,175 @@ const parseProjectsFromText = (text) => {
   const projects = [];
   const lines = text.split("\n").map(l => l.trim());
   let currentProject = null;
-  
+
   const isProjectKeyword = (str) => {
-    return /^(Autor|Tutor|Tutora|Carrera|Periodo|Período|Tecnologías|Tecnologias|PDF|Repositorio|Video)/i.test(str) ||
+    return /^(Autor|Tutor|Tutora|Carrera|Periodo|Período|Tecnologías|Tecnologias|PDF|Repositorio|Video|Enlace|Documentación|Documentacion|Fecha|Entrega)/i.test(str) ||
            /PDF disponible en/i.test(str);
+  };
+
+  const isProjectStart = (line) => {
+    return /^(Autor|Autores|Autor y Tutor|Tutor y Autor)\s*[:y]/i.test(line) ||
+           /^\[\d+\]/i.test(line) ||
+           /:\s*Autor\s*:/i.test(line);
   };
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (!line) continue;
-    
-    // Formato 1: "PoliGym EPN : Autor: Nicolás Chiguano | Tutora: Yadira Franco"
-    const headerMatch = line.match(/^(.+?)\s*:\s*Autor\s*:\s*(.+)$/i);
-    
-    if (headerMatch) {
-      if (currentProject && currentProject.titulo && currentProject.archivoPDF) {
+
+    let startsNew = false;
+    let titleFromHeader = "";
+    let autorFromHeader = "";
+    let tutorFromHeader = "";
+
+    // Case 1: [1] Proyecto Aguas y saneamiento ambiental
+    const bracketMatch = line.match(/^\[\d+\]\s*(.+)$/i);
+    if (bracketMatch) {
+      startsNew = true;
+      titleFromHeader = bracketMatch[1].replace(/\*/g, "").trim();
+    }
+
+    // Case 2: Title : Autor: Nicolas | Tutor: ...
+    const colonAutorMatch = line.match(/^(.+?)\s*:\s*Autor\s*:\s*(.+)$/i);
+    if (colonAutorMatch) {
+      startsNew = true;
+      titleFromHeader = colonAutorMatch[1].replace(/\*/g, "").trim();
+      autorFromHeader = colonAutorMatch[2].split("|")[0].trim();
+      
+      const tutorMatch = colonAutorMatch[2].match(/Tutor(?:a)?\s*:\s*([^|]+)/i);
+      if (tutorMatch) tutorFromHeader = tutorMatch[1].trim();
+    }
+
+    // Case 3: Line starts with Autor / Autor y Tutor
+    const autorMatch = line.match(/^(Autor|Autores|Autor y Tutor)\s*:\s*(.+)$/i);
+    if (autorMatch && !colonAutorMatch) {
+      startsNew = true;
+      const content = autorMatch[2];
+      
+      if (line.toLowerCase().startsWith("autor y tutor")) {
+        const parts = content.split(/\||y/i);
+        autorFromHeader = parts[0].trim();
+        if (parts[1]) tutorFromHeader = parts[1].trim();
+      } else {
+        autorFromHeader = content.split("|")[0].trim();
+        const tutorMatch = line.match(/Tutor(?:a)?\s*:\s*([^|]+)/i);
+        if (tutorMatch) tutorFromHeader = tutorMatch[1].trim();
+      }
+    }
+
+    if (startsNew) {
+      if (currentProject && (currentProject.archivoPDF || currentProject.autor)) {
         projects.push(currentProject);
       }
-      
-      const titulo = headerMatch[1].replace(/\*/g, "").trim();
-      const autorText = headerMatch[2].split("|")[0].trim();
-      
-      currentProject = {
-        _id: `parsed-${i}`,
-        titulo: titulo,
-        autor: autorText,
-        tecnologias: "",
-        archivoPDF: ""
-      };
-      
-      const tutorInLine = headerMatch[2].match(/Tutor(?:a)?\s*:\s*([^|]+)/i);
-      if (tutorInLine) {
-        currentProject.tutor = tutorInLine[1].trim();
-      }
-      continue;
-    }
-    
-    // Formato 2: "Autor: Edison Cruz | Tutor: Ing. Becerra" (con el título en la línea anterior)
-    const autorMatch = line.match(/^Autor\s*:\s*(.+)$/i);
-    if (autorMatch) {
-      // Intentar buscar el título en la línea anterior
-      let prevIndex = i - 1;
-      let titulo = "Proyecto sin título";
-      while (prevIndex >= 0) {
-        const prevLine = lines[prevIndex];
-        if (prevLine && !isProjectKeyword(prevLine)) {
-          const cleanedPrev = prevLine.toLowerCase().replace(/\*/g, "").replace(/#/g, "").trim();
-          if (
-            cleanedPrev !== "proyectos" && 
-            cleanedPrev !== "proyecto" && 
-            cleanedPrev !== "proyectos recomendados" && 
-            cleanedPrev !== "proyectos relacionados" &&
-            cleanedPrev !== "proyectos relacionados con"
-          ) {
-            titulo = prevLine.replace(/\*/g, "").trim();
-            break;
+
+      let titulo = titleFromHeader || "";
+      if (!titulo) {
+        let prevIndex = i - 1;
+        while (prevIndex >= 0) {
+          const prevLine = lines[prevIndex];
+          if (prevLine && !isProjectStart(prevLine) && !isProjectKeyword(prevLine)) {
+            const cleanedPrev = prevLine.toLowerCase().replace(/\*/g, "").replace(/#/g, "").trim();
+            if (
+              cleanedPrev !== "proyectos" && 
+              cleanedPrev !== "proyecto" && 
+              cleanedPrev !== "proyectos recomendados" && 
+              cleanedPrev !== "proyectos relacionados" &&
+              cleanedPrev !== "proyectos relacionados con"
+            ) {
+              titulo = prevLine.replace(/\*/g, "").trim();
+              break;
+            }
           }
+          prevIndex--;
         }
-        prevIndex--;
       }
-      
-      if (currentProject && currentProject.titulo && currentProject.archivoPDF) {
-        projects.push(currentProject);
-      }
-      
+
+      const isGenericOrIntroductory = (t) => {
+        if (!t) return true;
+        const clean = t.toLowerCase().trim();
+        return clean.length > 60 ||
+               clean.startsWith("tenemos") ||
+               clean.startsWith("tienes") ||
+               clean.startsWith("en nuestro") ||
+               clean.startsWith("a continuación") ||
+               clean.startsWith("a continuacion") ||
+               clean.startsWith("el proyecto es") ||
+               clean.startsWith("estos proyectos") ||
+               clean.startsWith("proyectos") ||
+               clean.startsWith("proyecto") ||
+               clean === "proyecto sin título";
+      };
+
       currentProject = {
         _id: `parsed-${i}`,
-        titulo: titulo,
-        autor: autorMatch[1].split("|")[0].trim(),
+        titulo: isGenericOrIntroductory(titulo) ? "Proyecto Recomendado" : titulo,
+        autor: autorFromHeader,
+        tutor: tutorFromHeader,
         tecnologias: "",
         archivoPDF: ""
       };
-      
-      // Buscar tutor en la misma línea
-      const tutorInLine = line.match(/Tutor(?:a)?\s*:\s*([^|]+)/i);
-      if (tutorInLine) {
-        currentProject.tutor = tutorInLine[1].trim();
-      }
       continue;
     }
-    
+
     if (currentProject) {
-      // Carrera: ...
-      const carreraMatch = line.match(/^Carrera\s*:\s*([^|]+)/i);
+      const tutorMatch = line.match(/^(Tutor|Tutora)\s*:\s*(.+)$/i);
+      if (tutorMatch) {
+        currentProject.tutor = tutorMatch[2].trim();
+        continue;
+      }
+
+      const carreraMatch = line.match(/^Carrera\s*:\s*([^|,]+)/i);
       if (carreraMatch) {
         currentProject.carrera = carreraMatch[1].trim();
       }
-      // Buscar periodo si está en la misma línea (Carrera: ... | Periodo: ...)
-      const periodoInLine = line.match(/Periodo\s*:\s*(.+)$/i);
-      if (periodoInLine) {
-        currentProject.periodoAcademico = periodoInLine[1].trim();
-      }
       
-      // Tecnologías: ...
-      const tecMatch = line.match(/^(Tecnologías|Tecnologias)\s*:\s*(.+)$/i);
+      const periodoMatch = line.match(/(Periodo|Período)\s*:\s*([^|,]+)/i);
+      if (periodoMatch) {
+        currentProject.periodoAcademico = periodoMatch[2].trim();
+      }
+
+      const carreraPeriodoMatch = line.match(/^Carrera y Período\s*:\s*(.+)$/i);
+      if (carreraPeriodoMatch) {
+        const parts = carreraPeriodoMatch[1].split(",");
+        currentProject.carrera = parts[0].trim();
+        if (parts[1]) currentProject.periodoAcademico = parts[1].trim();
+      }
+
+      const tecMatch = line.match(/^(Tecnologías|Tecnologias|Tecnologías utilizadas|Tecnologias utilizadas)\s*:\s*(.+)$/i);
       if (tecMatch) {
         currentProject.tecnologias = tecMatch[2].trim();
         continue;
       }
-      
-      // PDF: ... o PDF disponible en: ...
-      const pdfMatch = line.match(/^(PDF|PDF disponible en)\s*:\s*(https?:\/\/\S+)$/i);
+
+      const pdfMatch = line.match(/^(PDF|PDF disponible en|Enlace al PDF|Documentación asociada)\s*:\s*(https?:\/\/\S+)$/i);
       if (pdfMatch) {
         currentProject.archivoPDF = pdfMatch[2].trim();
         continue;
       }
-      
+
       if (!currentProject.archivoPDF && line.startsWith("https://") && line.includes("cloudinary") && line.endsWith(".pdf")) {
         currentProject.archivoPDF = line;
         continue;
       }
+      
+      const urlInText = line.match(/(https?:\/\/res\.cloudinary\.com\/\S+\.pdf)/i);
+      if (urlInText) {
+        currentProject.archivoPDF = urlInText[1].trim();
+        continue;
+      }
 
-      // Repositorio: ...
-      const repoMatch = line.match(/^Repositorio\s*:\s*(https?:\/\/\S+)$/i);
+      const repoMatch = line.match(/^(Repositorio|GitHub|Repositorio de código)\s*:\s*(https?:\/\/\S+)$/i);
       if (repoMatch) {
-        currentProject.repositorio = repoMatch[1].trim();
+        currentProject.repositorio = repoMatch[2].trim();
         continue;
       }
     }
   }
-  
-  if (currentProject && currentProject.titulo && currentProject.archivoPDF) {
+
+  if (currentProject && (currentProject.archivoPDF || currentProject.autor)) {
     projects.push(currentProject);
   }
-  
+
   return projects;
 };
 
@@ -234,11 +279,12 @@ const cleanMessageText = (text, tieneProyectos, tieneIdeas) => {
     // Si tiene proyectos, filtramos las líneas de metadatos de proyectos
     if (tieneProyectos) {
       const containsProjectPattern = 
-        /^(Autor|Tutor|Tutora|Carrera|Periodo|Período|Tecnologías|Tecnologias|PDF|Repositorio|Video)/i.test(line) ||
-        /:\s*(Autor|Tutor|Tutora|Carrera|Periodo|Período|Tecnologías|Tecnologias|PDF|Repositorio|Video)/i.test(line) ||
+        /^(Autor|Tutor|Tutora|Carrera|Periodo|Período|Tecnologías|Tecnologias|PDF|Repositorio|Video|Enlace|Documentación|Documentacion|Fecha|Entrega)/i.test(line) ||
+        /:\s*(Autor|Tutor|Tutora|Carrera|Periodo|Período|Tecnologías|Tecnologias|PDF|Repositorio|Video|Enlace|Documentación|Documentacion|Fecha|Entrega)/i.test(line) ||
         line.includes("https://res.cloudinary.com") ||
         line.includes("https://github.com") ||
-        /PDF disponible en/i.test(line);
+        /PDF disponible en/i.test(line) ||
+        /^\[\d+\]/i.test(line);
         
       if (containsProjectPattern) {
         continue;
@@ -250,6 +296,7 @@ const cleanMessageText = (text, tieneProyectos, tieneIdeas) => {
         cleanedLineLower === "proyectos" ||
         cleanedLineLower === "proyecto" ||
         cleanedLineLower === "proyecto sin título" ||
+        cleanedLineLower === "proyecto recomendado" ||
         cleanedLineLower === "proyectos recomendados" ||
         cleanedLineLower === "proyectos relacionados" ||
         cleanedLineLower === "proyectos relacionados con"
@@ -334,7 +381,7 @@ const ChatMessage = ({ message, esFlotante = false }) => {
   // Un proyecto es real si tiene archivo PDF o no es idea
   const tieneProyectosValidos = isBot && proyectos.length > 0 && (proyectos.some(p => p.esIdea || p.archivoPDF));
   
-  const tieneIdeas = tieneProyectosValidos && proyectos.every(p => p.esIdea);
+  const tieneIdeas = tieneProyectosValidos && proyectos.some(p => p.esIdea);
   const tieneProyectos = tieneProyectosValidos && proyectos.some(p => !p.esIdea || p.archivoPDF);
 
   // Si hay proyectos para mostrar en tarjetas, limpiamos la lista cruda del texto para que no se duplique
@@ -348,7 +395,7 @@ const ChatMessage = ({ message, esFlotante = false }) => {
     
     const toResolve = proyectos.filter(p => 
       !p.esIdea && 
-      (p._id?.startsWith("parsed-") || p.titulo === "Proyectos" || p.titulo === "Proyecto sin título" || !p.titulo)
+      (p._id?.startsWith("parsed-") || p.titulo === "Proyectos" || p.titulo === "Proyecto sin título" || p.titulo === "Proyecto Recomendado" || !p.titulo)
     );
     
     if (toResolve.length === 0) return;
@@ -542,7 +589,7 @@ const ChatMessage = ({ message, esFlotante = false }) => {
                 if (!pro.archivoPDF && !esIdeaCard) return null;
 
                 // Título descriptivo si el título parseado es genérico o ausente
-                const displayTitle = (!pro.titulo || pro.titulo === "Proyectos" || pro.titulo === "Proyecto sin título")
+                const displayTitle = (!pro.titulo || pro.titulo === "Proyectos" || pro.titulo === "Proyecto sin título" || pro.titulo === "Proyecto Recomendado")
                   ? (pro.autor ? `Proyecto de ${pro.autor}` : "Proyecto Recomendado")
                   : pro.titulo;
 
