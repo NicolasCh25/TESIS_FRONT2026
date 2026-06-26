@@ -1,39 +1,7 @@
 import ReactMarkdown from 'react-markdown';
 import { MdPictureAsPdf, MdPerson, MdComputer, MdSmartToy, MdSchool } from "react-icons/md";
 
-// ✅ Función para limpiar la descripción repetida de los proyectos en el texto crudo de la IA
-const cleanMessageText = (text) => {
-  if (!text) return "";
-  
-  const lines = text.split("\n");
-  const cleanedLines = [];
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    
-    if (line === "") {
-      if (cleanedLines.length > 0 && cleanedLines[cleanedLines.length - 1] !== "") {
-        cleanedLines.push("");
-      }
-      continue;
-    }
-    
-    // Ignoramos líneas que corresponden a la ficha de datos de un proyecto
-    const containsProjectPattern = 
-      /:\s*(Autor|Tutor|Tutora|Carrera|Periodo|Período|Tecnologías|Tecnologias|PDF|Repositorio|Video)/i.test(line) ||
-      /^(Autor|Tutor|Tutora|Carrera|Periodo|Período|Tecnologías|Tecnologias|PDF|Repositorio|Video):/i.test(line) ||
-      line.includes("https://res.cloudinary.com") ||
-      line.includes("https://github.com");
-      
-    if (containsProjectPattern) {
-      continue;
-    }
-    
-    cleanedLines.push(lines[i]);
-  }
-  
-  return cleanedLines.join("\n").trim();
-};
+
 
 // ✅ Función para parsear proyectos estructurados desde el texto crudo (útil para historial y F5)
 const parseProjectsFromText = (text) => {
@@ -43,10 +11,16 @@ const parseProjectsFromText = (text) => {
   const lines = text.split("\n").map(l => l.trim());
   let currentProject = null;
   
+  const isProjectKeyword = (str) => {
+    return /^(Autor|Tutor|Tutora|Carrera|Periodo|Período|Tecnologías|Tecnologias|PDF|Repositorio|Video)/i.test(str) ||
+           /PDF disponible en/i.test(str);
+  };
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    if (!line) continue;
     
-    // Comprobar inicio de proyecto (ej: "PoliGym EPN : Autor: Nicolás Chiguano...")
+    // Formato 1: "PoliGym EPN : Autor: Nicolás Chiguano | Tutora: Yadira Franco"
     const headerMatch = line.match(/^(.+?)\s*:\s*Autor\s*:\s*(.+)$/i);
     
     if (headerMatch) {
@@ -67,22 +41,64 @@ const parseProjectsFromText = (text) => {
       continue;
     }
     
-    if (currentProject) {
-      const carreraMatch = line.match(/^Carrera\s*:\s*(.+)$/i);
-      if (carreraMatch) {
-        currentProject.carrera = carreraMatch[1].trim();
-        continue;
+    // Formato 2: "Autor: Edison Cruz | Tutor: Ing. Becerra" (con el título en la línea anterior)
+    const autorMatch = line.match(/^Autor\s*:\s*(.+)$/i);
+    if (autorMatch) {
+      // Intentar buscar el título en la línea anterior
+      let prevIndex = i - 1;
+      let titulo = "Proyecto sin título";
+      while (prevIndex >= 0) {
+        const prevLine = lines[prevIndex];
+        if (prevLine && !isProjectKeyword(prevLine)) {
+          titulo = prevLine;
+          break;
+        }
+        prevIndex--;
       }
       
+      if (currentProject && currentProject.titulo && currentProject.archivoPDF) {
+        projects.push(currentProject);
+      }
+      
+      currentProject = {
+        _id: `parsed-${i}`,
+        titulo: titulo,
+        autor: autorMatch[1].split("|")[0].trim(),
+        tecnologias: "",
+        archivoPDF: ""
+      };
+      
+      // Buscar tutor en la misma línea
+      const tutorInLine = line.match(/Tutor(?:a)?\s*:\s*([^|]+)/i);
+      if (tutorInLine) {
+        currentProject.tutor = tutorInLine[1].trim();
+      }
+      continue;
+    }
+    
+    if (currentProject) {
+      // Carrera: ...
+      const carreraMatch = line.match(/^Carrera\s*:\s*([^|]+)/i);
+      if (carreraMatch) {
+        currentProject.carrera = carreraMatch[1].trim();
+      }
+      // Buscar periodo si está en la misma línea (Carrera: ... | Periodo: ...)
+      const periodoInLine = line.match(/Periodo\s*:\s*(.+)$/i);
+      if (periodoInLine) {
+        currentProject.periodoAcademico = periodoInLine[1].trim();
+      }
+      
+      // Tecnologías: ...
       const tecMatch = line.match(/^(Tecnologías|Tecnologias)\s*:\s*(.+)$/i);
       if (tecMatch) {
         currentProject.tecnologias = tecMatch[2].trim();
         continue;
       }
       
-      const pdfMatch = line.match(/^PDF\s*:\s*(https?:\/\/\S+)$/i);
+      // PDF: ... o PDF disponible en: ...
+      const pdfMatch = line.match(/^(PDF|PDF disponible en)\s*:\s*(https?:\/\/\S+)$/i);
       if (pdfMatch) {
-        currentProject.archivoPDF = pdfMatch[1].trim();
+        currentProject.archivoPDF = pdfMatch[2].trim();
         continue;
       }
       
@@ -91,21 +107,10 @@ const parseProjectsFromText = (text) => {
         continue;
       }
 
+      // Repositorio: ...
       const repoMatch = line.match(/^Repositorio\s*:\s*(https?:\/\/\S+)$/i);
       if (repoMatch) {
         currentProject.repositorio = repoMatch[1].trim();
-        continue;
-      }
-
-      const tutorMatch = line.match(/^(Tutor|Tutora)\s*:\s*(.+)$/i);
-      if (tutorMatch) {
-        currentProject.tutor = tutorMatch[2].trim();
-        continue;
-      }
-
-      const periodoMatch = line.match(/^(Período|Periodo)\s*:\s*(.+)$/i);
-      if (periodoMatch) {
-        currentProject.periodoAcademico = periodoMatch[2].trim();
         continue;
       }
     }
@@ -116,6 +121,53 @@ const parseProjectsFromText = (text) => {
   }
   
   return projects;
+};
+
+// ✅ Función para limpiar la descripción repetida de los proyectos en el texto crudo de la IA
+const cleanMessageText = (text) => {
+  if (!text) return "";
+  
+  const lines = text.split("\n");
+  const cleanedLines = [];
+  const projects = parseProjectsFromText(text);
+  const titles = projects.map(p => p.titulo.toLowerCase());
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    if (line === "") {
+      if (cleanedLines.length > 0 && cleanedLines[cleanedLines.length - 1] !== "") {
+        cleanedLines.push("");
+      }
+      continue;
+    }
+    
+    // Ignoramos líneas que contienen palabras clave del proyecto
+    const containsProjectPattern = 
+      /^(Autor|Tutor|Tutora|Carrera|Periodo|Período|Tecnologías|Tecnologias|PDF|Repositorio|Video)/i.test(line) ||
+      /:\s*(Autor|Tutor|Tutora|Carrera|Periodo|Período|Tecnologías|Tecnologias|PDF|Repositorio|Video)/i.test(line) ||
+      line.includes("https://res.cloudinary.com") ||
+      line.includes("https://github.com") ||
+      /PDF disponible en/i.test(line);
+      
+    if (containsProjectPattern) {
+      continue;
+    }
+    
+    // Si la línea es exactamente el título de uno de los proyectos detectados, la ignoramos
+    if (titles.includes(line.toLowerCase())) {
+      continue;
+    }
+    
+    // Si la línea contiene un título seguido de ": Autor" (como en la primera versión)
+    if (/: Autor/i.test(line)) {
+      continue;
+    }
+    
+    cleanedLines.push(lines[i]);
+  }
+  
+  return cleanedLines.join("\n").trim();
 };
 
 const ChatMessage = ({ message, esFlotante = false }) => {
