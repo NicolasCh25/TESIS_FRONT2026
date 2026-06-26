@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
-import TablaLogs from "../../components/logs/TablaLogs";
-import FiltroLogs from "../../components/logs/FiltroLogs";
+import TablaLogs from "../components/logs/TablaLogs";
+import FiltroLogs from "../components/logs/FiltroLogs";
 import { ToastContainer, toast } from "react-toastify";
 import { MdOutlineShield } from "react-icons/md";
 
