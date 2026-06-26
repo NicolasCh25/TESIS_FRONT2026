@@ -136,7 +136,7 @@ const ChatbotFloating = () => {
 
           <div ref={scrollRef} className="flex-grow p-4 overflow-y-auto custom-scrollbar flex flex-col gap-2 bg-gray-50">
             {messages.map((msg, index) => (
-              <ChatMessage key={index} message={msg} />
+              <ChatMessage key={index} message={msg} esFlotante={true} />
             ))}
           </div>
 
