@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
 import { CardProfile } from "../components/profile/CardProfile";
+import { CardPassword } from "../components/profile/CardPassword"; // ✅ IMPORTACIÓN DE LA NUEVA TARJETA
 import { MdBadge, MdEmail, MdCalendarMonth, MdVerifiedUser, MdSave } from "react-icons/md";
 import { toast, ToastContainer } from "react-toastify";
 
@@ -15,15 +16,8 @@ const Profile = () => {
     const [editando, setEditando] = useState(false);
 
     const obtenerPerfil = async () => {
-        // Aseguramos que la base URL termine en / para que la unión sea limpia
-        const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith('/') 
-            ? import.meta.env.VITE_BACKEND_URL 
-            : `${import.meta.env.VITE_BACKEND_URL}`;
-        
-        // Corregido: El endpoint real entregado por tu curl es api/perfil
-        const endpoint = "api/perfil";
-            
-        const url = `${baseUrl}${endpoint}`;
+        const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+        const url = `${baseUrl}/api/perfil`;
 
         try {
             const response = await fetchDataBackend(url, null, "GET", {
@@ -45,12 +39,8 @@ const Profile = () => {
     const handleActualizar = async () => {
         if (!nombreEditado.trim()) return toast.warn("El nombre no puede estar vacío");
 
-        const baseUrl = import.meta.env.VITE_BACKEND_URL.endsWith('/') 
-            ? import.meta.env.VITE_BACKEND_URL 
-            : `${import.meta.env.VITE_BACKEND_URL}`;
-
-        // Corregido: Se mantiene la coherencia con el endpoint raíz de perfil
-        const url = `${baseUrl}api/perfil`; 
+        const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+        const url = `${baseUrl}/api/perfil`; 
 
         try {
             const response = await fetchDataBackend(url, { nombre: nombreEditado }, "PUT", {
@@ -88,7 +78,9 @@ const Profile = () => {
                     <CardProfile user={perfil} />
                 </div>
 
+                {/* Columna de configuraciones */}
                 <div className="lg:col-span-2 space-y-6">
+                    {/* Detalles de la Cuenta */}
                     <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
                         <div className="flex justify-between items-center mb-8">
                             <h2 className="text-xl font-black text-[#17243D] flex items-center gap-2 uppercase tracking-tighter">
@@ -134,6 +126,9 @@ const Profile = () => {
                             <InfoField icon={<MdCalendarMonth />} label="Desde" value={perfil?.createdAt ? new Date(perfil.createdAt).toLocaleDateString() : "N/A"} />
                         </div>
                     </div>
+
+                    {/* ✅ INTEGRACIÓN DE LA TARJETA DE CAMBIO DE PASSWORD */}
+                    <CardPassword />
                 </div>
             </div>
         </div>
