@@ -20,15 +20,28 @@ const DetalleProyecto = () => {
     const obtenerProyecto = async () => {
       try {
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-        const url = `${baseUrl}api/proyectos`;
+        
+        // ✅ CORRECCIÓN CRÍTICA: Apuntar directamente al endpoint específico por ID de proyecto
+        const url = `${baseUrl}api/proyectos/${id}`;
+        
         const response = await fetchDataBackend(url, null, "GET", {
           Authorization: `Bearer ${token}`
         });
 
-        if (response?.resultados) {
-          const encontrado = response.resultados.find((p) => p._id === id);
-          if (encontrado) {
-            setProyecto(encontrado);
+        // ✅ CORRECCIÓN: Si el backend devuelve el objeto directo o dentro de un campo 'resultado'
+        if (response) {
+          const proyectoEncontrado = response.proyecto || response.resultado || response;
+          
+          if (proyectoEncontrado && (proyectoEncontrado._id === id || proyectoEncontrado.id === id)) {
+            setProyecto(proyectoEncontrado);
+          } else if (response.resultados && Array.isArray(response.resultados)) {
+            // Respaldar por si el backend solo maneja el GET global en esa ruta
+            const encontrado = response.resultados.find((p) => p._id === id || p.id === id);
+            if (encontrado) {
+              setProyecto(encontrado);
+            } else {
+              toast.error("Proyecto no encontrado en el repositorio");
+            }
           } else {
             toast.error("Proyecto no encontrado");
           }
@@ -38,7 +51,8 @@ const DetalleProyecto = () => {
         toast.error("Error al cargar proyecto");
       }
     };
-    obtenerProyecto();
+    
+    if (id && token) obtenerProyecto();
   }, [id, token]);
 
   if (!proyecto) {
@@ -152,7 +166,7 @@ const DetalleProyecto = () => {
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
-              {/* TECNOLOGÍAS - CORREGIDO PARA ARRAY O STRING */}
+              {/* TECNOLOGÍAS */}
               <section>
                 <div className="flex items-center gap-2 mb-3 border-b border-gray-100 pb-2">
                   <MdCode className="text-[#F5BD45]" size={24} />
@@ -163,7 +177,7 @@ const DetalleProyecto = () => {
                 </div>
               </section>
 
-              {/* PALABRAS CLAVE - CORREGIDO PARA ARRAY O STRING */}
+              {/* PALABRAS CLAVE */}
               <section>
                 <div className="flex items-center gap-2 mb-3 border-b border-gray-100 pb-2">
                   <MdLabel className="text-[#F5BD45]" size={24} />
