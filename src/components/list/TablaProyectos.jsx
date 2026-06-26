@@ -105,7 +105,7 @@ const TablaProyectos = ({
 
                         {/* EDITAR */}
                         <MdEdit
-                          onClick={() => handleEditar(proyecto._id)}
+                          onClick={() => handleEditar(proyecto)}
                           className="h-7 w-7 text-gray-400 cursor-pointer hover:text-amber-500 transition-colors"
                           title="Editar"
                         />

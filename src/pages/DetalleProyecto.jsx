@@ -16,36 +16,58 @@ const DetalleProyecto = () => {
   const fetchDataBackend = useFetch();
   const { token } = storeAuth();
   
-  // ✅ CLONACIÓN DE LÓGICA ESTUDIANTE: Cargamos el proyecto de inmediato si ya viene del state de navegación
-  const [proyecto, setProyecto] = useState(location.state?.proyectoSeleccionado || null);
+  // ✅ LÓGICA MEJORADA: Cargamos el proyecto de inmediato si viene del state de navegación
+  const [proyecto, setProyecto] = useState(() => {
+    if (location.state) {
+      if (location.state._id || location.state.id) {
+        return location.state;
+      }
+      if (location.state.proyectoSeleccionado) {
+        return location.state.proyectoSeleccionado;
+      }
+    }
+    return null;
+  });
 
   useEffect(() => {
-    // ✅ CONTROL DE FLUJO SÓLIDO: Si el proyecto ya existe en el state de navegación, 
-    // cancelamos la ejecución del efecto para que no pise ni destruya los datos del Admin.
+    // ✅ Si el proyecto ya existe en el state de navegación, no realizamos la petición
     if (proyecto) return;
 
     const obtenerProyecto = async () => {
       try {
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
         
-        // ✅ SOLUCIÓN DEFINITIVA: Si se entra por recarga de página (F5), ampliamos el límite de la consulta
-        // para que traiga todo el grupo de datos sin la paginación corta de 10 elementos que rompe el .find()
-        const url = `${baseUrl}api/proyectos?limite=1000`;
-        
-        const response = await fetchDataBackend(url, null, "GET", {
-          Authorization: `Bearer ${token}`
-        });
+        let encontrado = null;
+        let paginaActual = 1;
+        let totalPaginas = 1;
 
-        if (response) {
-          // Normalizamos la estructura de datos para que soporte tanto el objeto del admin como el del estudiante
-          const listaProyectos = response.resultados || response.proyectos || (Array.isArray(response) ? response : []);
-          const encontrado = listaProyectos.find((p) => p._id === id || p.id === id);
-          
-          if (encontrado) {
-            setProyecto(encontrado);
+        // ✅ BÚSQUEDA PAGINADA: Buscamos página por página hasta encontrar el proyecto por ID
+        do {
+          const url = `${baseUrl}api/proyectos?limit=50&page=${paginaActual}`;
+          const response = await fetchDataBackend(url, null, "GET", {
+            Authorization: `Bearer ${token}`
+          });
+
+          if (response) {
+            const listaProyectos = response.resultados || response.proyectos || (Array.isArray(response) ? response : []);
+            const proyectoEncontrado = listaProyectos.find((p) => p._id === id || p.id === id);
+            
+            if (proyectoEncontrado) {
+              encontrado = proyectoEncontrado;
+              break;
+            }
+            
+            totalPaginas = response.totalPaginas || 1;
+            paginaActual++;
           } else {
-            toast.error("Proyecto no localizado en los datos cargados.");
+            break;
           }
+        } while (paginaActual <= totalPaginas);
+
+        if (encontrado) {
+          setProyecto(encontrado);
+        } else {
+          toast.error("Proyecto no localizado en los datos cargados.");
         }
       } catch (error) {
         console.error("Error en DetalleProyecto:", error);

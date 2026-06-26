@@ -84,7 +84,8 @@ const ListarProyectos = () => {
 
   const handleEditar = (proyecto) => {
     const idFinal = proyecto?._id || proyecto?.id || proyecto;
-    navigate(`/dashboard/actualizar/${idFinal}`);
+    const proyectoObjeto = typeof proyecto === "object" ? proyecto : null;
+    navigate(`/dashboard/actualizar/${idFinal}`, { state: proyectoObjeto });
   };
 
   // ✅ CAMBIO CLAVE: Enviamos el objeto del proyecto filtrado en el state de la navegación
