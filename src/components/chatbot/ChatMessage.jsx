@@ -4,57 +4,54 @@ import { MdSmartToy, MdPerson } from "react-icons/md";
 const ChatMessage = ({ message }) => {
   const isBot = message.sender === "bot";
 
-  // 🧹 1. FUNCIÓN PARA LIMPIEZA TOTAL DEL TEXTO
+  // 🧹 1. FUNCIÓN PARA LIMPIEZA TOTAL DEL TEXTO (Remueve los datos que irán dentro de las tarjetas)
   const limpiarTextoBot = (texto) => {
     if (!texto) return "";
     return texto
-      // Elimina las líneas completas de metadatos de los proyectos para que no se dupliquen
-      .replace(/(?:Título|Autor|Tutor|Carrera|Período|Tecnologías|PDF disponible|Enlace|Documento):\s*.*(\n|$)/gi, "")
-      // Elimina asteriscos de negrita, guiones de listas sueltos y formatos Markdown residuales
-      .replace(/\*\*+/g, "")
-      .replace(/^[\s*-]+\s*/gm, "")
-      // Limpia enlaces en formato Markdown [Texto](url) o remanentes
-      .replace(/\[\s*Ver\s*PDF\s*\]\([^\)]+\)/gi, "")
-      .replace(/\[\s*Enlace\s*\]\([^\)]+\)/gi, "")
-      // Normaliza los saltos de línea múltiples
-      .replace(/\n{2,}/g, "\n\n")
+      .replace(/(?:Título|Proyecto \d+|Autor|Tutor|Carrera|Período|Periodo|Tecnologías|PDF disponible|Enlace|Documento):\s*.*(\n|$)/gi, "")
+      .replace(/[\*\+]/g, "") // Elimina asteriscos de Markdown
+      .replace(/^[\s*-]+\s*/gm, "") // Elimina guiones sueltos de listas
+      .replace(/\[\s*Ver\s*PDF\s*\]\([^\)]+\)/gi, "") // Quita enlaces en formato Markdown
+      .replace(/https?:\/\/[^\s\)\*]+/gi, "") // Quita URLs sueltas del texto principal
+      .replace(/\n{2,}/g, "\n\n") // Normaliza saltos de línea
       .trim();
   };
 
-  // 🕵️‍♂️ 2. EXTACTOR GLOBAL INTELIGENTE DE PROYECTOS MULTIPLES
+  // 🕵️‍♂️ 2. EXTRACTOR INTELIGENTE Y SEGURO LÍNEA POR LÍNEA
   const extraerMultiplesProyectos = (textoOriginal) => {
     if (!textoOriginal) return [];
 
-    // Dividimos el texto usando palabras clave como "Título:" o "Proyecto:" para separar cada bloque
-    const bloques = textoOriginal.split(/(?=Título:|Proyecto \d+:)/i);
+    // Buscamos todas las ocurrencias globales de cada campo en el texto
+    const titulos = [...textoOriginal.matchAll(/(?:Título|Proyecto \d+):\s*(.*)/gi)].map(m => m[1].replace(/[\*]/g, "").trim());
+    const autores = [...textoOriginal.matchAll(/Autor:\s*(.*)/gi)].map(m => m[1].replace(/[\*]/g, "").trim());
+    const tutores = [...textoOriginal.matchAll(/Tutor:\s*(.*)/gi)].map(m => m[1].replace(/[\*]/g, "").trim());
+    const carreras = [...textoOriginal.matchAll(/Carrera:\s*(.*)/gi)].map(m => m[1].replace(/[\*]/g, "").trim());
+    const periodos = [...textoOriginal.matchAll(/(?:Período|Periodo):\s*(.*)/gi)].map(m => m[1].replace(/[\*]/g, "").trim());
+    
+    // Captura todas las URLs de Cloudinary o HTTP/HTTPS que vengan en el texto
+    const urls = [...textoOriginal.matchAll(/(https?:\/\/[^\s\)\*]+)/gi)].map(m => m[1].trim());
+
     const proyectosEncontrados = [];
+    
+    // Usamos el total de títulos o autores encontrados como cantidad base de proyectos
+    const cantidadProyectos = Math.max(titulos.length, autores.length);
 
-    // Si el texto está dividido en bloques, procesamos cada uno
-    if (bloques.length > 1) {
-      bloques.forEach((bloque) => {
-        if (!bloque.toLowerCase().includes("autor:") && !bloque.toLowerCase().includes("tutor:")) return;
-
-        // Extraemos las variables limpiando asteriscos o corchetes residuales
-        const titulo = bloque.match(/(?:Título|Proyecto \d+):\s*(.*)/i)?.[1]?.replace(/[\*\+]/g, "").trim();
-        const autor = bloque.match(/Autor:\s*(.*)/i)?.[1]?.replace(/[\*\+]/g, "").trim();
-        const tutor = bloque.match(/Tutor:\s*(.*)/i)?.[1]?.replace(/[\*\+]/g, "").trim();
-        const carrera = bloque.match(/Carrera:\s*(.*)/i)?.[1]?.replace(/[\*\+]/g, "").trim();
-        const periodo = bloque.match(/(?:Período|Periodo):\s*(.*)/i)?.[1]?.replace(/[\*\+]/g, "").trim();
-        
-        // Extrae CUALQUIER URL http/https que venga en el bloque (ya sea en un [Markdown](url) o suelta)
-        const urlMatch = bloque.match(/(https?:\/\/[^\s\)\*]+)/i);
-        const archivoPDF = urlMatch ? urlMatch[1] : null;
-
-        if (titulo || autor) {
-          proyectosEncontrados.push({ titulo, autor, tutor, carrera, periodo, archivoPDF });
-        }
+    for (let i = 0; i < cantidadProyectos; i++) {
+      proyectosEncontrados.push({
+        titulo: titulos[i] || `Proyecto Recomendado ${i + 1}`,
+        autor: autores[i] || null,
+        tutor: tutores[i] || null,
+        carrera: carreras[i] || null,
+        periodo: periodos[i] || null,
+        // Asignamos la URL correspondiente de forma secuencial si existen
+        archivoPDF: urls[i] || null
       });
     }
 
     return proyectosEncontrados;
   };
 
-  // Procesamos el texto y los proyectos
+  // Procesamos los datos
   const textoLimpio = isBot ? limpiarTextoBot(message.text) : message.text;
 
   const proyectosARenderizar = message.proyectos && message.proyectos.length > 0
@@ -71,7 +68,7 @@ const ChatMessage = ({ message }) => {
       )}
 
       {/* Burbuja de Texto Principal */}
-      <div className="max-w-[80%] flex flex-col gap-1.5 w-full">
+      <div className="max-w-[85%] flex flex-col gap-1.5 w-full">
         {textoLimpio && (
           <div className={`p-4 rounded-2xl shadow-sm text-xs sm:text-sm leading-relaxed border ${
             isBot 
@@ -82,7 +79,7 @@ const ChatMessage = ({ message }) => {
           </div>
         )}
 
-        {/* ✅ LISTADO DE TARJETAS: Renderiza múltiples tarjetas de proyectos alineadas en cuadrícula/lista */}
+        {/* ✅ GRILLA DE TARJETAS MODULARES */}
         {isBot && proyectosARenderizar.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 w-full max-w-4xl">
             {proyectosARenderizar.map((proj, idx) => (
