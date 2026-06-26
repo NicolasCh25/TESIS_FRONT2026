@@ -27,7 +27,6 @@ const ListarProyectos = () => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
     const valor = busqueda.trim();
 
-    // ✅ CORRECCIÓN: Mapeo del filtro para que coincida con el campo del Backend
     const nombreFiltroBackend = filtro === "periodo" ? "periodoAcademico" : filtro;
 
     const query = valor

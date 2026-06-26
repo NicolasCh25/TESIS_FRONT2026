@@ -20,28 +20,31 @@ const DetalleProyecto = () => {
   const [proyecto, setProyecto] = useState(location.state?.proyectoSeleccionado || null);
 
   useEffect(() => {
-    // ✅ CONTROL DE FLUJO: Si el proyecto ya está cargado mediante el state, detenemos el efecto.
-    // Esto evita que la petición del Administrador rompa o pise los datos correctos.
+    // ✅ CONTROL DE FLUJO SÓLIDO: Si el proyecto ya existe en el state de navegación, 
+    // cancelamos la ejecución del efecto para que no pise ni destruya los datos del Admin.
     if (proyecto) return;
 
     const obtenerProyecto = async () => {
       try {
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-        const url = `${baseUrl}api/proyectos`;
+        
+        // ✅ SOLUCIÓN DEFINITIVA: Si se entra por recarga de página (F5), ampliamos el límite de la consulta
+        // para que traiga todo el grupo de datos sin la paginación corta de 10 elementos que rompe el .find()
+        const url = `${baseUrl}api/proyectos?limite=1000`;
         
         const response = await fetchDataBackend(url, null, "GET", {
           Authorization: `Bearer ${token}`
         });
 
         if (response) {
-          // ✅ IDENTIFICACIÓN DE ESTRUCTURAS: Si viene el objeto paginado del Admin, extraemos '.resultados'
+          // Normalizamos la estructura de datos para que soporte tanto el objeto del admin como el del estudiante
           const listaProyectos = response.resultados || response.proyectos || (Array.isArray(response) ? response : []);
           const encontrado = listaProyectos.find((p) => p._id === id || p.id === id);
           
           if (encontrado) {
             setProyecto(encontrado);
           } else {
-            toast.error("Proyecto no localizado.");
+            toast.error("Proyecto no localizado en los datos cargados.");
           }
         }
       } catch (error) {
