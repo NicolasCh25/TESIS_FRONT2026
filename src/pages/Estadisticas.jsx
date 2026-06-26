@@ -13,9 +13,17 @@ const Estadisticas = () => {
   const { token } = storeAuth();
   const reportRef = useRef(); 
 
-  const [metricas, setMetricas] = useState({ totalProyectos: 0, totalTutores: 0, totalPeriodos: 0 });
+  // Guardamos las métricas extendidas que envió el backend
+  const [metricas, setMetricas] = useState({ 
+    totalProyectos: 0, 
+    totalTutores: 0, 
+    totalPeriodos: 0,
+    totalAdministradores: 0,
+    totalUsuarios: 0
+  });
   const [datosCarrera, setDatosCarrera] = useState([]);
   const [datosTutor, setDatosTutor] = useState([]);
+  const [datosPeriodo, setDatosPeriodo] = useState([]); // Nuevo estado para periodos
   const [carreraSeleccionada, setCarreraSeleccionada] = useState("Todas");
   const [tutoresGenerales, setTutoresGenerales] = useState([]);
 
@@ -28,7 +36,6 @@ const Estadisticas = () => {
       .trim();
   };
 
-  // --- ✅ A. FUNCIÓN DE LIMPIEZA DE COLORES OKLCH ---
   const limpiarColoresParaPDF = (contenedor) => {
     const elementos = contenedor.querySelectorAll("*");
     elementos.forEach((el) => {
@@ -53,19 +60,33 @@ const Estadisticas = () => {
         setMetricas({
           totalProyectos: response.totalProyectos || 0,
           totalTutores: response.proyecto_tutor?.length || 0,
-          totalPeriodos: response.proyecto_periodo?.length || 0
+          totalPeriodos: response.proyecto_periodo?.length || 0,
+          totalAdministradores: response.totalAdministradores || 0,
+          totalUsuarios: response.totalUsuarios || 0
         });
+
         setDatosCarrera(response.proyecto_carrera?.map(item => ({
           name: resumirNombre(item._id),
           fullName: item._id,
           cantidad: item.total
         })) || []);
+
         const tutoresFormateados = response.proyecto_tutor?.map(item => ({
           name: item._id,
           cantidad: item.total
         })) || [];
         setTutoresGenerales(tutoresFormateados);
         if (carreraSeleccionada === "Todas") setDatosTutor(tutoresFormateados);
+
+        // ✅ PROCESAMIENTO NUEVO: Formateamos periodos manejando arrays u objetos del backend
+        const periodosFormateados = response.proyecto_periodo?.map(item => {
+          const nombrePeriodo = Array.isArray(item._id) ? item._id[0] : item._id;
+          return {
+            name: nombrePeriodo || "Desconocido",
+            cantidad: item.total
+          };
+        }).sort((a, b) => a.name.localeCompare(b.name)) || [];
+        setDatosPeriodo(periodosFormateados);
       }
     } catch (error) {
       toast.error("Error al cargar estadísticas globales");
@@ -102,7 +123,6 @@ const Estadisticas = () => {
   useEffect(() => { cargarDatosGlobales(); }, []);
   useEffect(() => { filtrarTutoresPorCarrera(carreraSeleccionada); }, [carreraSeleccionada]);
 
-  // --- ✅ B, C y D. DESCARGA DE INFORME MEJORADA ---
   const descargarInforme = async () => {
     const elemento = reportRef.current;
     if (!elemento) {
@@ -113,10 +133,7 @@ const Estadisticas = () => {
     const idToast = toast.loading("Generando informe PDF multi-página...");
 
     try {
-      // Limpiamos estilos antes de capturar
       limpiarColoresParaPDF(elemento);
-      
-      // Esperamos a que Recharts termine de renderizar en el DOM real
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const canvas = await html2canvas(elemento, {
@@ -125,7 +142,7 @@ const Estadisticas = () => {
         logging: false,
         backgroundColor: "#ffffff",
         windowWidth: 1400, 
-        windowHeight: elemento.scrollHeight, // ✅ Sugerencia C aplicada
+        windowHeight: elemento.scrollHeight,
         onclone: async (clonedDoc) => {
           const el = clonedDoc.getElementById('report-container');
           if (el) {
@@ -142,19 +159,16 @@ const Estadisticas = () => {
       const imgProps = pdf.getImageProperties(imgData);
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-      // ✅ Sugerencia D: Lógica de multi-página
       const pageHeight = pdf.internal.pageSize.getHeight();
       let heightLeft = pdfHeight;
-      let position = 10; // Margen inicial
+      let position = 10;
 
-      // Encabezado solo en la primera página
       pdf.setFillColor(23, 36, 61);
       pdf.rect(0, 0, pdfWidth, 40, 'F');
       pdf.setFontSize(18);
       pdf.setTextColor(255, 255, 255);
       pdf.text("REPORTE ESTADÍSTICO - PORTAL PIC", 15, 22);
 
-      // Añadir imagen (Manejo de múltiples páginas)
       pdf.addImage(imgData, "PNG", 0, 45, pdfWidth, pdfHeight);
       heightLeft -= (pageHeight - 45);
 
@@ -202,6 +216,7 @@ const Estadisticas = () => {
           <GraficosEstadisticos 
             datosCarrera={datosCarrera} 
             datosTutor={datosTutor}
+            datosPeriodo={datosPeriodo} // Pasamos la nueva colección
             carreraSeleccionada={carreraSeleccionada}
             setCarreraSeleccionada={setCarreraSeleccionada}
             carrerasOriginales={datosCarrera} 
