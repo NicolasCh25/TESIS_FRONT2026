@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom"; // Añadimos useLocation
 import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
 import { toast } from "react-toastify";
@@ -12,38 +12,35 @@ import {
 const DetalleProyecto = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation(); // ✅ Captura el estado enviado por la navegación
   const fetchDataBackend = useFetch();
   const { token } = storeAuth();
-  const [proyecto, setProyecto] = useState(null);
+  
+  // ✅ Clonamos la lógica del estudiante: Si el proyecto ya viene en el state de navegación, lo precargamos directamente
+  const [proyecto, setProyecto] = useState(location.state?.proyectoSeleccionado || null);
 
   useEffect(() => {
+    // Si ya tenemos el proyecto en el estado local, no le hacemos perder tiempo y no llamamos al backend
+    if (proyecto) return;
+
     const obtenerProyecto = async () => {
       try {
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-        
-        // ✅ CORRECCIÓN DEFINITIVA: Forzamos al backend a ignorar filtros previos del administrador 
-        // enviando parámetros limpios, asegurando que devuelva todo el universo de datos tal como en el estudiante.
-        const url = `${baseUrl}api/proyectos?limpiar=true&pagina=1&limite=1000`;
+        const url = `${baseUrl}api/proyectos`;
         
         const response = await fetchDataBackend(url, null, "GET", {
           Authorization: `Bearer ${token}`
         });
 
         if (response) {
-          // Extraemos el array correcto venga paginado (Administrador) o directo (Estudiante)
           const listaProyectos = response.resultados || response.proyectos || (Array.isArray(response) ? response : []);
-
-          // Buscamos el proyecto usando el ID de la URL
           const encontrado = listaProyectos.find((p) => p._id === id || p.id === id);
           
           if (encontrado) {
             setProyecto(encontrado);
           } else {
-            console.log("ID buscado:", id, "No se encontró en la lista devuelta.");
-            toast.error("Proyecto no localizado en los resultados.");
+            toast.error("Proyecto no localizado.");
           }
-        } else {
-          toast.error("No se recibió respuesta del servidor.");
         }
       } catch (error) {
         console.error("Error en DetalleProyecto:", error);
@@ -52,7 +49,7 @@ const DetalleProyecto = () => {
     };
     
     if (id && token) obtenerProyecto();
-  }, [id, token]);
+  }, [id, token, proyecto]);
 
   if (!proyecto) {
     return (
@@ -63,7 +60,7 @@ const DetalleProyecto = () => {
     );
   }
 
-  // Helper para renderizar listas que pueden venir como String o Array
+  // Helper para renderizar listas
   const renderList = (data, colorClass) => {
     const items = Array.isArray(data) ? data : (data?.split(',') || []);
     return items.map((item, i) => (

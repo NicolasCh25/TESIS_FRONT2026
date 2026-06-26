@@ -83,15 +83,22 @@ const ListarProyectos = () => {
     }
   };
 
-  // ✅ CORRECCIÓN EXCLUSIVA: Extraer de forma segura el identificador (_id o id) del objeto recibido
   const handleEditar = (proyecto) => {
     const idFinal = proyecto?._id || proyecto?.id || proyecto;
     navigate(`/dashboard/actualizar/${idFinal}`);
   };
 
+  // ✅ CAMBIO CLAVE: Enviamos el objeto del proyecto filtrado en el state de la navegación
   const handleDetalle = (proyecto) => {
-    const idFinal = proyecto?._id || proyecto?.id || proyecto;
-    navigate(`/dashboard/detalle/${idFinal}`);
+    const idFinal = proyecto?._id || proyecto?.id;
+    
+    if (idFinal) {
+      // Pasamos el ID en la URL y el objeto completo dentro de state
+      navigate(`/dashboard/detalle/${idFinal}`, { state: { proyectoSeleccionado: proyecto } });
+    } else {
+      // Respaldo por si TablaProyectos pasa solo la cadena de texto del ID
+      navigate(`/dashboard/detalle/${proyecto}`);
+    }
   };
 
   return (
