@@ -368,7 +368,7 @@ const ChatMessage = ({ message, esFlotante = false }) => {
           
           // 1. Intentar buscar por autor (muy eficiente)
           if (pro.autor && !pro.autor.toLowerCase().includes("proyecto")) {
-            const url = `${baseUrl}/api/proyectos?autor=${encodeURIComponent(pro.autor)}`;
+            const url = `${baseUrl}api/proyectos?autor=${encodeURIComponent(pro.autor)}`;
             const res = await fetch(url, {
               headers: { Authorization: `Bearer ${tokenFinal}` }
             });
@@ -387,7 +387,7 @@ const ChatMessage = ({ message, esFlotante = false }) => {
             let paginaActual = 1;
             let totalPaginas = 1;
             do {
-              const url = `${baseUrl}/api/proyectos?limit=50&page=${paginaActual}`;
+              const url = `${baseUrl}api/proyectos?limit=50&page=${paginaActual}`;
               const res = await fetch(url, {
                 headers: { Authorization: `Bearer ${tokenFinal}` }
               });
@@ -457,7 +457,7 @@ const ChatMessage = ({ message, esFlotante = false }) => {
       let totalPaginas = 1;
 
       do {
-        const url = `${baseUrl}/api/proyectos?limit=50&page=${paginaActual}`;
+        const url = `${baseUrl}api/proyectos?limit=50&page=${paginaActual}`;
         const res = await fetch(url, {
           headers: {
             Authorization: `Bearer ${tokenFinal}`
