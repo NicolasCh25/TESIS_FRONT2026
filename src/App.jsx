@@ -17,7 +17,7 @@ import ListarProyectos from './pages/ListarProyectos';
 import GestionUsuarios from './pages/GestionUsuarios'; 
 import RegistrarUsuario from './pages/RegistrarUsuario';
 import Estadisticas from './pages/Estadisticas';
-import Logs from './pages/Logs'; // ✅ AGREGADO: Importación de la página modular de Logs
+import Logs from './pages/Logs'; 
 import Profile from './pages/Profile';
 import ActualizarProyecto from './pages/ActualizarProyecto';
 import ActualizarUsuario from './pages/ActualizarUsuario';
@@ -80,7 +80,6 @@ function App() {
             <Route path="usuarios/registrar" element={<RegistrarUsuario />} />
             <Route path="usuarios/actualizar/:id" element={<ActualizarUsuario />} />
             <Route path="stats" element={<Estadisticas />} />
-            {/* ✅ AGREGADO: Ruta protegida para visualizar la bitácora de auditoría */}
             {esAdmin && <Route path="logs" element={<Logs />} />}
             <Route path="profile" element={<Profile />} />
           </Route>
