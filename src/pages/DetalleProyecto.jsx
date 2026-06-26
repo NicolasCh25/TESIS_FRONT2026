@@ -20,15 +20,17 @@ const DetalleProyecto = () => {
     const obtenerProyecto = async () => {
       try {
         const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-        const url = `${baseUrl}api/proyectos`;
+        
+        // ✅ CORRECCIÓN DEFINITIVA: Forzamos al backend a ignorar filtros previos del administrador 
+        // enviando parámetros limpios, asegurando que devuelva todo el universo de datos tal como en el estudiante.
+        const url = `${baseUrl}api/proyectos?limpiar=true&pagina=1&limite=1000`;
         
         const response = await fetchDataBackend(url, null, "GET", {
           Authorization: `Bearer ${token}`
         });
 
         if (response) {
-          // ✅ SOLUCIÓN TOLERANTE A ROLES: Extraemos la lista de proyectos sea cual sea el formato del backend
-          // Intenta buscar en 'resultados', en 'proyectos', o asume que la respuesta ya es el array directo.
+          // Extraemos el array correcto venga paginado (Administrador) o directo (Estudiante)
           const listaProyectos = response.resultados || response.proyectos || (Array.isArray(response) ? response : []);
 
           // Buscamos el proyecto usando el ID de la URL
@@ -37,8 +39,8 @@ const DetalleProyecto = () => {
           if (encontrado) {
             setProyecto(encontrado);
           } else {
-            console.log("ID buscado:", id, "No se encontró en:", listaProyectos);
-            toast.error("Proyecto no localizado en el repositorio.");
+            console.log("ID buscado:", id, "No se encontró en la lista devuelta.");
+            toast.error("Proyecto no localizado en los resultados.");
           }
         } else {
           toast.error("No se recibió respuesta del servidor.");
