@@ -83,8 +83,16 @@ const ListarProyectos = () => {
     }
   };
 
-  const handleEditar = (id) => navigate(`/dashboard/actualizar/${id}`);
-  const handleDetalle = (id) => navigate(`/dashboard/detalle/${id}`);
+  // ✅ CORRECCIÓN EXCLUSIVA: Extraer de forma segura el identificador (_id o id) del objeto recibido
+  const handleEditar = (proyecto) => {
+    const idFinal = proyecto?._id || proyecto?.id || proyecto;
+    navigate(`/dashboard/actualizar/${idFinal}`);
+  };
+
+  const handleDetalle = (proyecto) => {
+    const idFinal = proyecto?._id || proyecto?.id || proyecto;
+    navigate(`/dashboard/detalle/${idFinal}`);
+  };
 
   return (
     <div className="p-6 min-h-screen bg-gray-50">
