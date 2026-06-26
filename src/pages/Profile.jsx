@@ -12,11 +12,13 @@ const Profile = () => {
     const [perfil, setPerfil] = useState(null);
     const [cargando, setCargando] = useState(true);
     
+    // ✅ ESTADOS CORREGIDOS: Estados independientes para nombre y apellido
     const [nombreEditado, setNombreEditado] = useState("");
+    const [apellidoEditado, setApellidoEditado] = useState("");
     const [editando, setEditando] = useState(false);
 
     const obtenerPerfil = async () => {
-        const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+        const baseUrl = import.meta.env.VITE_BACKEND_URL;
         const url = `${baseUrl}api/perfil`;
 
         try {
@@ -27,6 +29,7 @@ const Profile = () => {
             if (response) {
                 setPerfil(response);
                 setNombreEditado(response.nombre || "");
+                setApellidoEditado(response.apellido || ""); // ✅ Seteo inicial del apellido
             }
         } catch (error) {
             console.error("Error al cargar perfil:", error);
@@ -38,18 +41,32 @@ const Profile = () => {
 
     const handleActualizar = async () => {
         if (!nombreEditado.trim()) return toast.warn("El nombre no puede estar vacío");
+        if (!apellidoEditado.trim()) return toast.warn("El apellido no puede estar vacío");
 
-        const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+        const baseUrl = import.meta.env.VITE_BACKEND_URL;
         const url = `${baseUrl}api/perfil`; 
 
+        // ✅ ENVÍO CORREGIDO: Mandamos tanto 'nombre' como 'apellido' en la petición PUT
+        const datosActualizados = { 
+            nombre: nombreEditado, 
+            apellido: apellidoEditado 
+        };
+
         try {
-            const response = await fetchDataBackend(url, { nombre: nombreEditado }, "PUT", {
+            const response = await fetchDataBackend(url, datosActualizados, "PUT", {
                 Authorization: `Bearer ${token}`
             });
 
             if (response) {
                 toast.success(response.msg || "Perfil actualizado correctamente");
-                setPerfil(prev => prev ? { ...prev, nombre: nombreEditado } : null);
+                
+                // Actualizamos el estado local para reflejar los cambios en toda la pantalla
+                setPerfil(prev => prev ? { 
+                    ...prev, 
+                    nombre: nombreEditado, 
+                    apellido: apellidoEditado 
+                } : null);
+                
                 setEditando(false);
             }
         } catch (error) {
@@ -78,43 +95,62 @@ const Profile = () => {
                     <CardProfile user={perfil} />
                 </div>
 
-                {/* Columna de configuraciones */}
                 <div className="lg:col-span-2 space-y-6">
-                    {/* Detalles de la Cuenta */}
                     <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
                         <div className="flex justify-between items-center mb-8">
                             <h2 className="text-xl font-black text-[#17243D] flex items-center gap-2 uppercase tracking-tighter">
                                 Detalles de la Cuenta
                             </h2>
                             <button 
-                                onClick={() => setEditando(!editando)}
+                                onClick={() => {
+                                    if (editando) {
+                                        // Si cancela, restauramos los valores originales del perfil
+                                        setNombreEditado(perfil?.nombre || "");
+                                        setApellidoEditado(perfil?.apellido || "");
+                                    }
+                                    setEditando(!editando);
+                                }}
                                 className="text-xs font-bold text-[#17243D] hover:text-[#F5BD45] uppercase transition-colors"
                             >
-                                {editando ? "Cancelar" : "Editar Nombre"}
+                                {editando ? "Cancelar" : "Editar Datos"}
                             </button>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 md:col-span-2">
                                 <div className="text-2xl text-[#F5BD45] bg-[#17243D] p-3 rounded-xl shadow-md">
                                     <MdBadge />
                                 </div>
                                 <div className="flex-grow">
-                                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Nombre</p>
+                                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Nombre Completo</p>
+                                    
                                     {editando ? (
-                                        <div className="flex gap-2">
-                                            <input 
-                                                type="text"
-                                                value={nombreEditado}
-                                                onChange={(e) => setNombreEditado(e.target.value)}
-                                                className="border-b-2 border-[#F5BD45] bg-transparent outline-none font-bold text-[#17243D] w-full"
-                                            />
-                                            <button onClick={handleActualizar} className="text-[#17243D] hover:text-green-600">
+                                        // ✅ FORMULARIO DE EDICIÓN: Inputs paralelos para Nombre y Apellido
+                                        <div className="flex flex-col sm:flex-row gap-4 items-end w-full">
+                                            <div className="w-full">
+                                                <label className="text-[10px] text-gray-400 font-bold uppercase block mb-1">Nombre</label>
+                                                <input 
+                                                    type="text"
+                                                    value={nombreEditado}
+                                                    onChange={(e) => setNombreEditado(e.target.value)}
+                                                    className="border-b-2 border-[#F5BD45] bg-transparent outline-none font-bold text-[#17243D] w-full text-sm"
+                                                />
+                                            </div>
+                                            <div className="w-full">
+                                                <label className="text-[10px] text-gray-400 font-bold uppercase block mb-1">Apellido</label>
+                                                <input 
+                                                    type="text"
+                                                    value={apellidoEditado}
+                                                    onChange={(e) => setApellidoEditado(e.target.value)}
+                                                    className="border-b-2 border-[#F5BD45] bg-transparent outline-none font-bold text-[#17243D] w-full text-sm"
+                                                />
+                                            </div>
+                                            <button onClick={handleActualizar} className="text-[#17243D] hover:text-green-600 p-1 mb-0.5">
                                                 <MdSave size={24} />
                                             </button>
                                         </div>
                                     ) : (
-                                        <p className="text-[#17243D] font-bold">
+                                        <p className="text-[#17243D] font-bold text-sm sm:text-base">
                                             {perfil?.nombre || "N/A"} {perfil?.apellido || ""}
                                         </p>
                                     )}
@@ -127,7 +163,6 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    
                     <CardPassword />
                 </div>
             </div>
