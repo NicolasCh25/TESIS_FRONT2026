@@ -3,7 +3,7 @@ import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { 
   MdMenu, MdClose, MdDashboard, MdFolder, MdAddCircle, 
   MdGroup, MdBarChart, MdPerson, MdLogout, MdSearch, MdStar,
-  MdOutlineShield // ✅ AGREGADO: Icono de escudo para auditoría
+  MdOutlineShield, MdChat // ✅ AGREGADO: Icono de chat para chatbot
 } from "react-icons/md";
 import { storeAuth } from "../context/storeAuth"; 
 import ChatbotFloating from "../components/chatbot/ChatbotFloating";
@@ -106,6 +106,10 @@ export default function Dashboard() {
               {/* ✅ AGREGADO: BOTÓN DE AUDITORÍA LOGS EN LA BARRA AZUL DEL ADMIN */}
               <Link to="/dashboard/logs" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/logs')}>
                 <MdOutlineShield size={22} /> Auditoría (Logs)
+              </Link>
+              {/* ✅ AGREGADO: BOTÓN CHATBOT */}
+              <Link to="/dashboard/chatbot" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/chatbot')}>
+                <MdChat size={22} /> Asistente IA (Chatbot)
               </Link>
             </>
           ) : (
