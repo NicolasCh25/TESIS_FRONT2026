@@ -24,7 +24,6 @@ const ListarProyectos = () => {
   ];
 
   const obtenerProyectos = async () => {
-    const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
     const valor = busqueda.trim();
 
     const nombreFiltroBackend = filtro === "periodo" ? "periodoAcademico" : filtro;
@@ -33,7 +32,7 @@ const ListarProyectos = () => {
       ? `?${nombreFiltroBackend}=${encodeURIComponent(valor)}`
       : "";
 
-    const url = `${baseUrl}api/proyectos${query}`;
+    const url = `${import.meta.env.VITE_BACKEND_URL}api/proyectos${query}`;
 
     try {
       const response = await fetchDataBackend(
@@ -62,8 +61,7 @@ const ListarProyectos = () => {
 
   // Cambiar Visibilidad del Proyecto (Mostrar/Ocultar)
   const handleCambiarVisibilidad = async (id, nuevoEstado) => {
-    const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-    const url = `${baseUrl}api/proyectos/visibilidad/${id}`;
+    const url = `${import.meta.env.VITE_BACKEND_URL}api/proyectos/visibilidad/${id}`;
     
     try {
       const response = await fetchDataBackend(
@@ -74,7 +72,7 @@ const ListarProyectos = () => {
       );
       if (response) {
         toast.success(response.msg || "Visibilidad del proyecto actualizada");
-        obtenerProyectos(); // Recargamos la lista
+        obtenerProyectos(); 
       }
     } catch (error) {
       console.error("Error al cambiar visibilidad del proyecto:", error);
@@ -84,8 +82,7 @@ const ListarProyectos = () => {
 
   const handleEliminar = async (id) => {
     if (window.confirm("¿Estás seguro de eliminar este proyecto?")) {
-      const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-      const url = `${baseUrl}/api/proyectos/${id}`;
+      const url = `${import.meta.env.VITE_BACKEND_URL}api/proyectos/${id}`;
       try {
         const response = await fetchDataBackend(
           url,

@@ -1,7 +1,7 @@
 import { MdDeleteForever, MdInfo, MdEdit, MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { Link } from "react-router-dom";
 
-// ✅ Se mantiene todo tu diseño original adaptando la visibilidad dinámica
+// ✅ Se mantiene todo tu diseño original adaptando la visibilidad dinámica con los estados "visible" y "oculto"
 const TablaProyectos = ({
   proyectos,
   handleEliminar,
@@ -40,7 +40,7 @@ const TablaProyectos = ({
                   <tr
                     key={proyecto._id}
                     className={`transition-colors ${
-                      proyecto.estado === 'invisible' ? 'bg-gray-50 opacity-60' : 'hover:bg-purple-50/30'
+                      proyecto.estado === 'oculto' ? 'bg-gray-50 opacity-60' : 'hover:bg-purple-50/30'
                     }`}
                   >
                     {/* NUMERO */}
@@ -78,7 +78,7 @@ const TablaProyectos = ({
                       <div className="flex justify-center items-center gap-3">
                         {/* TOGGLE VISIBILIDAD */}
                         <button
-                          onClick={() => handleCambiarVisibilidad(proyecto._id, proyecto.estado === 'visible' ? 'invisible' : 'visible')}
+                          onClick={() => handleCambiarVisibilidad(proyecto._id, proyecto.estado === 'visible' ? 'oculto' : 'visible')}
                           className="transition-transform active:scale-90 cursor-pointer"
                           title={proyecto.estado === 'visible' ? "Ocultar Proyecto" : "Mostrar Proyecto"}
                         >
