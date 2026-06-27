@@ -50,7 +50,10 @@ const Login = () => {
 
     } catch (error) {
       // Captura si el Hook lanza el error (throw error)
-      const errorMsg = error.response?.data?.msg || "Error de conexión con el servidor";
+      let errorMsg = error.response?.data?.msg || "Error de conexión con el servidor";
+      if (errorMsg.toLowerCase().includes("desactivada")) {
+        errorMsg = `${errorMsg.trim()}. PARA REACTIVARLA CONTACTE CON UN ADMINISTRADOR.`;
+      }
       setErrorBackend(errorMsg);
       toast.error(errorMsg);
     }
