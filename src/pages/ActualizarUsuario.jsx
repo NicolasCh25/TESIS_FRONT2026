@@ -18,17 +18,27 @@ const ActualizarUsuario = () => {
   useEffect(() => {
     const obtenerPerfil = async () => {
       try {
-        // Usamos el GET de administradores para traer la info actual
-        const url = `${import.meta.env.VITE_BACKEND_URL}api/administradores`;
-        const response = await fetchDataBackend(url, null, "GET", {
-          Authorization: `Bearer ${token}`
-        });
+        const urlAdmins = `${import.meta.env.VITE_BACKEND_URL}api/administradores`;
+        const urlEstudiantes = `${import.meta.env.VITE_BACKEND_URL}api/usuarios`;
 
-        if (response) {
-          const usuario = response.find(u => u._id === id);
-          if (usuario) setDatosUsuario(usuario);
+        // Traemos las dos listas en paralelo
+        const [resAdmins, resEstudiantes] = await Promise.all([
+          fetchDataBackend(urlAdmins, null, "GET", { Authorization: `Bearer ${token}` }).catch(() => []),
+          fetchDataBackend(urlEstudiantes, null, "GET", { Authorization: `Bearer ${token}` }).catch(() => [])
+        ]);
+
+        const listAdmins = Array.isArray(resAdmins) ? resAdmins : (resAdmins.usuarios || resAdmins.data || []);
+        const listEstudiantes = Array.isArray(resEstudiantes) ? resEstudiantes : (resEstudiantes.usuarios || resEstudiantes.data || []);
+
+        const usuario = [...listAdmins, ...listEstudiantes].find(u => u._id === id);
+        
+        if (usuario) {
+          setDatosUsuario(usuario);
+        } else {
+          toast.error("Usuario no encontrado.");
         }
       } catch (error) {
+        console.error("Error al cargar datos del usuario:", error);
         toast.error("Error al cargar los datos del usuario");
       }
     };
@@ -38,8 +48,8 @@ const ActualizarUsuario = () => {
   const handleActualizar = async (dataForm) => {
     setCargando(true);
     try {
-      // Endpoint de tu Postman: Actualizar Perfil
-      const url = `${import.meta.env.VITE_BACKEND_URL}api/administradores/perfil`;
+      // Usamos el endpoint unificado y funcional /api/perfil para actualizar datos del perfil
+      const url = `${import.meta.env.VITE_BACKEND_URL}api/perfil`;
       
       const response = await fetchDataBackend(url, dataForm, "PUT", {
         Authorization: `Bearer ${token}`
@@ -47,10 +57,10 @@ const ActualizarUsuario = () => {
 
       if (response) {
         toast.success(response.msg || "¡Perfil actualizado!");
-        setTimeout(() => navigate('/dashboard/users'), 2000);
+        setTimeout(() => navigate('/dashboard/usuarios'), 2000);
       }
     } catch (error) {
-      const msg = error.response?.data?.msg || "Error al actualizar";
+      const msg = error.response?.data?.msg || error.message || "Error al actualizar";
       toast.error(msg);
     } finally {
       setCargando(false);

@@ -1,6 +1,8 @@
 import { MdDeleteForever, MdEdit, MdCheckCircle, MdRemoveCircle } from "react-icons/md";
 
 const TablaUsuarios = ({ usuarios, handleEliminar, handleEditar, handleCambiarEstado }) => {
+  const mostrarCarrera = usuarios.some(u => u.carrera);
+
   return (
     <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
       <div className="overflow-x-auto">
@@ -9,6 +11,7 @@ const TablaUsuarios = ({ usuarios, handleEliminar, handleEditar, handleCambiarEs
             <tr className="bg-[#17243D] text-white">
               <th className="px-6 py-4 font-bold uppercase text-xs">Nombre Completo</th>
               <th className="px-6 py-4 font-bold uppercase text-xs">Correo Electrónico</th>
+              {mostrarCarrera && <th className="px-6 py-4 font-bold uppercase text-xs">Carrera</th>}
               <th className="px-6 py-4 font-bold uppercase text-xs">Rol</th>
               <th className="px-6 py-4 font-bold uppercase text-xs text-center">Estado</th>
               <th className="px-6 py-4 font-bold uppercase text-xs text-center">Acciones</th>
@@ -22,6 +25,11 @@ const TablaUsuarios = ({ usuarios, handleEliminar, handleEditar, handleCambiarEs
                     {user.nombre} {user.apellido}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
+                  {mostrarCarrera && (
+                    <td className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">
+                      {user.carrera || "N/A"}
+                    </td>
+                  )}
                   <td className="px-6 py-4">
                     <span className="text-xs px-3 py-1 rounded-full font-bold bg-blue-100 text-blue-700 uppercase">
                       {user.rol || 'ADMINISTRADOR'}
@@ -39,7 +47,7 @@ const TablaUsuarios = ({ usuarios, handleEliminar, handleEditar, handleCambiarEs
                       {/* ACCIÓN: CAMBIAR ESTADO (No elimina de la tabla) */}
                       <button 
                         onClick={() => handleCambiarEstado(user._id, user.estado === 'activo' ? 'inactivo' : 'activo')}
-                        className="transition-transform active:scale-90"
+                        className="transition-transform active:scale-90 cursor-pointer"
                         title={user.estado === 'activo' ? "Desactivar" : "Activar"}
                       >
                         {user.estado === 'activo' ? 
@@ -65,7 +73,7 @@ const TablaUsuarios = ({ usuarios, handleEliminar, handleEditar, handleCambiarEs
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="px-6 py-20 text-center text-gray-400 font-medium italic">
+                <td colSpan={mostrarCarrera ? "6" : "5"} className="px-6 py-20 text-center text-gray-400 font-medium italic">
                   No hay usuarios en la base de datos.
                 </td>
               </tr>

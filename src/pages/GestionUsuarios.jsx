@@ -10,11 +10,13 @@ const GestionUsuarios = () => {
   const fetchDataBackend = useFetch();
   const { token } = storeAuth();
   const navigate = useNavigate();
-  const [usuarios, setUsuarios] = useState([]);
+  
+  const [admins, setAdmins] = useState([]);
+  const [estudiantes, setEstudiantes] = useState([]);
+  const [activoTab, setActivoTab] = useState("admins"); // "admins" o "estudiantes"
 
   // 1. OBTENER LISTADO DE ADMINISTRADORES
   const obtenerUsuarios = async () => {
-    // Estandarizamos el uso de la variable de entorno
     const url = `${import.meta.env.VITE_BACKEND_URL}api/administradores`;
 
     try {
@@ -23,35 +25,69 @@ const GestionUsuarios = () => {
       });
 
       if (response) {
-        // CORRECCIÓN: Manejamos si el back devuelve el array directo o envuelto
         const dataFinal = Array.isArray(response) 
           ? response 
           : (response.usuarios || response.data || []);
         
-        setUsuarios(dataFinal);
+        setAdmins(dataFinal);
       }
     } catch (error) {
-      console.error("Error al obtener usuarios:", error);
-      toast.error("No se pudieron cargar los usuarios");
+      console.error("Error al obtener administradores:", error);
+      toast.error("No se pudieron cargar los administradores");
+    }
+  };
+
+  // 2. OBTENER LISTADO DE ESTUDIANTES
+  const obtenerEstudiantes = async () => {
+    const url = `${import.meta.env.VITE_BACKEND_URL}api/usuarios`;
+
+    try {
+      const response = await fetchDataBackend(url, null, "GET", {
+        Authorization: `Bearer ${token}`
+      });
+
+      if (response) {
+        const dataFinal = Array.isArray(response) 
+          ? response 
+          : (response.usuarios || response.data || []);
+        
+        setEstudiantes(dataFinal);
+      }
+    } catch (error) {
+      console.error("Error al obtener estudiantes:", error);
+      toast.error("No se pudieron cargar los estudiantes");
     }
   };
 
   useEffect(() => {
     obtenerUsuarios();
+    obtenerEstudiantes();
   }, []);
 
-  // 2. CAMBIAR ESTADO (ACTIVO/INACTIVO)
+  // 3. CAMBIAR ESTADO (ACTIVO/INACTIVO)
   const handleCambiarEstado = async (id, nuevoEstado) => {
-    const url = `${import.meta.env.VITE_BACKEND_URL}api/administradores/estado/${id}`;
+    let url = "";
+    let body = null;
+
+    if (nuevoEstado === "inactivo") {
+      // Endpoint específico para desactivar
+      url = `${import.meta.env.VITE_BACKEND_URL}api/usuarios/desactivar`;
+      body = { id };
+    } else {
+      // Endpoint unificado para activar
+      url = `${import.meta.env.VITE_BACKEND_URL}api/usuarios/estado/${id}`;
+      body = { estado: nuevoEstado };
+    }
     
     try {
-      const response = await fetchDataBackend(url, { estado: nuevoEstado }, "PUT", {
+      const response = await fetchDataBackend(url, body, "PUT", {
         Authorization: `Bearer ${token}`
       });
 
       if (response) {
         toast.success(response.msg || `Estado actualizado a ${nuevoEstado}`);
-        obtenerUsuarios(); // Recargamos la lista inmediatamente
+        obtenerUsuarios();
+        obtenerEstudiantes();
       }
     } catch (error) {
       console.error("Error al cambiar estado:", error);
@@ -59,7 +95,7 @@ const GestionUsuarios = () => {
     }
   };
 
-  // 3. ELIMINAR PERMANENTE
+  // 4. ELIMINAR PERMANENTE
   const handleEliminar = async (id) => {
     if (window.confirm("¿Deseas eliminar permanentemente a este usuario?")) {
       const url = `${import.meta.env.VITE_BACKEND_URL}api/usuario/eliminar/${id}`;
@@ -72,6 +108,7 @@ const GestionUsuarios = () => {
         if (response) {
           toast.success("Usuario eliminado exitosamente");
           obtenerUsuarios();
+          obtenerEstudiantes();
         }
       } catch (error) {
         console.error("Error al eliminar:", error);
@@ -106,10 +143,34 @@ const GestionUsuarios = () => {
         </div>
       </div>
 
+      {/* Selector de Pestañas */}
+      <div className="flex gap-6 mb-6 border-b border-gray-200">
+        <button
+          onClick={() => setActivoTab("admins")}
+          className={`pb-3 font-black text-sm uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
+            activoTab === "admins"
+              ? "border-[#F5BD45] text-[#17243D]"
+              : "border-transparent text-gray-400 hover:text-gray-600"
+          }`}
+        >
+          Administradores ({admins.length})
+        </button>
+        <button
+          onClick={() => setActivoTab("estudiantes")}
+          className={`pb-3 font-black text-sm uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
+            activoTab === "estudiantes"
+              ? "border-[#F5BD45] text-[#17243D]"
+              : "border-transparent text-gray-400 hover:text-gray-600"
+          }`}
+        >
+          Estudiantes ({estudiantes.length})
+        </button>
+      </div>
+
       {/* Tabla de Resultados */}
       <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
         <TablaUsuarios 
-          usuarios={usuarios} 
+          usuarios={activoTab === "admins" ? admins : estudiantes} 
           handleEliminar={handleEliminar} 
           handleEditar={handleEditar}
           handleCambiarEstado={handleCambiarEstado}
