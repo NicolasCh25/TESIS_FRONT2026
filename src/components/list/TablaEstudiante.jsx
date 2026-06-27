@@ -5,7 +5,11 @@ const TablaEstudiante = ({
   proyectos,
   onVer,
   favoritos,
-  onToggleFav
+  onToggleFav,
+  seleccionable = false,
+  seleccionados = [],
+  onSelectUno,
+  onSelectTodos
 }) => {
 
   const proyectosValidos = Array.isArray(proyectos)
@@ -13,16 +17,21 @@ const TablaEstudiante = ({
     : [];
 
   return (
-
     <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-
       <div className="overflow-x-auto">
-
         <table className="w-full text-left border-collapse">
-
           <thead>
-
             <tr className="bg-[#17243D] text-white uppercase text-[10px] tracking-widest">
+              {seleccionable && (
+                <th className="px-6 py-5 w-12 text-center">
+                  <input
+                    type="checkbox"
+                    checked={proyectosValidos.length > 0 && seleccionados.length === proyectosValidos.length}
+                    onChange={onSelectTodos}
+                    className="h-4 w-4 rounded border-gray-300 text-[#F5BD45] focus:ring-[#F5BD45] cursor-pointer"
+                  />
+                </th>
+              )}
 
               <th className="px-6 py-5 font-black">
                 N°
@@ -43,30 +52,22 @@ const TablaEstudiante = ({
               <th className="px-6 py-5 font-black text-center">
                 Opciones
               </th>
-
             </tr>
-
           </thead>
 
           <tbody className="divide-y divide-gray-50">
-
             {
               proyectosValidos.length > 0 ? (
-
                 proyectosValidos.map((p, i) => (
-
                   <FilaEstudiante
-
                     key={`${p._id}-${i}`}
-
                     index={i}
-
                     proyecto={p}
-
                     onVer={onVer}
-
                     onToggleFav={onToggleFav}
-
+                    seleccionable={seleccionable}
+                    checked={seleccionados.includes(p._id)}
+                    onSelectChange={() => onSelectUno(p._id)}
                     esFavorito={
                       Array.isArray(favoritos)
                         ? favoritos.some(
@@ -74,45 +75,27 @@ const TablaEstudiante = ({
                           )
                         : false
                     }
-
                   />
-
                 ))
-
               ) : (
-
                 <tr>
-
                   <td
-                    colSpan="5"
+                    colSpan={seleccionable ? "6" : "5"}
                     className="py-20 text-center text-gray-400 font-bold uppercase italic opacity-50"
                   >
-
                     <div className="flex flex-col items-center gap-2">
-
                       <MdSearchOff size={50} />
-
-                      No hay proyectos para mostrar
-
+                      No hay favoritos para mostrar
                     </div>
-
                   </td>
-
                 </tr>
-
               )
             }
-
           </tbody>
-
         </table>
-
       </div>
-
     </div>
-
   );
-
 };
 
 export default TablaEstudiante;

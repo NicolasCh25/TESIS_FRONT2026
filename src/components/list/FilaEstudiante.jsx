@@ -1,8 +1,28 @@
 import { MdInfo, MdFavorite, MdFavoriteBorder } from "react-icons/md";
 
-const FilaEstudiante = ({ proyecto, index, onVer, esFavorito, onToggleFav }) => {
+const FilaEstudiante = ({ 
+  proyecto, 
+  index, 
+  onVer, 
+  esFavorito, 
+  onToggleFav,
+  seleccionable = false,
+  checked = false,
+  onSelectChange
+}) => {
   return (
-    <tr className="hover:bg-blue-50/30 transition-colors border-b border-gray-100">
+    <tr className={`hover:bg-blue-50/30 transition-colors border-b border-gray-100 ${checked ? 'bg-amber-50/20' : ''}`}>
+      {seleccionable && (
+        <td className="px-6 py-4 text-center">
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={onSelectChange}
+            className="h-4 w-4 rounded border-gray-300 text-[#F5BD45] focus:ring-[#F5BD45] cursor-pointer"
+          />
+        </td>
+      )}
+      
       <td className="px-6 py-4 text-gray-400 font-medium text-xs">{index + 1}</td>
       
       <td className="px-6 py-4">
