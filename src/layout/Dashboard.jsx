@@ -122,6 +122,10 @@ export default function Dashboard() {
               <Link to="/dashboard/favoritos" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/favoritos')}>
                 <MdStar size={22} /> Mis Favoritos
               </Link>
+              {/* ✅ AGREGADO: BOTÓN CHATBOT ESTUDIANTE */}
+              <Link to="/dashboard/chatbot" onClick={() => setIsSidebarOpen(false)} className={linkClass('/dashboard/chatbot')}>
+                <MdChat size={22} /> Asistente IA (Chatbot)
+              </Link>
             </>
           )}
 
