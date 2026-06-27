@@ -33,7 +33,7 @@ const ListarProyectos = () => {
       ? `?${nombreFiltroBackend}=${encodeURIComponent(valor)}`
       : "";
 
-    const url = `${baseUrl}api/proyectos${query}`;
+    const url = `${baseUrl}/api/proyectos${query}`;
 
     try {
       const response = await fetchDataBackend(
@@ -60,10 +60,32 @@ const ListarProyectos = () => {
     obtenerProyectos();
   }, [busqueda, filtro]);
 
+  // Cambiar Visibilidad del Proyecto (Mostrar/Ocultar)
+  const handleCambiarVisibilidad = async (id, nuevoEstado) => {
+    const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+    const url = `${baseUrl}/api/proyectos/visibilidad/${id}`;
+    
+    try {
+      const response = await fetchDataBackend(
+        url,
+        { estado: nuevoEstado },
+        "PATCH",
+        { Authorization: `Bearer ${token}` }
+      );
+      if (response) {
+        toast.success(response.msg || "Visibilidad del proyecto actualizada");
+        obtenerProyectos(); // Recargamos la lista
+      }
+    } catch (error) {
+      console.error("Error al cambiar visibilidad del proyecto:", error);
+      toast.error("Error al cambiar la visibilidad del proyecto");
+    }
+  };
+
   const handleEliminar = async (id) => {
     if (window.confirm("¿Estás seguro de eliminar este proyecto?")) {
       const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-      const url = `${baseUrl}api/proyectos/${id}`;
+      const url = `${baseUrl}/api/proyectos/${id}`;
       try {
         const response = await fetchDataBackend(
           url,
@@ -88,15 +110,12 @@ const ListarProyectos = () => {
     navigate(`/dashboard/actualizar/${idFinal}`, { state: proyectoObjeto });
   };
 
-  // ✅ CAMBIO CLAVE: Enviamos el objeto del proyecto filtrado en el state de la navegación
   const handleDetalle = (proyecto) => {
     const idFinal = proyecto?._id || proyecto?.id;
     
     if (idFinal) {
-      // Pasamos el ID en la URL y el objeto completo dentro de state
       navigate(`/dashboard/detalle/${idFinal}`, { state: { proyectoSeleccionado: proyecto } });
     } else {
-      // Respaldo por si TablaProyectos pasa solo la cadena de texto del ID
       navigate(`/dashboard/detalle/${proyecto}`);
     }
   };
@@ -152,6 +171,7 @@ const ListarProyectos = () => {
           handleEliminar={handleEliminar}
           handleEditar={handleEditar}
           handleDetalle={handleDetalle}
+          handleCambiarVisibilidad={handleCambiarVisibilidad}
         />
       </div>
     </div>
