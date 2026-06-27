@@ -33,7 +33,7 @@ const ListarProyectos = () => {
       ? `?${nombreFiltroBackend}=${encodeURIComponent(valor)}`
       : "";
 
-    const url = `${baseUrl}/api/proyectos${query}`;
+    const url = `${baseUrl}api/proyectos${query}`;
 
     try {
       const response = await fetchDataBackend(
@@ -63,7 +63,7 @@ const ListarProyectos = () => {
   // Cambiar Visibilidad del Proyecto (Mostrar/Ocultar)
   const handleCambiarVisibilidad = async (id, nuevoEstado) => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
-    const url = `${baseUrl}/api/proyectos/visibilidad/${id}`;
+    const url = `${baseUrl}api/proyectos/visibilidad/${id}`;
     
     try {
       const response = await fetchDataBackend(
