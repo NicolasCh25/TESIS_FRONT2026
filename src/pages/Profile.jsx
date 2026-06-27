@@ -8,7 +8,7 @@ import { toast, ToastContainer } from "react-toastify";
 
 const Profile = () => {
     const fetchDataBackend = useFetch();
-    const { token, rol } = storeAuth(); 
+    const { token, rol, clearToken } = storeAuth(); 
     const [perfil, setPerfil] = useState(null);
     const [cargando, setCargando] = useState(true);
     
@@ -74,6 +74,30 @@ const Profile = () => {
         }
     };
 
+    const handleDesactivarCuentaPropia = async () => {
+        const confirmar = window.confirm(
+            "¿Estás seguro de que deseas desactivar tu cuenta? Se cerrará tu sesión de forma inmediata."
+        );
+        if (!confirmar) return;
+
+        const baseUrl = import.meta.env.VITE_BACKEND_URL;
+        const url = `${baseUrl}api/usuarios/desactivar`;
+
+        try {
+            const response = await fetchDataBackend(url, null, "PUT", {
+                Authorization: `Bearer ${token}`
+            });
+
+            if (response) {
+                alert("Cuenta desactivada correctamente. Si deseas volver a activar tu cuenta en el futuro, por favor contacta con un administrador.");
+                clearToken();
+            }
+        } catch (error) {
+            console.error("Error al desactivar cuenta propia:", error);
+            toast.error("Error al intentar desactivar tu cuenta");
+        }
+    };
+
     useEffect(() => {
         obtenerPerfil();
     }, [token, rol]);
@@ -91,8 +115,23 @@ const Profile = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-1">
+                <div className="lg:col-span-1 space-y-6">
                     <CardProfile user={perfil} />
+                    
+                    {rol === "usuario" && (
+                        <div className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100 flex flex-col items-center animate-fadeIn">
+                            <h3 className="text-xs font-black text-red-500 mb-2 uppercase tracking-wider">Zona de Peligro</h3>
+                            <p className="text-[11px] text-gray-500 text-center mb-4 leading-relaxed font-medium">
+                                ¿Deseas desactivar temporalmente tu cuenta? Perderás el acceso de inmediato y deberás contactar a un administrador para poder reactivarla.
+                            </p>
+                            <button
+                                onClick={handleDesactivarCuentaPropia}
+                                className="w-full bg-red-50 text-red-600 border border-red-200 font-bold py-3 px-6 rounded-2xl hover:bg-red-600 hover:text-white hover:border-transparent transition-all shadow-sm hover:shadow-md active:scale-95 cursor-pointer uppercase text-[10px] tracking-widest"
+                            >
+                                Desactivar mi cuenta
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 <div className="lg:col-span-2 space-y-6">
