@@ -1,6 +1,6 @@
-import { MdDeleteForever, MdEdit, MdCheckCircle, MdRemoveCircle } from "react-icons/md";
+import { MdDeleteForever, MdCheckCircle, MdRemoveCircle } from "react-icons/md";
 
-const TablaUsuarios = ({ usuarios, handleEliminar, handleEditar, handleCambiarEstado }) => {
+const TablaUsuarios = ({ usuarios, handleEliminar, handleCambiarEstado }) => {
   const mostrarCarrera = usuarios.some(u => u.carrera);
 
   return (
@@ -55,12 +55,6 @@ const TablaUsuarios = ({ usuarios, handleEliminar, handleEditar, handleCambiarEs
                           <MdCheckCircle className="h-7 w-7 text-green-500 hover:text-green-700" />
                         }
                       </button>
-
-                      <MdEdit 
-                        onClick={() => handleEditar(user._id)}
-                        className="h-7 w-7 text-gray-400 cursor-pointer hover:text-[#F5BD45]" 
-                        title="Editar Datos"
-                      />
                       
                       <MdDeleteForever 
                         onClick={() => handleEliminar(user._id)}

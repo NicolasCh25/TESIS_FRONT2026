@@ -3,13 +3,12 @@ import { useFetch } from "../hooks/useFetch";
 import { storeAuth } from "../context/storeAuth";
 import TablaUsuarios from "../components/users/TablaUsuarios";
 import { ToastContainer, toast } from "react-toastify";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { MdPersonAdd } from "react-icons/md";
 
 const GestionUsuarios = () => {
   const fetchDataBackend = useFetch();
   const { token } = storeAuth();
-  const navigate = useNavigate();
   
   const [admins, setAdmins] = useState([]);
   const [estudiantes, setEstudiantes] = useState([]);
@@ -66,21 +65,11 @@ const GestionUsuarios = () => {
 
   // 3. CAMBIAR ESTADO (ACTIVO/INACTIVO)
   const handleCambiarEstado = async (id, nuevoEstado) => {
-    let url = "";
-    let body = null;
-
-    if (nuevoEstado === "inactivo") {
-      // Endpoint específico para desactivar
-      url = `${import.meta.env.VITE_BACKEND_URL}api/usuarios/desactivar`;
-      body = { id };
-    } else {
-      // Endpoint unificado para activar
-      url = `${import.meta.env.VITE_BACKEND_URL}api/usuarios/estado/${id}`;
-      body = { estado: nuevoEstado };
-    }
+    // Se utiliza el endpoint unificado /api/usuarios/estado/:id que funciona para ambos roles y permite activar/desactivar en DB
+    const url = `${import.meta.env.VITE_BACKEND_URL}api/usuarios/estado/${id}`;
     
     try {
-      const response = await fetchDataBackend(url, body, "PUT", {
+      const response = await fetchDataBackend(url, { estado: nuevoEstado }, "PUT", {
         Authorization: `Bearer ${token}`
       });
 
@@ -116,8 +105,6 @@ const GestionUsuarios = () => {
       }
     }
   };
-
-  const handleEditar = (id) => navigate(`/dashboard/usuarios/actualizar/${id}`);
 
   return (
     <div className="p-6 min-h-screen bg-gray-50 animate-fadeIn">
@@ -172,7 +159,6 @@ const GestionUsuarios = () => {
         <TablaUsuarios 
           usuarios={activoTab === "admins" ? admins : estudiantes} 
           handleEliminar={handleEliminar} 
-          handleEditar={handleEditar}
           handleCambiarEstado={handleCambiarEstado}
         />
       </div>
