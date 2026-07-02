@@ -50,7 +50,31 @@ export default function InicioAdmin() {
         </svg>
       ),
       color: "bg-[#F5BD45]",
-      ruta: "/dashboard/stats" // <--- CAMBIADO de 'reports' a 'stats' para que coincida con App.jsx
+      ruta: "/dashboard/stats"
+    },
+    {
+      id: 5,
+      titulo: "Auditoría (Logs)",
+      descripcion: "Monitorea el historial de acciones y registros de seguridad de la plataforma en tiempo real.",
+      icono: (
+        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      ),
+      color: "bg-slate-700",
+      ruta: "/dashboard/logs"
+    },
+    {
+      id: 6,
+      titulo: "Asistente IA (Chatbot)",
+      descripcion: "Resuelve dudas académicas y localiza proyectos rápidamente mediante el asistente conversacional con inteligencia artificial.",
+      icono: (
+        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      ),
+      color: "bg-indigo-600",
+      ruta: "/dashboard/chatbot"
     }
   ];
 
@@ -61,7 +85,7 @@ export default function InicioAdmin() {
         <p className="text-gray-600 mt-2">¿Qué acción administrativa deseas realizar el día de hoy?</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {acciones.map((accion) => (
           <Link 
             key={accion.id} 
