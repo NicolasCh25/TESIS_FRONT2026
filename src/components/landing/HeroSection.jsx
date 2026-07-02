@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export default function HeroSection() {
+export default function HeroSection({ onScrollToGrid }) {
   
   // --- LÓGICA DEL CARRUSEL ---
   const images = [
@@ -63,7 +63,10 @@ export default function HeroSection() {
 
         {/* BOTÓN CENTRADO INFERIOR */}
         <div className="flex justify-center mt-8 md:mt-12 pt-6">
-        <button className="rounded-full bg-yellow-400 px-8 sm:px-12 py-3 sm:py-4 text-lg sm:text-xl font-bold text-blue-950 shadow-2xl hover:bg-yellow-500 transition-all hover:scale-105">
+        <button 
+          onClick={onScrollToGrid}
+          className="rounded-full bg-yellow-400 px-8 sm:px-12 py-3 sm:py-4 text-lg sm:text-xl font-bold text-blue-950 shadow-2xl hover:bg-yellow-500 transition-all hover:scale-105 cursor-pointer"
+        >
           Explorar Proyectos
         </button>
       </div>

@@ -1,9 +1,16 @@
+import { useRef } from 'react';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import HeroSection from '../components/landing/HeroSection';
 import ProjectGrid from '../components/landing/ProjectGrid';
 
 export default function Home() {
+  const gridRef = useRef(null);
+
+  const handleScrollToGrid = () => {
+    gridRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
       <Navbar />
@@ -25,8 +32,11 @@ export default function Home() {
           </div>
         </div>
 
-        <HeroSection />
-        <ProjectGrid />
+        <HeroSection onScrollToGrid={handleScrollToGrid} />
+        
+        <div ref={gridRef} className="scroll-mt-12">
+          <ProjectGrid />
+        </div>
 
       </main>
       
