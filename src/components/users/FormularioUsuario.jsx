@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { MdSave, MdPerson, MdEmail, MdLock, MdError } from "react-icons/md";
+import { MdSave, MdPerson, MdEmail, MdError } from "react-icons/md";
 
 const FormularioUsuario = ({ onSubmit, cargando, errorServer }) => {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -65,31 +65,6 @@ const FormularioUsuario = ({ onSubmit, cargando, errorServer }) => {
           />
         </div>
         {errors.email && <p className="text-red-500 text-xs mt-1 font-bold">{errors.email.message}</p>}
-      </div>
-
-      {/* Password */}
-      <div>
-        <label className="block text-sm font-bold text-[#17243D] mb-2 uppercase tracking-wide">Contraseña Temporal</label>
-        <div className="relative">
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-            <MdLock size={20} />
-          </span>
-          <input 
-            type="password"
-            placeholder="Mínimo 8 caracteres"
-            className={inputClass}
-            {...register("password", { 
-              required: "La contraseña es obligatoria",
-              minLength: { value: 8, message: "Debe tener al menos 8 caracteres" },
-              validate: {
-                format: (value) => 
-                  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/.test(value) || 
-                  "Debe contener mayúscula, minúscula y número"
-              }
-            })}
-          />
-        </div>
-        {errors.password && <p className="text-red-500 text-xs mt-1 font-bold">{errors.password.message}</p>}
       </div>
 
       {/* MENSAJE DE ERROR DEL SERVIDOR (Ej: Usuario ya registrado) */}
